@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "audit-book.finding.v2",
+  "title": "Unified Audit Finding",
+  "description": "ONE schema for every finding across every repo, tool, and audit run. Instance-specific vocabularies (repo names, surfaces) live in the instance config.json and are enforced by tools/validate-ledger.mjs, not hardcoded here. v2 change from v1: repo/surface enums removed (instance-defined); semantics otherwise identical.",
+  "type": "object",
+  "required": ["id", "taxonomy_id", "surface", "repo", "severity", "kind", "status", "title", "evidence", "claim", "provenance"],
+  "properties": {
+    "id":          { "type": "string", "pattern": "^F-\\d{4,}$", "description": "Stable global finding id, e.g. F-0001. Never reused, never renumbered. Assigned at merge time by tools/merge-runs.mjs — staged run files omit it." },
+    "taxonomy_id": { "type": "string", "pattern": "^[A-Z]{1,2}:\\d+$", "description": "Book rule in LETTER:NUMBER form, e.g. 'A:6'. Must exist in the Book index. The canonical checklist axis." },
+    "legacy_flag_id": { "type": "string", "description": "Back-compat: pre-2026-07 'Flag A:6 -finding 28' nomenclature. Provenance only; never assigned to new findings." },
+    "title":       { "type": "string", "description": "One-line defect name." },
+    "surface":     { "type": "string", "description": "Where the defect lives. Must be one of the instance config.json surfaces[]. 'cross' spans repos (must set related_findings)." },
+    "repo":        { "type": "string", "description": "Must be one of the instance config.json repos[]." },
+    "component":   { "type": "string", "description": "Logical unit, e.g. 'auth/role_auth.tf' or 'mcp-tool-server'." },
+    "severity":    { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+    "kind":        { "type": "string", "enum": ["BAD", "IMP"], "description": "BAD = actively wrong. IMP = works-but-improve." },
+    "status":      { "type": "string", "enum": ["open", "closed", "accepted", "cant_verify"], "description": "accepted = intentional, documented posture (e.g. sanctioned dev-stage choice)." },
+    "confidence":  { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "claim":       { "type": "string", "description": "One sentence: the defect, stated as fact about live code." },
+    "fix":         { "type": "string", "description": "One sentence: the remediation." },
+    "evidence": {
+      "type": "object",
+      "required": ["path", "line"],
+      "properties": {
+        "path":    { "type": "string", "description": "Repo-relative path to the live source proving the claim." },
+        "line":    { "type": "integer" },
+        "snippet": { "type": "string" }
+      }
+    },
+    "related_findings": { "type": "array", "items": { "type": "string" }, "description": "Other finding ids this links to (frontend<->backend root-cause pairing)." },
+    "provenance": {
+      "type": "object",
+      "required": ["found_by", "method", "verified_at"],
+      "properties": {
+        "found_by":   { "type": "string", "description": "Audit run id, e.g. 'audit-2026-07-05-fresh'." },
+        "method":     { "type": "string", "enum": ["live-source", "live-source+adversarial", "live-aws", "cartography", "ledger-db"], "description": "How it was found/verified. RULE 0: never 'stale-doc'." },
+        "adversarially_refuted": { "type": "boolean", "description": "Did an independent refuter agent fail to disprove it? false = survived refutation." },
+        "verified_at":{ "type": "string", "description": "ISO date of last live-source verification." },
+        "verifier_evidence": { "type": "string" }
+      }
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date":  { "type": "string" },
+          "event": { "type": "string", "enum": ["opened", "reverified-open", "closed-fixed", "closed-not-an-issue", "accepted", "reopened"] },
+          "run":   { "type": "string" },
+          "note":  { "type": "string" }
+        }
+      }
+    }
+  }
+}

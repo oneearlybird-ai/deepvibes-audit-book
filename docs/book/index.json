@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 40,
- "rule_count": 564,
+ "rule_count": 566,
  "sections": [
   {
    "id": "A",
@@ -947,7 +947,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "K:1",
@@ -996,6 +996,10 @@
     {
      "id": "K:12",
      "title": "Forms: Dirty-state navigation without guards — users silently lose long-form input"
+    },
+    {
+     "id": "K:13",
+     "title": "Staged Actions: Submit payloads re-derived from an evictable cache instead of the captured selection"
     }
    ]
   },
@@ -2287,7 +2291,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "II:1",
@@ -2336,6 +2340,10 @@
     {
      "id": "II:12",
      "title": "Same-entity operations processed in parallel without per-key serialization"
+    },
+    {
+     "id": "II:13",
+     "title": "Re-triggerable long-running workflows without a per-entity in-flight guard"
     }
    ]
   },

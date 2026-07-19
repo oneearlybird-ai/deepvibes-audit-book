@@ -53,3 +53,25 @@ Derived State: Computable values stored in state alongside their sources, inevit
 ## K:12 — Forms: Dirty-state navigation without guards — users silently lose long-form input
 
 Forms: Dirty-state navigation without guards — users silently lose long-form input.
+
+## K:13 — Staged Actions: Submit payloads re-derived from an evictable cache instead of the captured selection
+
+**Statement.** The UI stages items for a deferred action (a queue, cart, tray, or multi-select) but
+at submit time rebuilds the payload by looking the staged ids up in a live windowed/paginated/
+evictable cache (`cache.filter(staged.has(id))`). Any item evicted between staging and submit —
+window recentering, pagination, cache GC, refetch narrowing — silently drops out of the request.
+Worse, phase bookkeeping keyed to the staged list then marks the never-sent items as in-flight or
+succeeded, because the "mark processed" pass iterates the staged set rather than the acknowledged
+response. The user believes the action covered everything they queued; part of it never happened.
+
+**Detect.** Find submit handlers that intersect a staged-id set with a live query cache or windowed
+list to build the request body. Ask: can the cache evict or re-window while staging persists
+(navigation-recentered fetch windows, page changes, tenant/profile switches)? Then check the
+post-submit bookkeeping: is "sent/succeeded" derived from the server's acknowledgment
+(started/skipped lists) or from the staged set? A staged snapshot that already carries everything
+the request needs (ids, display fields) makes the cache lookup pure display — that is the fix.
+
+**False positives.** Caches that are append-only for the staging session (nothing evicts while the
+tray lives); staging that stores the full payload and uses the cache only for cosmetic refresh;
+submit paths that reconcile against the server response and explicitly surface unmatched staged
+items as failures.

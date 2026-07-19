@@ -171,3 +171,28 @@ locks) or fully conditional writes making interleaving safe.
 
 **False positives.** Handlers whose writes are all conditional/atomic (serialization not needed for
 correctness, only for throughput fairness); genuinely append-only workloads.
+
+## II:13 — Re-triggerable long-running workflows without a per-entity in-flight guard
+
+**Statement.** An API/UI action starts a long-running workflow instance (state machine, saga,
+human-callback loop) keyed to an entity, but nothing records that one is already running: execution
+names are salted with timestamps/UUIDs, and no conditional "in-flight" marker is stamped on the
+entity. Re-triggering — a double submit, a second client surface, a second operator, a bulk re-run —
+launches concurrent instances against the same entity. Even when every data write inside the workflow
+is version-guarded (so the datastore stays consistent), the *external* side effects duplicate:
+the same human gets two phone calls, two SMS, two emails about the same thing, or the same
+downstream system is driven twice. The longer the workflow can live (callback waits, scheduled
+retries measured in hours), the wider the duplication window.
+
+**Detect.** For each workflow trigger, ask: what prevents a second Start for the same entity while
+one instance is still running? Look for a conditional in-flight stamp on the entity row (acquired
+transactionally at trigger, cleared at terminal states), a deterministic per-entity execution id the
+engine rejects as duplicate, or an upstream per-entity lock. A trigger that names executions
+`{entity}-{timestamp}` has explicitly opted out of engine-level dedupe. Trace every surface that can
+reach the trigger (dashboard, mobile, bulk endpoints, scheduled sweeps) — the guard must be in the
+trigger or the workflow's first state, not in one client's button-disable logic.
+
+**False positives.** Workflows whose duplicated side effects are genuinely idempotent or harmless
+(pure recomputation, cache warming); triggers already gated by an upstream per-entity lock or queue
+with per-key serialization; workflows so short-lived that the UI's own submit-guard covers the
+realistic window AND no other surface can trigger them.

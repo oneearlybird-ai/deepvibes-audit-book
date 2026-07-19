@@ -61,6 +61,31 @@ document's claim as fact.
 9. **Validate.** `node audit-book/tools/validate-ledger.mjs <instance-dir>` must pass after ANY ledger
    mutation. A red validator blocks the work from being called done.
 
+## The fix loop — find → report → fix → report fix → keep going
+
+Auditing does not end at the ledger. Unless the user has scoped the run as report-only, every
+merged finding enters the fix loop **in the same session**, in this strict order:
+
+1. **Find.** The audit loop above, through merge + validate.
+2. **Report.** Surface the findings to the user BEFORE mutating anything — the found state must be
+   visible as found. Never batch "found and already fixed it" as one reveal.
+3. **Fix.** Remediate in the live repo, highest severity first. The finding's one-sentence `fix` is
+   the starting shape, but the live re-trace wins if it shows a better one. Every fix sweeps its
+   whole blast radius: every caller, every surface, every platform the changed contract touches —
+   a fix that moves one consumer of a changed contract is a new outage, not a fix. Obey the repo's
+   own gates (hooks, verifiers, tests) and trunk-only rules.
+4. **Report the fix.** What changed, where (file:line), and HOW it was verified. Then close the
+   finding per the Lifecycle rules — re-read the changed live code and cite the new evidence in the
+   history note. If verification cannot run on this machine (platform build/toolchain unavailable),
+   the finding STAYS OPEN with a history note naming what landed and which verification is pending —
+   closing on unverified execution is forbidden.
+5. **Keep going.** Return to step 1 for the next finding or the next scope until the run's scope is
+   exhausted or the user stops it.
+
+A fix that is genuinely not this session's call — owner decision, cross-team surface, accepted-
+posture candidate — is reported as such with its reason and left `open` (or proposed `accepted`);
+the loop never silently skips a finding.
+
 ## Lifecycle of a finding
 
 - **Open** it via the staging flow above. `claim` states the defect as fact about live code;

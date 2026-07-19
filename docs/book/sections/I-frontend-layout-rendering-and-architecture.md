@@ -65,3 +65,23 @@ Scripts: Third-party analytics/chat widgets loaded synchronously in <head> inste
 ## I:15 — i18n: Locale negotiation done client-side post-hydration, flashing wrong-language conten…
 
 i18n: Locale negotiation done client-side post-hydration, flashing wrong-language content and shifting layout.
+
+## I:16 — Fabricated live telemetry: ticking clocks, synthetic log lines, and "live" badges with no backing stream
+
+**Statement.** The UI stages live-system evidence that no system produces: a pulsing "Live"
+badge, a console of timestamped log lines whose timestamps come from a local `setInterval` and
+whose content is static copy, a "syncing" indicator not wired to any connection state. Users
+(and auditors, and support staff triaging with the customer's screen) trust telemetry that is
+theater — and the ticker that animates it typically lives as root-level state, re-rendering the
+entire heavy view at the tick frequency for a purely cosmetic readout.
+
+**Detect.** For every live-implying affordance (pulse dots, "Live"/"Syncing" copy, streaming
+consoles, ticking timestamps), trace the value to its source: a real transport (WebSocket/SSE
+state, query `dataUpdatedAt`, server-sent events) or a local timer/hardcoded string. A
+`setInterval(setState, 1000)` in a dashboard-scale component is both the fabrication tell and a
+render-thrash defect in its own right. Honest equivalents: "last updated <real timestamp>",
+connection badges bound to actual socket state.
+
+**False positives.** Clocks that are the product (a world-clock widget); demo/preview modes
+explicitly labeled as simulated; "live" indicators genuinely bound to transport state even when
+the transport is currently idle.

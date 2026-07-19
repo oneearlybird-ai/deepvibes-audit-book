@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 40,
- "rule_count": 568,
+ "rule_count": 578,
  "sections": [
   {
    "id": "A",
@@ -368,7 +368,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "D:1",
@@ -473,6 +473,10 @@
     {
      "id": "D:26",
      "title": "Migrations: Schema migrations run at process boot without distributed locks — parallel i…"
+    },
+    {
+     "id": "D:27",
+     "title": "DynamoDB: GSI queried against a key schema it does not have — runtime ValidationException CI never sees"
     }
    ]
   },
@@ -481,7 +485,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "E:1",
@@ -582,6 +586,10 @@
     {
      "id": "E:25",
      "title": "Kinesis: Static shard counts under growing traffic; GetRecords.IteratorAgeMilliseconds u…"
+    },
+    {
+     "id": "E:26",
+     "title": "EventBridge: consumer's accepted event vocabulary has no producer — a feature that can never fire"
     }
    ]
   },
@@ -590,7 +598,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "F:1",
@@ -671,6 +679,10 @@
     {
      "id": "F:20",
      "title": "IAM: Hand-rolled policies replicating (worse) what AWS-managed service-role policies alr…"
+    },
+    {
+     "id": "F:21",
+     "title": "KMS: Service-principal key-policy statements without kms:CallerAccount / kms:ViaService — cross-account confused deputy through the service"
     }
    ]
   },
@@ -679,7 +691,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "G:1",
@@ -748,6 +760,10 @@
     {
      "id": "G:17",
      "title": "SSM: Session Manager sessions without session logging to encrypted S3/CloudWatch — privi…"
+    },
+    {
+     "id": "G:18",
+     "title": "CloudWatch: Alarm dimensions referencing nonexistent resources — INSUFFICIENT_DATA forever, monitoring theater"
     }
    ]
   },
@@ -829,7 +845,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "I:1",
@@ -890,6 +906,10 @@
     {
      "id": "I:15",
      "title": "i18n: Locale negotiation done client-side post-hydration, flashing wrong-language conten…"
+    },
+    {
+     "id": "I:16",
+     "title": "Fabricated live telemetry: ticking clocks, synthetic log lines, and \"live\" badges with no backing stream"
     }
    ]
   },
@@ -947,7 +967,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "K:1",
@@ -1004,6 +1024,10 @@
     {
      "id": "K:14",
      "title": "Data Flow: Boundary-captured fields dropped by an intermediate carrier — downstream state documents values that can never arrive"
+    },
+    {
+     "id": "K:15",
+     "title": "Ranges: One labeled time-range selector, multiple data lanes with different window vocabularies — the narrower lane silently coerces"
     }
    ]
   },
@@ -1333,7 +1357,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "Q:1",
@@ -1386,6 +1410,10 @@
     {
      "id": "Q:13",
      "title": "Throughput: Outbound bursts exceeding carrier/number throughput with no queue — 429s and…"
+    },
+    {
+     "id": "Q:14",
+     "title": "Phone-format drift: multiple writers persist unnormalized numbers, breaking E.164-keyed delivery and consent joins"
     }
    ]
   },
@@ -1943,7 +1971,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "AA:1",
@@ -1992,6 +2020,10 @@
     {
      "id": "AA:12",
      "title": "Evals: Prompt/model changes shipped without a regression evaluation suite — quality drif…"
+    },
+    {
+     "id": "AA:13",
+     "title": "Dead capability: agent tool registered and callable but never referenced by any prompt or workflow"
     }
    ]
   },
@@ -2360,7 +2392,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 12,
+   "rule_count": 14,
    "rules": [
     {
      "id": "JJ:1",
@@ -2409,6 +2441,14 @@
     {
      "id": "JJ:12",
      "title": "Splitting totals across parts without remainder allocation"
+    },
+    {
+     "id": "JJ:13",
+     "title": "Readers depend on denormalized attributes no writer stamps"
+    },
+    {
+     "id": "JJ:14",
+     "title": "Status-vocabulary drift between writer eras leaves live rows invisible to lifecycle readers"
     }
    ]
   },

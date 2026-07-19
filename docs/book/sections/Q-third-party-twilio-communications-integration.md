@@ -57,3 +57,18 @@ Streams: Media Streams/ConversationRelay WebSocket endpoints accepting connectio
 ## Q:13 — Throughput: Outbound bursts exceeding carrier/number throughput with no queue — 429s and…
 
 Throughput: Outbound bursts exceeding carrier/number throughput with no queue — 429s and filtered messages unhandled.
+
+## Q:14 — Phone-format drift: multiple writers persist unnormalized numbers, breaking E.164-keyed delivery and consent joins
+
+**Statement.** Different write paths persist the same logical phone field in different formats (E.164
+from telephony webhooks, free-text from dashboards/imports). Everything keyed on the number then
+splits: provider send APIs reject or misroute non-E.164 destinations, opt-out list checks miss
+(the list holds E.164), consent/contact lookups fail to join, and dedupe by phone silently forks.
+
+**Detect.** Enumerate every writer of each phone attribute and check for a shared normalization
+(E.164) at the boundary. Then check senders and joiners: send calls, suppression-list checks, and
+GSI/index lookups on phone must all consume the normalized form. Live data sampling (mixed formats
+in the same column) is conclusive.
+
+**False positives.** Display-only fields that are never sent, joined, or matched; systems that
+normalize at READ time everywhere (verify every reader, not one).

@@ -85,3 +85,25 @@ Account: Root user without hardware MFA, or root access keys existing at all.
 ## F:20 — IAM: Hand-rolled policies replicating (worse) what AWS-managed service-role policies alr…
 
 IAM: Hand-rolled policies replicating (worse) what AWS-managed service-role policies already provide, drifting from service updates.
+
+## F:21 — KMS: Service-principal key-policy statements without kms:CallerAccount / kms:ViaService — cross-account confused deputy through the service
+
+**Statement.** A CMK key policy grants usage (Encrypt/Decrypt/GenerateDataKey/CreateGrant) to an
+AWS service principal (`secretsmanager.amazonaws.com`, `elasticache.amazonaws.com`,
+`rds.amazonaws.com`, …) with no `kms:CallerAccount` / `kms:ViaService` condition. Service
+principals are shared across ALL customers: the statement authorizes the service acting for
+anyone, so a foreign account that learns the key ARN can point its own resource (a secret, a
+cluster) at the key and the service will happily use it on their behalf — the classic confused
+deputy AWS's own key-policy guidance conditions against. Especially telling when sibling
+statements in the same policy carry the conditions and one service's statement does not.
+
+**Detect.** For every key-policy statement whose Principal is a `*.amazonaws.com` service, demand
+`kms:CallerAccount` (and `kms:ViaService` where the service supports it) or an encryption-context
+condition that pins account-owned resource ARNs. Diff statements within one policy — an
+unconditioned outlier among conditioned siblings is the finding. Verify against the LIVE key
+policy, not just IaC.
+
+**False positives.** Statements conditioned instead on `kms:EncryptionContext:*` values that embed
+the account id (equivalent pinning); metadata-only actions (`kms:DescribeKey`) deliberately split
+into an unconditioned statement because they carry no encryption context; services that reject
+the conditions (verify against current AWS documentation before accepting this excuse).

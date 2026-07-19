@@ -109,3 +109,18 @@ SQL/ORM: N+1 lazy-loading query patterns on hot endpoints, multiplying latency u
 ## D:26 — Migrations: Schema migrations run at process boot without distributed locks — parallel i…
 
 Migrations: Schema migrations run at process boot without distributed locks — parallel instances race and corrupt schema state.
+
+## D:27 — DynamoDB: GSI queried against a key schema it does not have — runtime ValidationException CI never sees
+
+**Statement.** A Query names a GSI but its KeyConditionExpression does not match the index's actual key
+schema (e.g. conditions on the range key alone, or treats the range key as the hash). DynamoDB rejects
+it at runtime (ValidationException), so every caller of that code path hard-fails — but unit-test
+fakes rarely model index key schemas, so CI stays green and the crash ships. Frequently caused by two
+consumers assuming DIFFERENT schemas for the same index name.
+
+**Detect.** For every Query with IndexName, resolve the index's real key schema (IaC/contract/table
+description) and check the KeyConditionExpression uses the hash key with equality. Cross-check ALL
+consumers of the same index against one schema. Treat range-only conditions as certain failures.
+
+**False positives.** Queries against the base table (no IndexName) keyed on the table's own hash;
+expressions where attribute-name aliases obscure a correct hash-key condition — resolve aliases first.

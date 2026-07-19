@@ -166,3 +166,34 @@ remainder distribution (largest-remainder / last-line-absorbs) and an assertion 
 at the split site or in tests.
 
 **False positives.** Display-only percentage breakdowns never written back or settled.
+
+## JJ:13 — Readers depend on denormalized attributes no writer stamps
+
+**Statement.** A read path filters or routes on denormalized item attributes (e.g. tenant/owner ids
+copied onto rows) that no writer actually persists — the authoritative values live only in the key.
+Results silently filter to empty: the code path "works" (no error) while always returning nothing,
+and the gap survives because test fixtures hand-craft rows WITH the attributes real writers omit.
+
+**Detect.** For each attribute a reader filters/projects, trace every producing writer and confirm the
+attribute is written. Sample live rows for the attribute's presence. Fixtures that fabricate the
+attribute are a tell, not a defense. Prefer deriving from the key (parse) over trusting denormalized
+copies.
+
+**False positives.** Attributes populated by a backfill or stream processor that verifiably ran;
+sparse-by-design attributes where absence is the intended filter.
+
+## JJ:14 — Status-vocabulary drift between writer eras leaves live rows invisible to lifecycle readers
+
+**Statement.** A scheduled or lifecycle reader selects rows by status equality (status = 'active'),
+but historical writer generations used a different vocabulary for the same live state (e.g. a mover
+that stamped 'rescheduled' on the still-active row before a later fix). The stale-status rows remain
+live business objects yet are permanently invisible to reminders, sweeps, exports, and escalations —
+with no error anywhere.
+
+**Detect.** Diff the status vocabulary each READER matches against the DISTINCT statuses present in
+live data and every historical writer. Any live-state row whose status a lifecycle reader will never
+match is a hit. After changing a writer's status semantics, require a one-time restamp of existing
+rows in the same change.
+
+**False positives.** Statuses that genuinely mean "no longer active" for that reader; readers that
+match on a computed liveness predicate rather than status equality.

@@ -105,3 +105,18 @@ Step Functions: Full payloads threaded between states toward the 256KB limit ins
 ## E:25 — Kinesis: Static shard counts under growing traffic; GetRecords.IteratorAgeMilliseconds u…
 
 Kinesis: Static shard counts under growing traffic; GetRecords.IteratorAgeMilliseconds unmonitored until data expires unread.
+
+## E:26 — EventBridge: consumer's accepted event vocabulary has no producer — a feature that can never fire
+
+**Statement.** A consumer (rule target, handler switch, allowed-event set) enumerates event types that
+no code anywhere emits. The lane looks complete — rule, target, permissions, handler, tests — but its
+trigger set is empty vocabulary: the feature has silently never run. Common after an emitter is
+deleted, renamed, or simply never built while the consumer shipped first.
+
+**Detect.** For each detail-type/source a consumer accepts, search the entire producing estate
+(services, jobs, tools, other lambdas) for a PutEvents/publish of that exact type. Zero producers =
+flag. Confirm with runtime evidence: rule match metrics or consumer invocation counts since deploy.
+
+**False positives.** Vocabulary reserved for a producer that is verifiably live in ANOTHER repo or
+emitted by an AWS service itself (S3, Config, etc.); staged rollouts where the producer ships in the
+same release train — verify the train, not the intent.

@@ -94,3 +94,22 @@ hand at the throw site.
 **False positives.** Fields deliberately deferred with the deferral stated at the drop site (not
 only in the field's doc); privacy-motivated redaction where the omission is the point; fields
 whose consumer is dead code being deleted in the same change.
+
+## K:15 — Ranges: One labeled time-range selector, multiple data lanes with different window vocabularies — the narrower lane silently coerces
+
+**Statement.** A view offers a single range selector (24H/7D/30D/12M…) feeding multiple data
+lanes (different hooks, endpoints, or query languages). One lane supports the full vocabulary;
+another supports a subset, and the mapping table silently coerces the unsupported range to the
+nearest supported window. The view then renders mixed windows under one label: some tiles show
+the selected range, others show the coerced one, and nothing on screen discloses the difference.
+Users read cross-lane comparisons (a 12-month health score against a 30-day call volume) as if
+they shared a denominator.
+
+**Detect.** Find the range-to-parameter mapping for EVERY data lane a ranged view consumes; any
+many-to-one entry in one lane's map while a sibling lane passes the range through is the defect.
+Trace each lane to its backend to confirm the actual supported vocabulary — the client type
+often already admits the truth (`type Window = "day" | "week" | "month"` behind a 12M button).
+
+**False positives.** Coercions disclosed in the UI at the point of display ("showing last 30
+days"); lanes whose data genuinely has no longer history AND whose tiles say so; selectors that
+disable/hide ranges a lane cannot honor.

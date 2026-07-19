@@ -73,3 +73,23 @@ CloudWatch: High-cardinality custom metric dimensions (per-user/per-request) exp
 ## G:17 — SSM: Session Manager sessions without session logging to encrypted S3/CloudWatch — privi…
 
 SSM: Session Manager sessions without session logging to encrypted S3/CloudWatch — privileged access leaves no trail.
+
+## G:18 — CloudWatch: Alarm dimensions referencing nonexistent resources — INSUFFICIENT_DATA forever, monitoring theater
+
+**Statement.** An alarm's dimensions point at a resource that no longer exists (a deleted API id,
+a renamed function, a replaced load balancer): the metric never emits, the alarm sits
+INSUFFICIENT_DATA indefinitely, and the dashboard reads as "monitored" while the surface the
+alarm was written for — or its replacement — is actually unwatched. Deleted-and-replaced
+resources are the sharpest case: the old resource's alarm survives the migration, the new
+resource never gets one, and the alarm inventory count hides the gap.
+
+**Detect.** For every alarm with hardcoded resource dimensions (ApiId, FunctionName,
+LoadBalancer/TargetGroup ARNs, TableName, QueueName), verify the resource exists live. Alarms in
+INSUFFICIENT_DATA state since creation are the runtime tell (`StateValue` +
+`StateUpdatedTimestamp` from describe-alarms). Prefer dimensions resolved from the same source of
+truth that provisions the resource (resource references, SSM parameters) over pasted literals.
+
+**False positives.** Alarms on metrics that are legitimately sparse (custom metrics emitted only
+on rare events) — distinguish "resource gone" from "metric quiet" by checking the resource, not
+the metric; alarms pre-created for resources that a pending deployment is about to create
+(verify the deployment actually lands).

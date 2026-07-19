@@ -53,3 +53,24 @@ Metadata Injection: Retrieved chunk metadata (filenames, titles) interpolated in
 ## AA:12 — Evals: Prompt/model changes shipped without a regression evaluation suite — quality drif…
 
 Evals: Prompt/model changes shipped without a regression evaluation suite — quality drift undetected.
+
+## AA:13 — Dead capability: agent tool registered and callable but never referenced by any prompt or workflow
+
+**Statement.** A tool is wired into the agent's tool surface (registered on the server, auto-approved by
+the platform) but no system prompt, workflow node, or instruction anywhere tells the agent when to use
+it. LLM agents overwhelmingly invoke only tools their instructions reference — the capability is
+silently dead, and every downstream pipeline it feeds (events, consumers, ledgers) idles at zero
+while looking "deployed" on every infrastructure check.
+
+**Detect.** For each registered tool, search the FULL rendered instruction surface — server-side prompt
+builders, per-agent platform config, workflow node prompts, first-messages — for a reference to the
+tool's purpose or name. Zero references = candidate. Then confirm with runtime evidence EITHER WAY:
+consumer-side invocation counts or event emissions since the tool shipped. An instruction may EXIST
+yet be non-binding — a standalone section the model skips while a competing flow (e.g. an aggressive
+call-closing sequence) carries it past the trigger point. Zero invocations over a meaningful call
+volume convicts the instruction surface even when the text is present; the fix is binding the step
+into a flow the model demonstrably executes, not adding more prose.
+
+**False positives.** Tools invoked programmatically (not by the LLM); tools whose triggering instruction
+lives in dynamic variables or retrieved knowledge that IS delivered at runtime — trace the actual
+rendered context before flagging.

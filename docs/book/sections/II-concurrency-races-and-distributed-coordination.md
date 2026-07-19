@@ -196,3 +196,27 @@ trigger or the workflow's first state, not in one client's button-disable logic.
 (pure recomputation, cache warming); triggers already gated by an upstream per-entity lock or queue
 with per-key serialization; workflows so short-lived that the UI's own submit-guard covers the
 realistic window AND no other surface can trigger them.
+
+## II:14 — Single-use continuations double-fired from an unguarded submit affordance
+
+**Statement.** A client submit spends a single-use server-side continuation — an auth-challenge
+session blob, a one-shot token, a redeem-once nonce — but the affordance stays enabled (and the
+submitting method is not reentrancy-guarded) while the consuming request is in flight. A second
+activation fires a concurrent duplicate consume of the same continuation. Exactly one wins; the
+loser's rejection ("expired" / "already used") races back and lands in shared error state, so the
+surfaced outcome contradicts what actually happened — an error banner over a successful login, a
+"try again" over a completed redemption — and where the server budgets limited attempts per
+continuation, the duplicate silently burns them.
+
+**Detect.** For each client action that transmits a single-use token/session, check the full
+in-flight window: the triggering control disables on the flow's loading flag (not merely on input
+validity) OR the method guards reentrancy, AND late failure handlers cannot overwrite state a
+completed success already set. Async-actor UIs deserve special attention: an `await` inside a
+main-actor method is a reentrancy window even though the code reads as serial. Contrast with the
+same screen's other submits — a primary CTA that disables on the loading flag while the secondary
+submit does not is the tell.
+
+**False positives.** Submits that are server-idempotent under a client-supplied key (the duplicate
+is absorbed); affordances structurally unmounted on first activation (the state that renders them
+is cleared synchronously before the first await); duplicate responses routed to per-request state
+that cannot clobber the winning outcome.

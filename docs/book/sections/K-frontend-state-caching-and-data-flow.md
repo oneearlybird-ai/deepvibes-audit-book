@@ -75,3 +75,22 @@ the request needs (ids, display fields) makes the cache lookup pure display — 
 tray lives); staging that stores the full payload and uses the cache only for cosmetic refresh;
 submit paths that reconcile against the server response and explicitly surface unmatched staged
 items as failures.
+
+## K:14 — Data Flow: Boundary-captured fields dropped by an intermediate carrier — downstream state documents values that can never arrive
+
+**Statement.** The transport/decode layer captures a field from the wire, but an intermediate
+carrier on the path to UI state — a typed error enum, a narrowed DTO, a mapper — has no slot for
+it, so the assembling code hard-codes the field's resting value (nil / empty / default). The
+downstream struct still declares and documents the field as live data; the UI branch or copy that
+would render it can never trigger. The type system reports a working data flow that structurally
+does not exist, and later consumers build on the documented lie instead of fixing the drop.
+
+**Detect.** For each field in view-facing state, walk the provenance chain back to the boundary
+that captures it. A constructor call passing a literal (nil, "", 0) into a field whose name/doc
+promises wire data is the tell. Enum-tunneled flows (throw typed error → catch → rebuild state)
+are the usual drop point: diff the enum case's associated values against what the thrower had in
+hand at the throw site.
+
+**False positives.** Fields deliberately deferred with the deferral stated at the drop site (not
+only in the field's doc); privacy-motivated redaction where the omission is the point; fields
+whose consumer is dead code being deleted in the same change.

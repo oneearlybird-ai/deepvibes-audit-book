@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 40,
- "rule_count": 566,
+ "rule_count": 568,
  "sections": [
   {
    "id": "A",
@@ -947,7 +947,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "K:1",
@@ -1000,6 +1000,10 @@
     {
      "id": "K:13",
      "title": "Staged Actions: Submit payloads re-derived from an evictable cache instead of the captured selection"
+    },
+    {
+     "id": "K:14",
+     "title": "Data Flow: Boundary-captured fields dropped by an intermediate carrier — downstream state documents values that can never arrive"
     }
    ]
   },
@@ -2291,7 +2295,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "II:1",
@@ -2344,6 +2348,10 @@
     {
      "id": "II:13",
      "title": "Re-triggerable long-running workflows without a per-entity in-flight guard"
+    },
+    {
+     "id": "II:14",
+     "title": "Single-use continuations double-fired from an unguarded submit affordance"
     }
    ]
   },

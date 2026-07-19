@@ -47,12 +47,18 @@ document's claim as fact.
    is it already fixed? Did you misread the call path? Is it an intentional, documented posture? Only
    survivors are recorded, with the refutation attempt summarized in `provenance.verifier_evidence`
    and `adversarially_refuted: false`.
-6. **Stage.** Write each surviving finding as ONE JSON file in `runs/<date>-<run-name>/` following the
+6. **Gap-check the Book.** For every confirmed finding, ask: does the rule you are filing it under
+   actually describe this *mechanism*? If no rule does, you have discovered a new pattern — the
+   finding becomes TWO deliverables: the ledger entry AND a new Book rule (see "Growing the Book").
+   Append the generalized rule first, rebuild the index, and use the NEW id as the finding's
+   `taxonomy_id`. Never shoehorn a novel mechanism under a loosely-related rule to avoid writing
+   one — that buries the discovery instead of teaching every future audit to catch it.
+7. **Stage.** Write each surviving finding as ONE JSON file in `runs/<date>-<run-name>/` following the
    schema — **without an `id` field** (ids are assigned at merge; never compute them yourself).
    Multiple agents stage into the same run directory safely because files never collide.
-7. **Merge.** `node audit-book/tools/merge-runs.mjs <instance-dir> [<run>]` — assigns global `F-####`
+8. **Merge.** `node audit-book/tools/merge-runs.mjs <instance-dir> [<run>]` — assigns global `F-####`
    ids, dedupes against open findings, appends history, writes the ledger.
-8. **Validate.** `node audit-book/tools/validate-ledger.mjs <instance-dir>` must pass after ANY ledger
+9. **Validate.** `node audit-book/tools/validate-ledger.mjs <instance-dir>` must pass after ANY ledger
    mutation. A red validator blocks the work from being called done.
 
 ## Lifecycle of a finding
@@ -66,18 +72,26 @@ document's claim as fact.
 - **Reopen** (`reopened`) when a fresh trace shows the defect returned. Never delete entries.
 - Cross-repo pairs (frontend symptom ↔ backend cause) link via `related_findings`, surface `cross`.
 
-## Growing the Book (the feedback loop)
+## Growing the Book (the feedback loop — MANDATORY)
 
-When an audit or incident reveals a pattern the Book lacks:
+Every confirmed finding whose mechanism is not yet in the Book MUST produce a Book addition in the
+same run — this is audit-loop step 6, not an optional extra. The split of responsibilities is the
+whole point: the **instance ledger** holds the specific occurrence (repo, file, line, snippet); the
+**Book** holds the pattern, stated so that the next audit — on any codebase, anyone's — catches it
+automatically. Naming the product in a Book rule is redundant by design: the rule's home is its
+category, not its discoverer.
 
 1. Generalize it — describe the **mechanism**, never the product. No company, repo, product, or
    customer identifiers. ("CDN normalizes auth headers before origin → origin-side header auth
    silently passes everyone", not "our CloudFront dropped X-Auth".)
-2. Append it — next number in the fitting section, or propose a new section (next letter) when a real
-   family is missing. Write `**Statement.**`, `**Detect.**`, `**False positives.**`.
+2. Append it — the next number in its proper home section (an EC2 container issue goes in [A],
+   a webhook issue in [Z]), or propose a new section (next letter) when a real family is missing.
+   Write `**Statement.**`, `**Detect.**`, `**False positives.**`.
 3. Rebuild — `node audit-book/tools/build-index.mjs` must pass (it enforces append-only numbering).
-4. Refutation lessons flow back too: when a candidate finding dies in step 5 for a generalizable
-   reason, add it to the rule's False-positives notes.
+4. Cite it — the new rule id becomes the staged finding's `taxonomy_id`, so ledger and Book
+   cross-reference from birth.
+5. Refutation lessons flow back too: when a candidate finding dies in step 5 for a generalizable
+   reason, add it to the matched rule's False-positives notes.
 
 ## Retired — never do these
 
@@ -89,5 +103,7 @@ When an audit or incident reveals a pattern the Book lacks:
 - Never wipe or wholesale-rewrite the ledger. Merges append; status changes edit single entries.
 - No findings from stale docs (RULE 0). No severity inflation: `severity` reflects blast radius on
   the live system, `kind: IMP` for works-but-improve.
+- Never put product-specific content in the Book (names, repos, snippets from a real codebase) and
+  never skip the gap-check: filing a novel mechanism under an ill-fitting rule is a lost discovery.
 
 Failure to follow the staging flow, the validator gate, or RULE 0 is a failed audit. Begin.

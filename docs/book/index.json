@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 40,
- "rule_count": 595,
+ "rule_count": 596,
  "sections": [
   {
    "id": "A",
@@ -485,7 +485,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "E:1",
@@ -590,6 +590,10 @@
     {
      "id": "E:26",
      "title": "EventBridge: consumer's accepted event vocabulary has no producer — a feature that can never fire"
+    },
+    {
+     "id": "E:27",
+     "title": "Step Functions: inter-state payload contract drift — states reference JSONPaths their predecessors do not produce"
     }
    ]
   },

@@ -120,3 +120,11 @@ flag. Confirm with runtime evidence: rule match metrics or consumer invocation c
 **False positives.** Vocabulary reserved for a producer that is verifiably live in ANOTHER repo or
 emitted by an AWS service itself (S3, Config, etc.); staged rollouts where the producer ships in the
 same release train — verify the train, not the intent.
+
+## E:27 — Step Functions: inter-state payload contract drift — states reference JSONPaths their predecessors do not produce
+
+**Statement.** A state machine mutates its working payload via ResultPath/OutputPath per state, and a downstream state references a JSONPath that the actually-executed predecessor chain does not produce: a Catch without ResultPath replaces the entire input with the error object (destroying the ids cleanup states need — the failure then raises uncatchable States.Runtime), or a retry/alternate lane writes its outcome to a different ResultPath than the primary lane while shared downstream Choice/Task states read the primary path only. The defect is invisible until that specific branch executes in production.
+
+**Detect.** Walk every state: build the set of payload paths available on ENTRY to each state per incoming edge (including Catch edges — a Catch without ResultPath yields ONLY the error object). Flag any Parameters/Choice/ResultSelector JSONPath not present on some feasible entry edge. Pay special attention to retry lanes duplicated from primary lanes with a different ResultPath, and to Catch blocks lacking ResultPath while their cleanup targets reference business ids.
+
+**False positives.** Paths guaranteed present via the execution input on every edge; Catch targets that genuinely need only the error (pure Fail/notify states referencing nothing); Map/Parallel states whose inner scope intentionally shadows outer paths.

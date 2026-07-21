@@ -197,3 +197,11 @@ rows in the same change.
 
 **False positives.** Statuses that genuinely mean "no longer active" for that reader; readers that
 match on a computed liveness predicate rather than status equality.
+
+## JJ:15 — Rates: jurisdiction- or tenant-variable statutory parameters hardcoded platform-wide
+
+**Statement.** A statutory or business-variable parameter — sales tax rate, regulatory fee, gratuity policy, currency rounding — is hardcoded as a platform-wide constant in the transaction path, silently applying one jurisdiction's value to every tenant. Totals presented to end customers (and persisted to records) are simply wrong for most tenants, and no configuration surface exists to correct them.
+
+**Detect.** Grep transaction-path code for numeric constants applied to money (rates, percentages, fees) and trace whether they vary by tenant jurisdiction in reality. Any per-tenant-variable value read from a module constant instead of tenant config is a hit. Check the admin/settings surface for a corresponding control — its absence confirms the parameter was never designed as configuration.
+
+**False positives.** True platform constants (payment-processor fixed fees the platform absorbs); defaults explicitly labeled as estimates in the UI with reconciliation downstream; sandbox/dev fixtures never reaching persisted records.

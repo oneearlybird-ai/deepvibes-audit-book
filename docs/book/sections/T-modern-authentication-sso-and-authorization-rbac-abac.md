@@ -69,3 +69,46 @@ Email Change: Address changes without re-verifying both old and new addresses �
 ## T:16 — B2B Keys: Customer API keys stored unhashed and retrievable in full after creation
 
 B2B Keys: Customer API keys stored unhashed and retrievable in full after creation.
+
+## T:17 — Cookie Scope: Cookie-conditioned server behavior unreachable under the cookie's own scoping — Strict cookies expected on cross-site callbacks
+
+**Statement.** A server path branches on the presence of a cookie whose declared attributes
+(SameSite=Strict/Lax, Domain, Path, Secure) prevent the browser from ever attaching it to that
+route's real request context — most commonly a SameSite=Strict session cookie expected on a
+cross-site-initiated top-level navigation (OAuth/SSO callbacks, emailed deep links,
+payment-provider return URLs). The cookie-present branch silently never executes in production
+(or executes only for some arrival paths — an external-app open with a null initiator carries
+Strict cookies, a webmail click does not), while unit tests fabricate the Cookie header on
+synthetic events and stay green, advertising a feature the transport cannot deliver.
+
+**Detect.** For every server read of a cookie, enumerate the request contexts that can actually
+reach that route (same-site fetch/XHR, same-site top-level navigation, cross-site-initiated
+top-level navigation or redirect chain, external-app open with null initiator) and check each
+context against the cookie's minted attributes at its Set-Cookie site. Flag any branch that only
+executes when the cookie arrives via a context its attributes exclude. Redirect chains take the
+cross-site character of their initiating origin, not their destination; Set-Cookie on the
+response still lands (SameSite gates sending, not setting), so "the mint works" is not evidence
+the read works. Tests injecting Cookie headers into fabricated events for such routes are
+corroborating evidence, not counter-evidence.
+
+**False positives.** Routes reachable through multiple contexts where the cookie-present branch
+is a designed progressive enhancement for same-site arrivals and the cookie-absent path is the
+designed cross-site behavior (documented as such); cookies deliberately minted Lax or None
+specifically so the cross-site route receives them; reads on endpoints provably called only via
+same-site fetch (e.g. CSRF-token-gated POSTs).
+
+## T:18 — Sign-out: identity teardown serialized behind unbudgeted best-effort network calls
+
+**Statement.** Sign-out or session-revocation flows await best-effort network side effects (push unregister, server logout, telemetry flush) BEFORE clearing local credentials and leaving the authenticated UI, with no time budget. The calls' failure is already accepted (try/catch-swallowed), yet a degraded network extends the authenticated window on a device the user believes signed out. The hook contract "must not throw or hang" exists only as a comment with no enforcing mechanism.
+
+**Detect.** Trace the sign-out path: enumerate every await between the user action and (a) local credential clearing, (b) the UI leaving authenticated state. Any network call ahead of those without an explicit short timeout or race is a hit. A documented "must not hang" contract with no timeout wrapper is the tell.
+
+**False positives.** Calls that MUST precede credential death to be authorized (device unregister) when time-boxed to a small budget with teardown proceeding on expiry; flows that flip UI/local state first and run network best-effort afterward.
+
+## T:19 — Re-auth: fail-open identity-continuity checks in resume flows
+
+**Statement.** A resume/re-auth flow that keeps the previous user's client state alive guards the identity boundary by fetching the new session's identity and comparing it to the old — but the comparison lives inside the fetch's success branch, so any transport failure, non-OK status, or shape drift skips the guard and the flow proceeds as if identity is unchanged. The single mechanism protecting cross-user isolation silently degrades to no protection exactly when the network is flaky.
+
+**Detect.** For every login/re-auth path that does NOT tear down client state (no reload, no cache clear), locate the old-vs-new identity comparison and trace the failure branches of the read feeding it: if catch/non-OK/missing-field paths fall through to the committed-resume path instead of failing closed (reload or full teardown), flag. Asymmetry between sibling handlers (one event lane has the check, another commits the same state without it) is a strong tell.
+
+**False positives.** Flows where the server refuses to bind a different principal to the same continuation (server-enforced, client comparison cosmetic); flows that always hard-navigate after auth so client state dies with the document.

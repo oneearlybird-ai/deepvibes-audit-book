@@ -65,3 +65,11 @@ Install Scripts: Dependency postinstall scripts executing in CI runners that hol
 ## U:15 — Permissions: CI workflow tokens (GITHUB_TOKEN) with default write-all permissions instea…
 
 Permissions: CI workflow tokens (GITHUB_TOKEN) with default write-all permissions instead of least-privilege per job.
+
+## U:16 — Tooling: repo scripts and verifier file-lists retaining references to deleted source files
+
+**Statement.** Codemods, one-off scripts, and verifier file-lists enumerate source paths by string, outside the module graph compilers check. When a listed file is deleted, existence-guarded tools silently no-op (dead lanes misleading the next maintainer) and unguarded ones break at run time; neither is caught by typecheck or build.
+
+**Detect.** On any file deletion, grep the ENTIRE repo — scripts/, tooling, CI configs, verifier file-lists — for the deleted path and each deleted export, not just importable code. Flag survivors even when existence-guarded; classify guarded ones as dead-lane, unguarded as breaking.
+
+**False positives.** Historical references in changelogs/docs describing past states; deny-lists and migration maps whose job is to name files that no longer exist.

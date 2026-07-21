@@ -61,3 +61,11 @@ Parsers: Content-Type not enforced — XML/multipart parsers reachable on JSON e
 ## W:14 — ReDoS: User-supplied search/filter input compiled into regexes without escaping or timeo…
 
 ReDoS: User-supplied search/filter input compiled into regexes without escaping or timeout guards.
+
+## W:15 — Error Hygiene: framework default exception serializer bypasses handler-level sanitization
+
+**Statement.** Error-hygiene fixes applied only at handler return paths while the hosting framework's or SDK's catch-all still serializes raw error messages to the caller. Teams sanitize the errors their code constructs and returns, but any exception ESCAPING the handler is caught by the framework default (Express error middleware, MCP SDK createToolError, GraphQL formatError default), which stringifies error.message — including cloud-SDK failure text carrying ARNs, account ids, hostnames, table names — straight into the response or, on agent tool-planes, into the LLM's context. The leak surface is precisely the plumbing (auth, role assumption, client construction) sitting OUTSIDE the sanitized try blocks, plus deliberate rethrows.
+
+**Detect.** Identify the framework layer converting uncaught handler exceptions into responses and read its serializer in the VENDORED copy actually deployed: does it include error.message/stack? Then check whether every handler's pre-logic plumbing sits inside the sanitizing try, and trace where deliberate rethrows land. Sanitized returns coexisting with reachable throws is the tell.
+
+**False positives.** Frameworks whose deployed default serializer already redacts to a generic code with server-side logging; internal-only services whose transport never reaches an end user or model context.

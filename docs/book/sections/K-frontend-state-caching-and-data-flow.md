@@ -113,3 +113,35 @@ often already admits the truth (`type Window = "day" | "week" | "month"` behind 
 **False positives.** Coercions disclosed in the UI at the point of display ("showing last 30
 days"); lanes whose data genuinely has no longer history AND whose tiles say so; selectors that
 disable/hide ranges a lane cannot honor.
+
+## K:16 — Event Bus: in-process posts with zero live subscribers presented as a working routing contract
+
+**Statement.** In-process event-bus posts (NotificationCenter, EventEmitter, custom pub/sub) that no live code subscribes to. The posting side reads as a working routing contract (navigate, refresh, invalidate) and reviews certify it as "the live path" because the publisher exists — but every post terminates in the void, so the claimed behavior (push-tap navigation, refresh fan-out) never happens.
+
+**Detect.** For each posted event name/topic, grep for at least one subscriber (addObserver/onReceive/publisher(for:)/on(...)) outside the posting file. Zero subscribers on a name whose call sites claim behavior is a hit. Prioritize names blessed in recent dead-code-deletion or consolidation commits — the enshrined survivor is often as dead as what was deleted.
+
+**False positives.** Names consumed via reflection or stringly-typed lookup tables the grep misses (verify the table); extension points intentionally published for plugins/tests with that contract documented at the post site.
+
+## K:17 — Placeholders: keep-previous-data bridging across scope-carrying query-key changes
+
+**Statement.** Queries embed a scope id (tenant, profile, business unit) in their key and use keep-previous-data placeholders for smooth in-scope transitions. When the scope id itself can change without a cache teardown or document unload, the placeholder bridges ACROSS scopes: the old scope's rows render under the new scope's label until the refetch lands. Comments asserting "switches always unmount/wipe" rot as new in-place re-scope lanes (background refresh, cross-tab sync, resume-after-reauth) are added.
+
+**Detect.** For every query using keepPreviousData/placeholderData whose key contains a scope id, enumerate ALL code paths that can change that id at runtime — not just the blessed switch flow. Each path must either tear down the scoped cache entries (removeQueries/clear/reload) or the placeholder must be gated to same-scope key changes only.
+
+**False positives.** Scope ids that provably cannot change without a full document navigation; placeholder functions returning undefined when the scope segment differs; data identical across scopes by construction.
+
+## K:18 — Filters: UI presents conjunction, API honors one parameter via else-if
+
+**Statement.** Multi-parameter filter contracts where the UI renders composable controls (status AND date, search AND category) but the server honors exactly one parameter via if/else-if branching. The losing control stays interactive, refetches under a new cache key, and silently returns data that ignores it — users read conjunction semantics into disjunction results, and client-side stats recompute from the mis-filtered list.
+
+**Detect.** For each list endpoint accepting multiple filter params, read the handler's branch structure: any else-if between params the client can send together is the defect. Cross-check every UI rendering both controls simultaneously; a query key including the ignored param is the tell that the client believes in the conjunction.
+
+**False positives.** Controls mutually exclusive in the UI (selecting one visibly resets/disables the other); servers that reject the combination with a 400 the client surfaces.
+
+## K:19 — Aggregates: client-computed totals over a server-truncated page presented as period totals
+
+**Statement.** Client-side aggregates (counts, sums, "today's totals") computed over a server-truncated window (Limit N with no pagination cursor surfaced) and presented as complete period totals. Once real volume exceeds the page size the number silently caps/understates, and nothing in the UI or API response discloses truncation; a server "count" field mirroring the page count deepens the illusion.
+
+**Detect.** For each reduce/filter-count over a fetched list rendered as a period total, trace the endpoint for a Limit without LastEvaluatedKey/cursor handling. Any aggregate whose denominator is one page is a finding; check whether the response's count field is the page count masquerading as the total.
+
+**False positives.** Aggregates the server computes over the full partition and returns alongside the page; explicitly windowed UI ("last 100 orders") where the cap is the product; volumes structurally bounded below the cap upstream.

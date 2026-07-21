@@ -220,3 +220,11 @@ submit does not is the tell.
 is absorbed); affordances structurally unmounted on first activation (the state that renders them
 is cleared synchronously before the first await); duplicate responses routed to per-request state
 that cannot clobber the winning outcome.
+
+## II:15 — Broadcasts: cross-context announcements emitted before the announced multi-step transition commits
+
+**Statement.** A producer announces a state transition to other execution contexts (tabs via storage events, windows via postMessage, services via pub/sub) at the START of a multi-step sequence rather than after its final commit. Observers react immediately, read the shared source of truth mid-transition, and durably adopt the intermediate state; the producer's later corrective steps are never re-announced, so observers stay wrong until an unrelated refresh trigger.
+
+**Detect.** For each cross-context broadcast, locate it relative to the full sequence it announces: any awaited mutations after the emit are windows where observers see intermediate state. Then check whether observers re-sync on anything other than the broadcast — if it is their only trigger, the intermediate adoption is sticky. Special attention to auth flows: login broadcasts fired before scope/tenant re-assertion completes.
+
+**False positives.** Broadcasts carrying the final payload inline (observers do not re-read shared state); observers that debounce/poll the source of truth after the event; sequences whose intermediate state is a valid final state.

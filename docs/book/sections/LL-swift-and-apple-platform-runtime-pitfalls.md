@@ -169,3 +169,11 @@ Bridging sync APIs to async via semaphore is the highest-priority hit.
 **False positives.** Semaphore bridging in synchronous legacy call sites that are provably OFF the
 cooperative pool (still fragile — prefer refactor); `os_unfair_lock` around non-awaiting critical
 sections.
+
+## LL:13 — A11y: gesture-only custom controls, and platform-twin fixes applied to one target only
+
+**Statement.** Native custom-drawn interactive controls (gesture-driven sliders, canvases, drawn charts) shipped without an accessibility element exposing the SAME operation the gesture performs (adjustable action, activate action, keyboard path) — and accessibility fixes applied to one platform target while the sibling target's twin of the same control keeps the pointer-only implementation. A label-only combine element is perceivable but not operable.
+
+**Detect.** For every DragGesture/onTapGesture on a drawn shape (not a Button/Slider), require a paired accessibilityElement plus accessibilityAdjustableAction/accessibilityAction providing equivalent operation. When an a11y fix lands, grep the OTHER platform target for the twin view (same scrubber/chart pattern) and verify the same treatment.
+
+**False positives.** Purely decorative/read-only visualizations with an equivalent accessible data representation adjacent; controls where an alternate accessible control (buttons) provides the same operation.

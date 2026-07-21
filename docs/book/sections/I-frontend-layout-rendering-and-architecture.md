@@ -85,3 +85,27 @@ connection badges bound to actual socket state.
 **False positives.** Clocks that are the product (a world-clock widget); demo/preview modes
 explicitly labeled as simulated; "live" indicators genuinely bound to transport state even when
 the transport is currently idle.
+
+## I:17 — Reachability: unmounted component trees receiving feature work, and deletions silently retiring capabilities
+
+**Statement.** Component-reachability drift in two directions: (a) a UI subtree with zero renderers keeps receiving feature work — its defects "pass" review as if live and headline fixes ship dead on arrival; (b) deleting a surface's only renderer silently retires distinct capabilities that surface uniquely owned, while the change narrative claims full parity with a replacement that absorbed only part of the capability set.
+
+**Detect.** For every component edited or deleted in a change, walk the import/render graph to a routed mount point (including dynamic-import strings). Edited-but-unreachable trees are findings. For deletions, diff the deleted component's outbound API calls/side effects against the claimed replacement's and require every uniquely-owned capability to be re-homed or explicitly retired. Barrel exports and passing typechecks are not reachability evidence.
+
+**False positives.** Trees staged behind a feature flag or route landing in the same release train (the flag/route must exist in-repo); capabilities deliberately retired with the retirement stated in the change; component libraries published for external consumers.
+
+## I:18 — Onboarding Copy: tours and help text promising affordances the anchored surface does not have
+
+**Statement.** Guided-tour, onboarding, or help copy promises an affordance ("turn X on or off here", "drag to reorder", "click to upload") that does not exist on the anchored/spotlighted surface. Anchor-existence verifiers pass because the ELEMENT exists; the promised CONTROL does not — onboarding teaches an interaction the product cannot perform.
+
+**Detect.** For each tour step/help string, extract the action verbs and map each to a concrete interactive element within the anchored container (switch, draggable, file input). The anchored subtree must contain a control matching the verb class. Also grep for affordance-implying props with no handler (cursor-pointer divs without onClick, "Click to …" copy with no input).
+
+**False positives.** Copy naming an action one navigation hop away AND saying so; fallback variants written for when the surface is absent; marketing copy outside interactive guidance.
+
+## I:19 — Verticals: industry-specific shell wholesale-transplants another vertical's control surface
+
+**Statement.** A multi-vertical product ships an industry-specific shell (own domain, own data model, own agent/tool plane) whose settings/control surface is another vertical's panel transplanted wholesale — sometimes with only the headline renamed. The controls speak the foreign vertical's vocabulary (appointments, slots, patients) for concepts the vertical models differently (covers, table turns, orders), some knobs configure subsystems the vertical's runtime path never consults, and the vertical's OWN runtime parameters (jurisdictional rates, capacity policies, domain-specific after-hours semantics) have no control surface at all — often hardcoded server-side.
+
+**Detect.** For each vertical shell, diff the control surface against the vertical's actual runtime consumers: (1) list every knob the panel writes and trace which runtime paths read it under THIS vertical's flow — unread knobs are transplant residue; (2) list every config value the vertical's runtime reads (grep its tools/handlers for constants and config lookups) and check each has a control — hardcoded constants that vary per business (tax rates, capacity, service windows) are the tell; (3) scan the panel's user-facing vocabulary against the vertical's domain terms.
+
+**False positives.** Genuinely shared subsystems (voice selection, transfer rules, business hours) correctly reused across verticals; early-stage products with ONE live vertical where the generic panel is the only panel; controls whose vocabulary is vertical-neutral.

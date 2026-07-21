@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 40,
- "rule_count": 578,
+ "rule_count": 595,
  "sections": [
   {
    "id": "A",
@@ -845,7 +845,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 16,
+   "rule_count": 19,
    "rules": [
     {
      "id": "I:1",
@@ -910,6 +910,18 @@
     {
      "id": "I:16",
      "title": "Fabricated live telemetry: ticking clocks, synthetic log lines, and \"live\" badges with no backing stream"
+    },
+    {
+     "id": "I:17",
+     "title": "Reachability: unmounted component trees receiving feature work, and deletions silently retiring capabilities"
+    },
+    {
+     "id": "I:18",
+     "title": "Onboarding Copy: tours and help text promising affordances the anchored surface does not have"
+    },
+    {
+     "id": "I:19",
+     "title": "Verticals: industry-specific shell wholesale-transplants another vertical's control surface"
     }
    ]
   },
@@ -967,7 +979,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 15,
+   "rule_count": 19,
    "rules": [
     {
      "id": "K:1",
@@ -1028,6 +1040,22 @@
     {
      "id": "K:15",
      "title": "Ranges: One labeled time-range selector, multiple data lanes with different window vocabularies — the narrower lane silently coerces"
+    },
+    {
+     "id": "K:16",
+     "title": "Event Bus: in-process posts with zero live subscribers presented as a working routing contract"
+    },
+    {
+     "id": "K:17",
+     "title": "Placeholders: keep-previous-data bridging across scope-carrying query-key changes"
+    },
+    {
+     "id": "K:18",
+     "title": "Filters: UI presents conjunction, API honors one parameter via else-if"
+    },
+    {
+     "id": "K:19",
+     "title": "Aggregates: client-computed totals over a server-truncated page presented as period totals"
     }
    ]
   },
@@ -1532,7 +1560,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 16,
+   "rule_count": 19,
    "rules": [
     {
      "id": "T:1",
@@ -1597,6 +1625,18 @@
     {
      "id": "T:16",
      "title": "B2B Keys: Customer API keys stored unhashed and retrievable in full after creation"
+    },
+    {
+     "id": "T:17",
+     "title": "Cookie Scope: Cookie-conditioned server behavior unreachable under the cookie's own scoping — Strict cookies expected on cross-site callbacks"
+    },
+    {
+     "id": "T:18",
+     "title": "Sign-out: identity teardown serialized behind unbudgeted best-effort network calls"
+    },
+    {
+     "id": "T:19",
+     "title": "Re-auth: fail-open identity-continuity checks in resume flows"
     }
    ]
   },
@@ -1605,7 +1645,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "U:1",
@@ -1666,6 +1706,10 @@
     {
      "id": "U:15",
      "title": "Permissions: CI workflow tokens (GITHUB_TOKEN) with default write-all permissions instea…"
+    },
+    {
+     "id": "U:16",
+     "title": "Tooling: repo scripts and verifier file-lists retaining references to deleted source files"
     }
    ]
   },
@@ -1731,7 +1775,7 @@
    "title": "Advanced API Security, Management & Rate Limiting",
    "group": "saas-core",
    "file": "sections/W-advanced-api-security-management-and-rate-limiting.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "W:1",
@@ -1788,6 +1832,10 @@
     {
      "id": "W:14",
      "title": "ReDoS: User-supplied search/filter input compiled into regexes without escaping or timeo…"
+    },
+    {
+     "id": "W:15",
+     "title": "Error Hygiene: framework default exception serializer bypasses handler-level sanitization"
     }
    ]
   },
@@ -2171,7 +2219,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 8,
+   "rule_count": 10,
    "rules": [
     {
      "id": "EE:1",
@@ -2204,6 +2252,14 @@
     {
      "id": "EE:8",
      "title": "SSE: Event streams behind buffering proxies/CDNs without no-buffering headers — \"real-ti…"
+    },
+    {
+     "id": "EE:9",
+     "title": "Gap Recovery: per-reconnect resync refetch without coalescing, bypassing rate limits via force flags"
+    },
+    {
+     "id": "EE:10",
+     "title": "Subscriptions: per-subscription transient errors unhandled on a live connection"
     }
    ]
   },
@@ -2327,7 +2383,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "II:1",
@@ -2384,6 +2440,10 @@
     {
      "id": "II:14",
      "title": "Single-use continuations double-fired from an unguarded submit affordance"
+    },
+    {
+     "id": "II:15",
+     "title": "Broadcasts: cross-context announcements emitted before the announced multi-step transition commits"
     }
    ]
   },
@@ -2392,7 +2452,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "JJ:1",
@@ -2449,6 +2509,10 @@
     {
      "id": "JJ:14",
      "title": "Status-vocabulary drift between writer eras leaves live rows invisible to lifecycle readers"
+    },
+    {
+     "id": "JJ:15",
+     "title": "Rates: jurisdiction- or tenant-variable statutory parameters hardcoded platform-wide"
     }
    ]
   },
@@ -2518,7 +2582,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "LL:1",
@@ -2567,6 +2631,10 @@
     {
      "id": "LL:12",
      "title": "Blocking primitives inside the cooperative thread pool"
+    },
+    {
+     "id": "LL:13",
+     "title": "A11y: gesture-only custom controls, and platform-twin fixes applied to one target only"
     }
    ]
   },

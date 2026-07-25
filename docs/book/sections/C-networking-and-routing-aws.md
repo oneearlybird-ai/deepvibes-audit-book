@@ -89,3 +89,32 @@ Load Balancing: Client IP not preserved or X-Forwarded-For mis-parsed — rate l
 ## C:21 — IPv6: Dual-stack enabled without mirroring security group/NACL rules for ::/0, silently…
 
 IPv6: Dual-stack enabled without mirroring security group/NACL rules for ::/0, silently opening an unfiltered path.
+
+## C:22 - A permissive network rule is replaced by "properly scoped" rules that enumerate only some of the principals that were riding it
+
+**Statement.** Tightening a broad allow rule - a wide security-group rule, an endpoint policy, a
+route, a NACL entry - is normally done by replacing it with narrow rules naming the specific sources
+that need the access. The tightening is only safe if the set of narrow rules covers every principal
+that was actually using the broad rule, and that set is almost never what the author believes: broad
+rules accumulate unrecorded riders over time, and the obvious consumer named in the code comment is
+frequently the *former* consumer, with the live workloads having been rebuilt behind different
+groups or identities since. The replacement passes review because it looks strictly more secure, it
+passes plan review because the diff shows a wildcard removed and specifics added, and it passes apply
+because nothing validates reachability. The severed workloads then fail on the first path that needed
+that access - often a management or control path such as agent connectivity, patching, or
+telemetry, which is not exercised by functional traffic and so fails silently until someone tries to
+use it. The failure surfaces as an operational incident hours later, at which point the tightening
+change is rarely the first suspect.
+
+**Detect.** Before accepting any rule-narrowing change, enumerate the live consumers of the rule
+being removed from the provider API - resolve every attached workload, and for each, resolve which
+security group or principal it actually carries right now rather than trusting the name in the code.
+Diff that live set against the set named in the replacement rules; any member of the live set absent
+from the replacement is a severance. For control-plane access specifically, verify reachability after
+apply with an actual connection attempt from an affected workload rather than treating a clean apply
+as proof. Treat a scoped rule that references a group with no current attachments as the signature of
+this defect.
+
+**False positives.** Rules whose only riders are demonstrably decommissioned resources; changes where
+an equivalent path exists through another rule that the review verified; deliberate severance of
+access as the point of the change, documented as such.

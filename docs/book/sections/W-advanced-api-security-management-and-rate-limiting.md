@@ -94,3 +94,28 @@ attribute, one item per attempt, or a sliding-window structure) where a single r
 legitimately carries the count; thresholds of exactly one, where a single-record read is the correct
 implementation; limiters whose real enforcement lives in an upstream edge/gateway layer and whose
 application-side check is documented as advisory only.
+
+## W:17 - Generated or templated API contract edited by replacement, silently retiring live routes, with no gate comparing the contract's route set to the deployed API
+
+**Statement.** When the API surface is defined by a single generated or hand-maintained contract
+document, adding a route means editing that document - and edits performed as a one-for-one
+replacement of a path block, whether by a tool, a regeneration step, or an assistant, remove the block
+they land on. The new route works, review focuses on it, and the deleted route leaves no trace in the
+diff summary anyone reads. The deployed API then stops serving a path that clients still call, and
+because the removal is a *deletion* rather than a change, every test that exercises the surviving
+routes passes and every schema validation of the contract passes too - the contract is perfectly valid,
+it is simply smaller. Detection is usually a client-side failure days later, and the class recurs:
+once a codebase has lost routes this way it will lose more, because nothing in the pipeline compares
+the contract's route inventory to the previously deployed one.
+
+**Detect.** Do not review the contract diff for what was added - inventory it. Extract the full route
+set (path plus method) from the contract at the merge base and at the head, and assert the head is a
+superset unless a removal is explicitly declared; run the same comparison against the live deployed
+API's route inventory pulled from the provider, since the contract and the deployment can also drift
+independently. Wire that comparison as a pipeline gate rather than a review habit. When auditing after
+the fact, diff the deployed route inventory against the client code's call sites: a call site with no
+matching deployed route is a silently retired path.
+
+**False positives.** Deliberate, documented route retirements; routes removed in the same change that
+removes their only callers across every client surface; contracts where the removed path is served by
+a wildcard or proxy integration that still matches.

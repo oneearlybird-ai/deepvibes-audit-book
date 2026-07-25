@@ -119,3 +119,61 @@ probes, infrastructure metrics) where a documented data-classification policy ex
 whose provider default is a customer-managed key at the account level (verify the account setting
 rather than assuming); environments where a documented, dated decision accepts service-owned keys
 with a named revisit condition.
+
+## G:20 - Detective alarm latched by a chronic baseline: a control that can never transition again can never notify
+
+**Statement.** An alarm only notifies on a state *transition*. When the metric it watches carries a
+permanent non-zero baseline - background automation re-writing the same resources on a schedule,
+a health-check path counted as a "change", a noisy filter matching routine activity - the alarm
+crosses into ALARM once and stays there indefinitely. Every dashboard, inventory, and compliance
+scanner still reports the control as present, enabled, and wired to a live notification target, and
+it is: it simply has no remaining transition to make. The real event the control exists to catch
+(an unexpected policy edit, an unexpected configuration change) arrives, raises the metric further,
+and produces no notification at all, because the alarm was already in the state it would have moved
+to. This is the inverse of the missing-alarm gap and strictly worse to find, because the control
+tests as healthy. The permanent baseline is usually itself a defect - an automation loop that never
+converges - so the latched alarm is simultaneously a dead control and the loudest available evidence
+of an unrelated fault nobody is reading.
+
+**Detect.** List every alarm and compare `StateUpdatedTimestamp` / `StateTransitionedTimestamp`
+against now: any alarm whose last transition is days or weeks old while its metric still receives
+data is latched, not quiet. For each, pull the metric over a multi-day window and look for a flat
+non-zero floor rather than spikes - a constant rate (an exact per-hour multiple of a scheduler
+interval is the strongest tell) means an automated producer, not organic activity. Then trace the
+producer: query the audit log for the events the metric filter matches within one interval and
+identify the calling principal. Judge the control by whether a *new* occurrence could notify anyone,
+not by whether the alarm exists and has actions attached.
+
+**False positives.** Alarms deliberately latched as a persistent status indicator whose notification
+path is a separate mechanism (a composite alarm or a dashboard widget); alarms in a documented
+maintenance suppression window; alarms whose metric legitimately carries a constant floor and whose
+threshold is set above it, so a real event still crosses; freshly created alarms that have not yet
+had an opportunity to transition.
+
+## G:21 - Custom config-compliance rule calls the resource API for the changed resource without handling deletion notifications
+
+**Statement.** A custom compliance rule driven by a configuration-change stream receives a
+notification for every recorded change to an in-scope resource, and deletion is a change. Rules are
+routinely written to take the resource identifier from the notification and immediately call the
+owning service's describe/get API to fetch the current configuration to evaluate. For a deletion
+notification that call cannot succeed: the resource is gone, the API returns not-found, and the
+unhandled exception fails the whole invocation. The rule then never submits an evaluation for that
+resource, so the compliance service keeps the resource's last known verdict forever, and - because
+every deletion in a fleet with normal churn produces one of these - the rule's error rate can sit at
+effectively 100% while the compliance dashboard still shows the rule as attached and in scope. The
+same shape appears when the notification carries a resource in a state the evaluator's happy path
+does not model. Deletion notifications must be answered with an explicit not-applicable evaluation,
+not by calling an API for something that no longer exists.
+
+**Detect.** Read the rule handler's entry point and check whether it inspects the notification's
+resource-status field before dispatching - a handler that branches only on message type and resource
+type, then calls a describe/get with the supplied identifier, is the defect. Confirm from the live
+system rather than the code alone: pull the rule function's error and invocation counts over a
+window that includes resource churn and compare them; then read the error payloads and look for
+not-found exceptions naming resources that no longer exist. Verify the consequence at the compliance
+service - resources with a stale verdict and no recent evaluation timestamp.
+
+**False positives.** Rules driven purely by periodic snapshot evaluation, which enumerate live
+resources themselves and never receive per-resource deletion notifications; handlers that already
+catch not-found and submit a not-applicable verdict; evaluators whose scope legitimately excludes the
+resource type carrying the deletions.

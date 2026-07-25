@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 619,
+ "rule_count": 626,
  "sections": [
   {
    "id": "A",
@@ -279,7 +279,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "C:1",
@@ -364,6 +364,10 @@
     {
      "id": "C:21",
      "title": "IPv6: Dual-stack enabled without mirroring security group/NACL rules for ::/0, silently…"
+    },
+    {
+     "id": "C:22",
+     "title": "A permissive network rule is replaced by \"properly scoped\" rules that enumerate only some of the principals that were riding it"
     }
    ]
   },
@@ -699,7 +703,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 19,
+   "rule_count": 21,
    "rules": [
     {
      "id": "G:1",
@@ -776,6 +780,14 @@
     {
      "id": "G:19",
      "title": "Log groups provisioned without a customer-managed key while carrying identity, payment, or tenant data"
+    },
+    {
+     "id": "G:20",
+     "title": "Detective alarm latched by a chronic baseline: a control that can never transition again can never notify"
+    },
+    {
+     "id": "G:21",
+     "title": "Custom config-compliance rule calls the resource API for the changed resource without handling deletion notifications"
     }
    ]
   },
@@ -950,7 +962,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 10,
+   "rule_count": 11,
    "rules": [
     {
      "id": "J:1",
@@ -991,6 +1003,10 @@
     {
      "id": "J:10",
      "title": "Deep Links: Post-login redirect handling leaking query params/tokens to third-party dest…"
+    },
+    {
+     "id": "J:11",
+     "title": "Framework special pages placed outside any root layout in a multi-root-layout app, so the error surface is itself an error"
     }
    ]
   },
@@ -1238,7 +1254,7 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "N:1",
@@ -1287,6 +1303,10 @@
     {
      "id": "N:12",
      "title": "Skip Links: No skip-to-content link — keyboard users tab through the full nav on every p…"
+    },
+    {
+     "id": "N:13",
+     "title": "Design-token indirection consumed in a form the build or the browser cannot resolve, yielding invisible or mis-themed UI with no error"
     }
    ]
   },
@@ -1778,7 +1798,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "V:1",
@@ -1827,6 +1847,10 @@
     {
      "id": "V:12",
      "title": "Lease Extension: Long tasks exceeding visibility/lease timeouts without heartbeat extens…"
+    },
+    {
+     "id": "V:13",
+     "title": "Automated remediator self-certifies success for a failure class it has no handler for, producing a non-convergent detect-repair loop"
     }
    ]
   },
@@ -1835,7 +1859,7 @@
    "title": "Advanced API Security, Management & Rate Limiting",
    "group": "saas-core",
    "file": "sections/W-advanced-api-security-management-and-rate-limiting.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "W:1",
@@ -1900,6 +1924,10 @@
     {
      "id": "W:16",
      "title": "Rate limiting: the counter is stored at a key the limited action itself overwrites, so the threshold is unreachable"
+    },
+    {
+     "id": "W:17",
+     "title": "Generated or templated API contract edited by replacement, silently retiring live routes, with no gate comparing the contract's route set to the deployed API"
     }
    ]
   },

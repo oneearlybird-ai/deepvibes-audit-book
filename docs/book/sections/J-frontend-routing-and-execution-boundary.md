@@ -45,3 +45,29 @@ API Routes: Handlers not enforcing HTTP method — state mutations reachable via
 ## J:10 — Deep Links: Post-login redirect handling leaking query params/tokens to third-party dest…
 
 Deep Links: Post-login redirect handling leaking query params/tokens to third-party destinations or losing CSRF context.
+
+## J:11 - Framework special pages placed outside any root layout in a multi-root-layout app, so the error surface is itself an error
+
+**Statement.** Frameworks that allow several sibling route groups to each own a root document have no
+top-level layout, and their reserved special pages - not-found, error, global boundaries - then sit at
+a path with no root layout to render into. Authors compensate by giving the special page its own
+document element, which the framework rejects: the page fails to build or hard-errors on first
+compile. The consequences are asymmetric and easy to under-rate. In production the intended surface
+simply never renders, so every unmatched URL falls through to a bare framework default and the
+application appears to have no handling for the case at all. In development the failure is worse than
+the missing page: compiling the special route can poison the running server so that *every* route
+returns a server error until restart, which reads as an unrelated environment problem. Because the
+broken artefact is the error path, normal navigation and every functional test pass - the defect is
+only reachable by doing the thing nobody scripts, which is requesting something that does not exist.
+
+**Detect.** Establish the root-layout topology first: if there is no top-level layout and multiple
+route groups each declare their own document, every reserved special file must live inside one of
+those groups, with a catch-all in the group that owns unmatched paths. Then exercise it rather than
+reading it - request a URL that matches nothing and assert the intended surface renders with the
+correct status, in both a production build and a dev server, and include that request in the smoke
+suite. Treat any special page that declares its own document element in a multi-root app as broken
+until proven otherwise.
+
+**False positives.** Apps with a genuine single top-level layout, where the root special page is
+correct exactly as written; frameworks that synthesize a root document for special pages; deliberate
+delegation of unmatched paths to an upstream proxy or CDN error page, verified end to end.

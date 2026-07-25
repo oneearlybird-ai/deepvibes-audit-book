@@ -71,3 +71,11 @@ until proven otherwise.
 **False positives.** Apps with a genuine single top-level layout, where the root special page is
 correct exactly as written; frameworks that synthesize a root document for special pages; deliberate
 delegation of unmatched paths to an upstream proxy or CDN error page, verified end to end.
+
+## J:12 — A layout-level scroll or focus reset runs unconditionally on mount and defeats the browser's own fragment navigation
+
+**Statement.** A shared layout runs a "start at the top on every load" side effect — `window.scrollTo(0, 0)`, a focus reset, a scroll-restoration override — in a mount effect, with no check for an incoming URL fragment. The browser has already begun scrolling to the `#anchor` target; the effect runs after hydration and wins. Every deep link into a section of the page silently lands at the top instead, including the site's own in-page navigation, table-of-contents links, and any externally shared anchor URL. Nothing errors and the target element exists, so link-checkers and route verifiers pass; the defect is only visible by watching where the viewport ends up.
+
+**Detect.** Grep shared layouts and app-shell components for mount-time `scrollTo`, `scrollIntoView`, `scrollRestoration` assignment, or programmatic focus, and check each for a `location.hash` (or router-hash) guard. Then load each documented deep link and assert final `scrollY` is non-zero and the target is in view — asserting only that the element exists is what lets this ship. Smooth-scroll CSS widens the race and makes it intermittent, so test with scroll-behavior forced to auto.
+
+**False positives.** Resets that explicitly early-return on a hash; single-page route transitions where scrolling to top is the intended behavior and no fragment is present; layouts that defer to the framework's own scroll restoration rather than overriding it.

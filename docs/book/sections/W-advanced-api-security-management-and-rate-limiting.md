@@ -69,3 +69,28 @@ ReDoS: User-supplied search/filter input compiled into regexes without escaping 
 **Detect.** Identify the framework layer converting uncaught handler exceptions into responses and read its serializer in the VENDORED copy actually deployed: does it include error.message/stack? Then check whether every handler's pre-logic plumbing sits inside the sanitizing try, and trace where deliberate rethrows land. Sanitized returns coexisting with reachable throws is the tell.
 
 **False positives.** Frameworks whose deployed default serializer already redacts to a generic code with server-side logging; internal-only services whose transport never reaches an end user or model context.
+## W:16 - Rate limiting: the counter is stored at a key the limited action itself overwrites, so the threshold is unreachable
+
+**Statement.** A rate limiter counts prior attempts by reading records at a key, while the action
+being limited writes its record to that same fixed key with replace semantics rather than appending a
+new one or atomically incrementing a counter. The store therefore holds at most one record per key,
+the observed count is capped at one, and a comparison against any threshold above one can never be
+true: the limiter evaluates on every call, logs nothing, raises no error, and allows without bound.
+Adjacent code and comments cite the cap as an enforced control, and other components - sometimes
+including a correctly-implemented limiter elsewhere - are written to "mirror" it, so the phantom cap
+propagates as a design precedent.
+
+**Detect.** For every limiter, put the read and the write side by side and compare key cardinality:
+does the write create a new item per attempt (distinct sort key, window-bucketed key, atomic add on a
+counter attribute) or replace one item at a fixed key? Then compute the maximum value the read can
+return and compare it to the threshold - if the maximum observable count is below the threshold, the
+branch is dead. Exact-match single-item reads (a point read, or a range query pinned to one full key)
+behind a threshold above one are the signature. Test the limiter by exercising it past the cap rather
+than trusting a unit test that asserts the threshold arithmetic in isolation; a green test over a
+fabricated multi-record fixture the production write path cannot produce is corroborating evidence.
+
+**False positives.** Limiters whose write genuinely accumulates (atomic increment on a counter
+attribute, one item per attempt, or a sliding-window structure) where a single returned item
+legitimately carries the count; thresholds of exactly one, where a single-record read is the correct
+implementation; limiters whose real enforcement lives in an upstream edge/gateway layer and whose
+application-side check is documented as advisory only.

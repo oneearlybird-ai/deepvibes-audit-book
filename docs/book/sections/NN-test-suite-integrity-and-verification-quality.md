@@ -147,3 +147,28 @@ code-level machinery).
 
 **False positives.** Mechanisms exercised by scheduled chaos/game-day drills with recorded results —
 the drill is the test; verify recency.
+
+## NN:11 — Framework installed, zero tests: the suite exists only in the dependency manifest
+
+**Statement.** A production surface ships with test tooling declared — a runner in
+devDependencies, `tests/**` carve-outs in tool configs, CI caches for it — but zero executable
+specs committed, no runner config, and no CI step that executes any test. Reviewers, dependency
+dashboards, and third-party auditors read the manifest and credit the surface with a suite it
+does not have; every behavioral regression reaches users because nothing executable ever ran.
+
+**Detect.** Don't read manifests — enumerate committed spec files (`git ls-files` filtered by
+the runner's discovery patterns) and the CI steps that would execute them. A devDependency
+runner with no config file and no committed specs is coverage theater. Static verifier scripts
+(lint, schema, contract checks) verify structure, not behavior — do not count them as the suite.
+
+**False positives.** Packages tested exclusively from a sibling package in the same monorepo
+(trace the CI invocation that covers them); a brand-new scaffold explicitly documented as
+pre-test with a dated owner decision.
+
+## NN:12 — Post-incident static verifier asserts source presence for a runtime-absence failure class
+
+**Statement.** After a live incident caused by an element or config being absent AT RUNTIME, the team ships a static verifier that checks the artifact exists IN SOURCE — a strictly weaker property. Conditional rendering (tabs, permissions, breakpoints, feature flags), dead code paths, and environment divergence all keep the incident class alive while the gate stays green — and the green gate now actively suppresses suspicion ("CI checks that").
+
+**Detect.** For each verifier born from an incident (comments usually cite it), restate the incident's failure predicate and the verifier's checked predicate; if the verifier's predicate is satisfiable while the incident predicate recurs (source-present but conditionally unmounted; config-defined but not deployed), the gap is the finding. Enumerate the concrete divergence paths as evidence.
+
+**False positives.** Verifiers explicitly scoped as one layer of several, where a runtime check (e2e, canary, graceful degradation) covers the residual class and is named; failure classes that structurally cannot diverge between source and runtime.

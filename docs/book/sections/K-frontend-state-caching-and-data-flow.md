@@ -145,3 +145,27 @@ disable/hide ranges a lane cannot honor.
 **Detect.** For each reduce/filter-count over a fetched list rendered as a period total, trace the endpoint for a Limit without LastEvaluatedKey/cursor handling. Any aggregate whose denominator is one page is a finding; check whether the response's count field is the page count masquerading as the total.
 
 **False positives.** Aggregates the server computes over the full partition and returns alongside the page; explicitly windowed UI ("last 100 orders") where the cap is the product; volumes structurally bounded below the cap upstream.
+
+## K:20 — Progress steps whose completion is a tautology of other steps
+
+**Statement.** A setup checklist / progress meter includes a step whose "complete" state is computed purely as a function of OTHER steps' signals — the work the step names (configure the agent, review settings, verify the domain) has no signal of its own and may never have happened. The meter reaches 100% and fires completion celebrations while the named work is untouched; users trust the checklist and skip the work.
+
+**Detect.** For each checklist step, trace the completion predicate to its inputs. Any step whose predicate references only sibling steps' inputs (a conjunction/disjunction of their signals with no independent source) is the finding. Cross-check the step's label against a real state signal that COULD have been used (config rows, review timestamps): its existence proves the tautology was a shortcut; its absence proves the step is unverifiable as designed.
+
+**False positives.** Explicit summary/rollup rows visually distinct from actionable steps; steps whose named work is genuinely implied by the conjunction (the label merely restates the combination).
+
+## K:21 — Cross-device user-journey state persisted device-locally
+
+**Statement.** Per-user journey state that must survive device and platform changes — first-run/welcome seen, tour progress, setup-checklist dismissals, one-shot celebration flags — is persisted only in device-local storage (localStorage/UserDefaults). Every new device, browser, or platform re-presents dismissed onboarding to a user who already completed it; partial server flags covering only one surface make the behavior inconsistent across surfaces of the same product.
+
+**Detect.** Inventory every first-run/dismissal/progress flag; for each, name the persistence layer and whether an authenticated server-side read/write exists. Device-local-only flags on cross-device products are the finding; flag surface-inconsistent coverage (server flag for surface A, local-only for surfaces B/C) explicitly.
+
+**False positives.** Genuinely device-scoped preferences (this-device notification prompts, install banners); anonymous/pre-auth surfaces with no user identity to key on; local caches that write through to a server record.
+
+## K:22 — Server-substituted resources never reconciled in the confirmation UI
+
+**Statement.** A flow lets the user select a specific external resource (phone number, handle, slot), the backend substitutes a different one when the selection is unavailable (a documented race), and the confirmation UI never reconciles: it shows the requested value or nothing, auto-advances on success, and the user learns the truth later — after printing the number, sharing the handle, or missing the slot.
+
+**Detect.** For each selection flow, find backend substitution/fallback paths (search the fulfillment path for substituted/fallback flags). Then trace the client's success rendering: does it display the AUTHORITATIVE granted value from the post-fulfillment record, and does it call out requested≠granted? Auto-navigation on success without rendering the granted value is the tell.
+
+**False positives.** Flows that re-fetch and prominently display the granted resource on success (even without an explicit "changed" callout, if the value is unmissable before proceeding); substitutions requiring user confirmation before commit.

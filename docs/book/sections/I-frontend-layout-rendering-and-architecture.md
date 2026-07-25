@@ -109,3 +109,19 @@ the transport is currently idle.
 **Detect.** For each vertical shell, diff the control surface against the vertical's actual runtime consumers: (1) list every knob the panel writes and trace which runtime paths read it under THIS vertical's flow — unread knobs are transplant residue; (2) list every config value the vertical's runtime reads (grep its tools/handlers for constants and config lookups) and check each has a control — hardcoded constants that vary per business (tax rates, capacity, service windows) are the tell; (3) scan the panel's user-facing vocabulary against the vertical's domain terms.
 
 **False positives.** Genuinely shared subsystems (voice selection, transfer rules, business hours) correctly reused across verticals; early-stage products with ONE live vertical where the generic panel is the only panel; controls whose vocabulary is vertical-neutral.
+
+## I:20 — Spotlight overlays retain the previous target's geometry when the next target fails to resolve
+
+**Statement.** A guided-tour/spotlight overlay resolves its target element per step and stores the highlight geometry, but the resolution path has no clearing branch: when the next step's target is absent (conditional tab not mounted, permission-gated panel, deleted element) or zero-sized, the overlay keeps the PREVIOUS step's rect — confidently highlighting an unrelated element while narrating the new step. Every registry/UI drift becomes user-visible mis-guidance instead of a graceful skip.
+
+**Detect.** Read the overlay's target-resolution function: assert an explicit else-branch that clears/hides the highlight when the selector misses or the rect is zero-sized. Then enumerate registry targets that are conditionally rendered (behind tabs, permissions, feature flags, breakpoints) — each is a live reproduction path. A timeout-fallback that only swaps the TEXT while the stale rect persists still fails the check.
+
+**False positives.** Engines that hide the spotlight and center the tooltip on unresolved targets; overlays that re-resolve on a raf/observer loop AND clear on miss.
+
+## I:21 — Guided flows ignore viewer authorization
+
+**Statement.** Product tours, setup guides, and checklists are authored as one fixed sequence with no capability model: steps anchor to surfaces (billing, team management, admin nav) that role-restricted or invited users cannot see, and the engine navigates to capability-gated tabs regardless of the viewer's grants. Restricted users get spotlights on missing elements, instructions for actions they cannot perform, and setup steps that are another role's job — the guide teaches them a product they don't have.
+
+**Detect.** Diff the guide registry's step anchors/targets against the permission gates on those surfaces (route guards, policy/useCan checks, conditional nav). A registry schema with no capability/audience field on steps is structurally guilty; confirm with one restricted-role walkthrough. Check invited-user onboarding specifically: setup-type steps shown to non-admin invitees are the tell.
+
+**False positives.** Registries whose steps all live within the product's universally-granted core; engines that filter steps through the same authorization snapshot the UI itself renders from.

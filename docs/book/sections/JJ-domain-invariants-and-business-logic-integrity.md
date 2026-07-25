@@ -205,3 +205,11 @@ match on a computed liveness predicate rather than status equality.
 **Detect.** Grep transaction-path code for numeric constants applied to money (rates, percentages, fees) and trace whether they vary by tenant jurisdiction in reality. Any per-tenant-variable value read from a module constant instead of tenant config is a hit. Check the admin/settings surface for a corresponding control — its absence confirms the parameter was never designed as configuration.
 
 **False positives.** True platform constants (payment-processor fixed fees the platform absorbs); defaults explicitly labeled as estimates in the UI with reconciliation downstream; sandbox/dev fixtures never reaching persisted records.
+
+## JJ:16 — Activation completes while a hard runtime gate guarantees first use fails
+
+**Statement.** A creation/activation flow marks the primary resource "active" (and presents success UI) while a hard runtime gate — funding/entitlement, required catalog data, quota, or a capability prerequisite — guarantees the user's inevitable first use of the core function fails. No step in any creation flow collects the prerequisite, or the step exists but is silently skippable (its validation unconditionally passes; skipping is the passive default rather than an informed choice). The first thing every new user does — exercising the thing they just created — hits the gate: dead line, disabled feature, or a degraded fallback contradicting the product's headline promise.
+
+**Detect.** Enumerate the runtime admission gates on the core action (billing/entitlement checks, required-data lookups, capability flags) and walk every creation/onboarding flow: for each gate, name the flow step that satisfies it. A gate with no satisfying step — or a step whose validation returns unconditionally true / whose skip needs no acknowledgment — is the finding. Test the literal first-use scenario a new user performs (call the number, hit the endpoint, open the feature) against a freshly created resource.
+
+**False positives.** Deliberate pay-first or approve-first products where the flow itself blocks completion until the gate is satisfied (the gate IS a flow step); sandbox/preview modes that explicitly exercise the core function pre-activation; enterprise flows where a named human approval step is the documented gate.

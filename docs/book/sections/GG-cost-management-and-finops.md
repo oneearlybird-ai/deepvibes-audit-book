@@ -33,3 +33,11 @@ Detection: Cost anomalies surfacing on the monthly invoice instead of daily anom
 ## GG:7 — Commitments: Savings Plans/Reserved coverage unmanaged — 100% on-demand pricing for stea…
 
 Commitments: Savings Plans/Reserved coverage unmanaged — 100% on-demand pricing for steady-state load.
+
+## GG:8 — Recurring-cost external resources minted for never-funded accounts with no reclamation path
+
+**Statement.** Signup/creation flows purchase recurring-cost external resources (phone numbers, seats, certificates, dedicated infrastructure) before the account has any payment identity, and no sweep reclaims resources belonging to never-funded accounts. Every free signup — including abusive multi-signups — permanently accretes third-party spend with zero offsetting revenue, and the leak stays invisible because the per-item cost is small and the vendor invoice aggregates.
+
+**Detect.** Trace every creation/onboarding flow for third-party purchase calls (vendor SDK create/buy endpoints) and check their ordering against the payment-identity mint. For any purchase reachable pre-funding, look for a reclamation job keyed on funding status + age. Absence of both the ordering and the reclamation is the finding; quantify as vendor unit cost × signups.
+
+**False positives.** Resources with no recurring cost; documented trial budgets with enforced caps AND a reclamation sweep; purchase deferred to a funded step (ordering already correct).

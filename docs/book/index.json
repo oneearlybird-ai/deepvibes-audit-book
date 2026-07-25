@@ -1,8 +1,8 @@
 {
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
- "section_count": 40,
- "rule_count": 596,
+ "section_count": 41,
+ "rule_count": 619,
  "sections": [
   {
    "id": "A",
@@ -154,7 +154,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "B:1",
@@ -267,6 +267,10 @@
     {
      "id": "B:28",
      "title": "CloudFront: Edge logs capturing sensitive query strings (tokens, emails) shipped into wi…"
+    },
+    {
+     "id": "B:29",
+     "title": "Managed rule group attached but constituent rules overridden to count, degrading the control while inventory shows it present"
     }
    ]
   },
@@ -695,7 +699,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "G:1",
@@ -768,6 +772,10 @@
     {
      "id": "G:18",
      "title": "CloudWatch: Alarm dimensions referencing nonexistent resources — INSUFFICIENT_DATA forever, monitoring theater"
+    },
+    {
+     "id": "G:19",
+     "title": "Log groups provisioned without a customer-managed key while carrying identity, payment, or tenant data"
     }
    ]
   },
@@ -849,7 +857,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 19,
+   "rule_count": 21,
    "rules": [
     {
      "id": "I:1",
@@ -926,6 +934,14 @@
     {
      "id": "I:19",
      "title": "Verticals: industry-specific shell wholesale-transplants another vertical's control surface"
+    },
+    {
+     "id": "I:20",
+     "title": "Spotlight overlays retain the previous target's geometry when the next target fails to resolve"
+    },
+    {
+     "id": "I:21",
+     "title": "Guided flows ignore viewer authorization"
     }
    ]
   },
@@ -983,7 +999,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 19,
+   "rule_count": 22,
    "rules": [
     {
      "id": "K:1",
@@ -1060,6 +1076,18 @@
     {
      "id": "K:19",
      "title": "Aggregates: client-computed totals over a server-truncated page presented as period totals"
+    },
+    {
+     "id": "K:20",
+     "title": "Progress steps whose completion is a tautology of other steps"
+    },
+    {
+     "id": "K:21",
+     "title": "Cross-device user-journey state persisted device-locally"
+    },
+    {
+     "id": "K:22",
+     "title": "Server-substituted resources never reconciled in the confirmation UI"
     }
    ]
   },
@@ -1068,7 +1096,7 @@
    "title": "Frontend: Browser Security Surfaces",
    "group": "frontend",
    "file": "sections/L-frontend-browser-security-surfaces.md",
-   "rule_count": 16,
+   "rule_count": 19,
    "rules": [
     {
      "id": "L:1",
@@ -1133,6 +1161,18 @@
     {
      "id": "L:16",
      "title": "Prototype Pollution: Client-side deep-merge of untrusted JSON into config objects (__pro…"
+    },
+    {
+     "id": "L:17",
+     "title": "Masking: sensitive values visually obscured in the client while the plaintext remains in the DOM"
+    },
+    {
+     "id": "L:18",
+     "title": "Reporting: violation-report channel declared with an endpoint group name nothing defines"
+    },
+    {
+     "id": "L:19",
+     "title": "HSTS: transport pinning scoped to the apex while session cookies are parent-domain scoped"
     }
    ]
   },
@@ -1564,7 +1604,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 19,
+   "rule_count": 22,
    "rules": [
     {
      "id": "T:1",
@@ -1641,6 +1681,18 @@
     {
      "id": "T:19",
      "title": "Re-auth: fail-open identity-continuity checks in resume flows"
+    },
+    {
+     "id": "T:20",
+     "title": "Step-up: re-authentication gate enforced only in the client, over data the server already released"
+    },
+    {
+     "id": "T:21",
+     "title": "Coverage: a per-object capability credential verified on only a minority of the entry points it was built for"
+    },
+    {
+     "id": "T:22",
+     "title": "Authorization-check transport failure rendered as definitive denial"
     }
    ]
   },
@@ -1649,7 +1701,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "U:1",
@@ -1714,6 +1766,10 @@
     {
      "id": "U:16",
      "title": "Tooling: repo scripts and verifier file-lists retaining references to deleted source files"
+    },
+    {
+     "id": "U:17",
+     "title": "Gate Liveness: a pipeline gate's per-item client retry worst-case exceeds the gate's own kill timeout, with no progress output — one wedged connection reads as \"gate too slow\" and the control gets bypassed or deleted"
     }
    ]
   },
@@ -1779,7 +1835,7 @@
    "title": "Advanced API Security, Management & Rate Limiting",
    "group": "saas-core",
    "file": "sections/W-advanced-api-security-management-and-rate-limiting.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "W:1",
@@ -1840,6 +1896,10 @@
     {
      "id": "W:15",
      "title": "Error Hygiene: framework default exception serializer bypasses handler-level sanitization"
+    },
+    {
+     "id": "W:16",
+     "title": "Rate limiting: the counter is stored at a key the limited action itself overwrites, so the threshold is unreachable"
     }
    ]
   },
@@ -2084,7 +2144,7 @@
    "title": "Modern Frontend Monorepo & Build Tooling (Turborepo, Nx, Vite, esbuild)",
    "group": "saas-core",
    "file": "sections/BB-modern-frontend-monorepo-and-build-tooling-turborepo-nx-vite-esbuild.md",
-   "rule_count": 10,
+   "rule_count": 11,
    "rules": [
     {
      "id": "BB:1",
@@ -2125,6 +2185,10 @@
     {
      "id": "BB:10",
      "title": "Type Gates: Transpile-only builds (esbuild/swc) in CI without a separate typecheck step…"
+    },
+    {
+     "id": "BB:11",
+     "title": "Vacuous Type Gate: the CI typecheck step's file selection silently resolves to zero source files"
     }
    ]
   },
@@ -2182,7 +2246,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 8,
+   "rule_count": 10,
    "rules": [
     {
      "id": "DD:1",
@@ -2215,6 +2279,14 @@
     {
      "id": "DD:8",
      "title": "Store Misuse: Secrets embedded in non-secret config documents (AppConfig/JSON) instead o…"
+    },
+    {
+     "id": "DD:9",
+     "title": "Ghost Config: env templates advertise retired services"
+    },
+    {
+     "id": "DD:10",
+     "title": "Enforcement mode read from remote config with a permissive default, and the key was never authored"
     }
    ]
   },
@@ -2309,7 +2381,7 @@
    "title": "Cost Management & FinOps",
    "group": "platform-delivery",
    "file": "sections/GG-cost-management-and-finops.md",
-   "rule_count": 7,
+   "rule_count": 8,
    "rules": [
     {
      "id": "GG:1",
@@ -2338,6 +2410,10 @@
     {
      "id": "GG:7",
      "title": "Commitments: Savings Plans/Reserved coverage unmanaged — 100% on-demand pricing for stea…"
+    },
+    {
+     "id": "GG:8",
+     "title": "Recurring-cost external resources minted for never-funded accounts with no reclamation path"
     }
    ]
   },
@@ -2456,7 +2532,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "JJ:1",
@@ -2517,6 +2593,10 @@
     {
      "id": "JJ:15",
      "title": "Rates: jurisdiction- or tenant-variable statutory parameters hardcoded platform-wide"
+    },
+    {
+     "id": "JJ:16",
+     "title": "Activation completes while a hard runtime gate guarantees first use fails"
     }
    ]
   },
@@ -2704,7 +2784,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 10,
+   "rule_count": 12,
    "rules": [
     {
      "id": "NN:1",
@@ -2745,6 +2825,27 @@
     {
      "id": "NN:10",
      "title": "Designed failure modes shipped untested"
+    },
+    {
+     "id": "NN:11",
+     "title": "Framework installed, zero tests: the suite exists only in the dependency manifest"
+    },
+    {
+     "id": "NN:12",
+     "title": "Post-incident static verifier asserts source presence for a runtime-absence failure class"
+    }
+   ]
+  },
+  {
+   "id": "OO",
+   "title": "Documentation & Comment Truthfulness",
+   "group": "cross-cutting",
+   "file": "sections/OO-documentation-and-comment-truthfulness.md",
+   "rule_count": 1,
+   "rules": [
+    {
+     "id": "OO:1",
+     "title": "Decision-bearing comments and headers contradict live wiring"
     }
    ]
   }

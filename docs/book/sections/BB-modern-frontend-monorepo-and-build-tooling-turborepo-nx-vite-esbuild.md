@@ -45,3 +45,25 @@ Define Leaks: Bundler define/env replacement inlining server-only constants into
 ## BB:10 — Type Gates: Transpile-only builds (esbuild/swc) in CI without a separate typecheck step…
 
 Type Gates: Transpile-only builds (esbuild/swc) in CI without a separate typecheck step — type errors ship to production.
+
+## BB:11 — Vacuous Type Gate: the CI typecheck step's file selection silently resolves to zero source files
+
+**Statement.** A dedicated typecheck (or lint) gate runs green while its project/include
+configuration selects no application source: unsupported glob syntax (e.g. brace expansion
+`*.{ts,tsx}` in a tsconfig `include`, which TypeScript does not implement), a wrong project
+root, or an exclude list that removes the very surfaces the gate exists to protect (server
+routes, middleware, backend adapters). The pipeline reports "typecheck passed" forever; the
+trust-boundary code is only ever transpiled, never type-checked, so type errors ship while
+the gate certifies them.
+
+**Detect.** Never trust the include text — enumerate the real program: `tsc -p <project>
+--listFilesOnly` (or the tool's equivalent) and count first-party files against the repo's
+source census. Then union EVERY typecheck lane (root project, per-package project, framework
+build) and list which files appear in none of them; a build-cache manifest (e.g. a fresh
+`.tsbuildinfo`) is admissible evidence of what the framework build actually checked. Brace
+groups in tsconfig include/exclude are the classic silent-zero.
+
+**False positives.** Projects genuinely scoped to a tiny set (a d.ts-only contract package);
+files verifiably covered by a different lane — but verify by listing that lane's program, not
+by reading its config. A refutation attempt on the discovering audit died exactly this way:
+the root include LOOKED comprehensive and only `--listFilesOnly` exposed the zero-match.

@@ -69,3 +69,70 @@ Error Reporting: Sentry/replay tooling capturing PII (inputs, cookies, request b
 ## L:16 — Prototype Pollution: Client-side deep-merge of untrusted JSON into config objects (__pro…
 
 Prototype Pollution: Client-side deep-merge of untrusted JSON into config objects (__proto__ keys unfiltered).
+## L:17 - Masking: sensitive values visually obscured in the client while the plaintext remains in the DOM
+
+**Statement.** A field the product presents as protected is delivered to the client in full and
+"redacted" by a presentation-layer transform - glyph substitution that builds a masked string from
+the real value, a CSS blur/filter over the true text, a non-selectable span, a truncated preview, or
+an overlay element - so the plaintext is present in the document and reachable by anyone who can read
+the page: devtools, view-source, the accessibility tree, textContent, a saved page, a screen reader,
+or a browser extension. The control is a picture of a control; the data left the server unprotected
+and no client-side transform can put it back.
+
+**Detect.** For each field the UI marks as sensitive/redacted/hidden, read the component and answer
+one question: does the real value reach the browser? If the masking function takes the true value as
+input (mask(value), value.slice, a blur applied to an element whose text is the value), the plaintext
+is in the DOM regardless of what renders. Confirm against the API response the component consumes -
+inspect the server projection, not the component's props type. A reveal/unmask toggle implemented as
+local component state, with no accompanying request, is proof the data was already present.
+
+**False positives.** Values the server already truncated or tokenized before transport (last-four
+digits, a display hint) where the full value never leaves the datastore; masking used purely as
+shoulder-surfing ergonomics over data the viewer is authorized to see and could request anyway, and
+which the product does not claim is access-controlled.
+
+## L:18 - Reporting: violation-report channel declared with an endpoint group name nothing defines
+
+**Statement.** A browser reporting pipeline (policy violations, deprecations, crashes, network
+errors) is wired with a report-group reference that does not match any group the response actually
+declares - a directive naming one group while the endpoint header defines another, a header the
+policy expects that is never emitted, or an endpoint declaration on a different response than the
+policy. The browser has nowhere to deliver reports, so it drops them silently. Both ends look
+configured in review, the receiving collector is deployed and healthy, and its zero traffic reads as
+"no violations" rather than "no delivery" - the failure mode is a monitoring channel that cannot
+report its own absence.
+
+**Detect.** Read the emitted response headers together, from a live response rather than the config
+that is supposed to produce them, and match every group reference to a declared group by exact
+string. Check the collector's actual receipt count over a period where violations were certain to
+occur (a known-blocked inline script, a deliberate test violation); a deployed collector with
+lifetime-zero receipts is the tell. Verify the policy and endpoint declarations ship on the same
+responses - a header set on one route family and a policy on another never join up.
+
+**False positives.** Channels intentionally report-only in a staging posture with the collector not
+yet deployed (documented); user agents in the support matrix that implement only the older reporting
+mechanism, where the modern group declaration is correctly inert alongside a working legacy
+directive.
+
+## L:19 - HSTS: transport pinning scoped to the apex while session cookies are parent-domain scoped
+
+**Statement.** Strict transport security is asserted without includeSubDomains while the
+authentication cookie is issued with a parent-domain Domain attribute, so every subdomain of the
+cookie's scope - including hosts that do not exist, are parked, or are operated by another team -
+remains reachable over plaintext on first contact. Cookie scope is broader than transport
+protection: an attacker who can answer for any name under the cookie's domain over cleartext can set
+or overwrite cookies for the parent domain (cookies ignore port and scheme for scoping), which turns
+a subdomain-level network position into session fixation or forced logout against the protected
+apex. The apex being perfectly pinned is irrelevant to the attack path.
+
+**Detect.** Compare the Domain attribute at the session cookie's mint site against the HSTS
+directive on the live response. If the cookie domain covers subdomains and the HSTS header lacks
+includeSubDomains, flag. Enumerate the wildcard DNS and every delegated subdomain under that scope -
+the exposure is the union of names the cookie covers, not the names the app serves. Check
+preload-list membership separately: preload without includeSubDomains is not accepted, so a
+preloaded apex is corroborating evidence the directive is present.
+
+**False positives.** Host-only cookies (no Domain attribute) where subdomain plaintext cannot affect
+the apex's cookie jar; domains whose subdomains are provably all under the same HSTS-asserting edge
+with no delegation and no wildcard record; a documented, dated rollout where includeSubDomains is
+deliberately staged behind an inventory of subdomains that must be migrated to TLS first.

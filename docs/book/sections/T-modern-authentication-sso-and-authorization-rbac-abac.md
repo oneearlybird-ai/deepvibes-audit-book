@@ -112,3 +112,59 @@ same-site fetch (e.g. CSRF-token-gated POSTs).
 **Detect.** For every login/re-auth path that does NOT tear down client state (no reload, no cache clear), locate the old-vs-new identity comparison and trace the failure branches of the read feeding it: if catch/non-OK/missing-field paths fall through to the committed-resume path instead of failing closed (reload or full teardown), flag. Asymmetry between sibling handlers (one event lane has the check, another commits the same state without it) is a strong tell.
 
 **False positives.** Flows where the server refuses to bind a different principal to the same continuation (server-enforced, client comparison cosmetic); flows that always hard-navigate after auth so client state dies with the document.
+## T:20 - Step-up: re-authentication gate enforced only in the client, over data the server already released
+
+**Statement.** A sensitive action or field is gated behind a step-up challenge (password re-entry,
+MFA re-prompt, PIN) whose verification endpoint returns a bare pass/fail and whose result is consumed
+only by client state - a boolean, a timer, a store flag - while the protected data was already
+included in the ordinary read response. The server never learns that step-up succeeded and never
+conditions its projection on it, so the gate controls rendering, not access: skipping the challenge
+entirely and reading the underlying response yields the same data. The challenge is load-bearing in
+the product's privacy story and load-bearing nowhere in its enforcement.
+
+**Detect.** Trace the step-up verification endpoint's response and find every consumer. If no
+subsequent request carries proof of step-up (a scoped token, a re-auth marker on the session, a
+distinct privileged read), and no server-side projection branches on such proof, the gate is
+cosmetic. Then confirm from the data endpoint's own projection whether the protected fields are
+present unconditionally. Two tells: the challenge endpoint returns no credential of any kind, and
+the "unlocked" duration is enforced by a client-side timer.
+
+**False positives.** Step-up that stamps the server session or mints a short-lived scoped credential
+which a distinct privileged read requires (enforcement is server-side; the client flag is only UX);
+challenges gating a write whose authorization the server independently re-checks; gates over data the
+viewer is already authorized to read where the prompt is documented as deliberate friction
+(confirmation of intent) rather than an access control.
+
+## T:21 - Coverage: a per-object capability credential verified on only a minority of the entry points it was built for
+
+**Statement.** A system designs and implements a per-object authorization credential - a signed
+ticket, capability token, or scoped grant binding one caller to one object - then wires verification
+into a small subset of the entry points that operate on those objects. The remaining entry points
+authorize on a transport-level secret shared across all objects (a service bearer token, a network
+allowlist) plus an object identifier supplied by the caller, so any party holding the transport
+credential can name any object and act on it. The existence of the credential makes the surface look
+protected in review and in design documents; the coverage gap means the strongest control present is
+the one least used, and the identifier doing the real authorization work is typically not a secret at
+all (it appears in logs, webhooks, provider consoles, and third-party records).
+
+**Detect.** Enumerate every registered entry point on the surface - every route, tool, handler, or
+command, from the registration table rather than from documentation - and mark for each whether the
+per-object credential is (a) accepted in its input schema and (b) verified before the object is
+resolved. Coverage below 100% is the finding; state the ratio. Separately establish the secrecy of
+the identifier the uncovered entry points trust: if it is minted or observed by any third party, or
+appears in any log or console, it is not an authorization input. Check whether verification is gated
+by a mode flag whose deployed value disables it.
+
+**False positives.** Entry points that resolve the object from a server-held context rather than
+caller input (nothing for the caller to forge); read-only entry points returning data already public
+to every holder of the transport credential; a documented, dated enforcement ramp where the uncovered
+entry points are individually compensated by another per-object check and the ramp names its
+completion condition.
+
+## T:22 — Authorization-check transport failure rendered as definitive denial
+
+**Statement.** A UI authorization check (can-I? endpoint, policy batch call) treats transport failure — network error, 5xx, timeout — identically to an authoritative deny: the client caches "no access", marks the check resolved, and renders a terminal access-denied state ("you don't have access, contact your administrator") with no retry path. Failing CLOSED for gating is correct; asserting the FACT of denial from an unknown is not. Fully-privileged users on a transient blip land in a dead-end that tells them they lack access they hold — worst on empty/first-run screens where the denied state is the entire page.
+
+**Detect.** Read the authorization-fetch error paths: catch/!ok branches that write the same client state as an authoritative allowed:false response are the finding. Check whether the denial UX asserts a fact ("no access") versus an unknown ("couldn't verify — retry"), and whether any retry/backoff runs before the terminal state renders.
+
+**False positives.** Gating that fails closed but renders a neutral loading/retry state (not a denial assertion); clients that honor a backend deny-vs-error distinction; security-sensitive surfaces where even the error state must not reveal the resource exists (the copy still must not claim definitive denial).

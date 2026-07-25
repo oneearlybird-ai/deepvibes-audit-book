@@ -117,3 +117,25 @@ S3: Replication configuration missing explicit delete-marker replication decisio
 ## B:28 — CloudFront: Edge logs capturing sensitive query strings (tokens, emails) shipped into wi…
 
 CloudFront: Edge logs capturing sensitive query strings (tokens, emails) shipped into wide-read analytics buckets.
+## B:29 - Managed rule group attached but constituent rules overridden to count, degrading the control while inventory shows it present
+
+**Statement.** A managed protection rule group is associated with the resource - so every inventory,
+compliance scan, and architecture diagram records the protection as present - while individual rules
+inside it carry per-rule action overrides to count/log, or the group itself carries a group-level
+override, so the overridden rules observe and never block. The override is typically added once to
+clear a false positive during a launch push and then outlives the reason: there is no expiry, the
+overridden rule name appears only in the infrastructure code, and the resource-level view reports the
+group as attached and healthy. The result is a control whose coverage is strictly smaller than its
+name implies, and the gap is invisible to anyone who checks attachment rather than effective action.
+
+**Detect.** For each associated rule group, enumerate per-rule action overrides and any group-level
+override, and list which specific rules are non-blocking; compare that list against the threat the
+group was attached to address. Read effective action from the live resource, not the module inputs -
+overrides are frequently applied out of band. For each override, look for a dated justification and an
+expiry; an override with neither is the finding. Check the counted rule's metric: sustained non-zero
+counts on a rule left in count mode quantify exactly what is passing through.
+
+**False positives.** Overrides with a documented false-positive analysis, a dated revisit, and a
+compensating control covering the same class; rules counted deliberately during an initial tuning
+window that is still open and tracked; rules irrelevant to the workload's actual data plane where the
+override is a documented noise-reduction decision rather than a weakened control.

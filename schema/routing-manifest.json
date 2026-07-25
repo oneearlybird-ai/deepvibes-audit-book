@@ -3,83 +3,372 @@
   "version": 2,
   "note": "The mechanical index->chapter router. During inventory, classify each discovered thing as one or more resource_kinds; the union of the mapped sections is the set of chapters to load and check EXHAUSTIVELY against that resource. Kinds are deliberately coarse — when in doubt, include the extra section. Supersedes taxonomy-map.json surface_sections (v1).",
   "groups": {
-    "aws-backend": ["A", "B", "C", "D", "E", "F", "G", "H"],
-    "frontend": ["I", "J", "K", "L", "M", "N"],
-    "vercel": ["O"],
-    "third-party": ["P", "Q", "R"],
-    "saas-core": ["S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "BB"],
-    "platform-delivery": ["CC", "DD", "EE", "FF", "GG", "HH"],
-    "cross-cutting": ["II", "JJ", "MM", "NN"],
-    "runtime": ["KK", "LL"]
+    "aws-backend": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H"
+    ],
+    "frontend": [
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N"
+    ],
+    "vercel": [
+      "O"
+    ],
+    "third-party": [
+      "P",
+      "Q",
+      "R"
+    ],
+    "saas-core": [
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "AA",
+      "BB"
+    ],
+    "platform-delivery": [
+      "CC",
+      "DD",
+      "EE",
+      "FF",
+      "GG",
+      "HH"
+    ],
+    "cross-cutting": [
+      "II",
+      "JJ",
+      "MM",
+      "NN",
+      "OO"
+    ],
+    "runtime": [
+      "KK",
+      "LL"
+    ]
   },
   "always_in_scope": {
     "note": "Cross-cutting sections consulted for EVERY audited component in addition to its kind-mapped sections.",
-    "sections": ["II", "JJ"]
+    "sections": [
+      "II",
+      "JJ"
+    ]
   },
   "resource_kinds": {
-    "lambda-function": ["A", "E", "F", "G", "KK"],
-    "ec2-service": ["A", "C", "F", "G", "KK"],
-    "ecs-eks-workload": ["A", "C", "F", "G"],
-    "asg-launch-template": ["A", "C", "F"],
-    "s3-bucket": ["B", "F", "Y"],
-    "cloudfront-distribution": ["B", "C", "L"],
-    "vpc-networking": ["C", "F"],
-    "load-balancer": ["C", "B"],
-    "dns-route53": ["C"],
-    "dynamodb-table": ["D", "S"],
-    "rds-database": ["D", "C", "F", "S"],
-    "redis-cache": ["D", "S"],
-    "opensearch-domain": ["D", "S"],
-    "sql-orm-layer": ["D", "S", "JJ"],
-    "sqs-queue": ["E", "V"],
-    "sns-topic": ["E"],
-    "eventbridge-bus": ["E", "V"],
-    "step-function": ["E", "X"],
-    "kinesis-stream": ["E"],
-    "api-gateway-rest": ["E", "W", "T"],
-    "api-gateway-websocket": ["E", "EE", "T"],
-    "iam-role-policy": ["F"],
-    "kms-key": ["F"],
-    "cognito-identity": ["F", "T"],
-    "secrets-config-store": ["F", "DD", "MM"],
-    "cloudtrail-config-audit": ["G", "Y"],
-    "cloudwatch-observability": ["G", "GG"],
-    "llm-bedrock-integration": ["H", "AA"],
-    "athena-glue-analytics": ["H", "GG"],
-    "ai-agent-tooling": ["AA", "H", "T"],
-    "vector-store-rag": ["AA", "S"],
-    "nextjs-app": ["I", "J", "K", "L", "M", "N", "O", "BB", "KK"],
-    "react-spa": ["I", "J", "K", "L", "M", "N", "BB", "KK"],
-    "frontend-auth-flow": ["J", "K", "L", "T"],
-    "vercel-deployment": ["O", "J", "DD"],
-    "stripe-integration": ["P", "Z", "W"],
-    "twilio-integration": ["Q", "Z", "W"],
-    "elevenlabs-integration": ["R", "Z", "W"],
-    "generic-payment-provider": ["P", "Z", "W"],
-    "generic-messaging-provider": ["Q", "Z", "FF"],
-    "webhook-consumer": ["Z", "W", "MM"],
-    "webhook-producer": ["Z", "MM"],
-    "public-api-surface": ["W", "T", "E"],
-    "graphql-api": ["W", "T"],
-    "multi-tenant-data-access": ["S", "T"],
-    "authn-authz-session": ["T", "MM", "S"],
-    "ci-cd-pipeline": ["U", "BB", "CC"],
-    "background-worker": ["V", "E", "KK"],
-    "cron-scheduled-job": ["V", "G"],
-    "resiliency-dr-posture": ["X", "G"],
-    "compliance-privacy-surface": ["Y", "S", "G"],
-    "realtime-websocket-sse": ["EE", "T", "KK"],
-    "email-sending": ["FF", "Z"],
-    "cost-finops-review": ["GG", "G"],
-    "mobile-native-app": ["HH", "LL", "K", "T"],
-    "monorepo-build-tooling": ["BB", "U"],
-    "terraform-iac-stack": ["CC", "F", "GG"],
-    "feature-flags-remote-config": ["DD"],
-    "money-billing-logic": ["JJ", "P", "MM"],
-    "booking-scheduling-logic": ["JJ", "S"],
-    "crypto-token-code": ["MM", "T"],
-    "test-suite": ["NN", "U"],
-    "node-typescript-codebase": ["KK", "NN"],
-    "swift-apple-codebase": ["LL", "HH", "NN"]
+    "lambda-function": [
+      "A",
+      "E",
+      "F",
+      "G",
+      "KK"
+    ],
+    "ec2-service": [
+      "A",
+      "C",
+      "F",
+      "G",
+      "KK"
+    ],
+    "ecs-eks-workload": [
+      "A",
+      "C",
+      "F",
+      "G"
+    ],
+    "asg-launch-template": [
+      "A",
+      "C",
+      "F"
+    ],
+    "s3-bucket": [
+      "B",
+      "F",
+      "Y"
+    ],
+    "cloudfront-distribution": [
+      "B",
+      "C",
+      "L"
+    ],
+    "vpc-networking": [
+      "C",
+      "F"
+    ],
+    "load-balancer": [
+      "C",
+      "B"
+    ],
+    "dns-route53": [
+      "C"
+    ],
+    "dynamodb-table": [
+      "D",
+      "S"
+    ],
+    "rds-database": [
+      "D",
+      "C",
+      "F",
+      "S"
+    ],
+    "redis-cache": [
+      "D",
+      "S"
+    ],
+    "opensearch-domain": [
+      "D",
+      "S"
+    ],
+    "sql-orm-layer": [
+      "D",
+      "S",
+      "JJ"
+    ],
+    "sqs-queue": [
+      "E",
+      "V"
+    ],
+    "sns-topic": [
+      "E"
+    ],
+    "eventbridge-bus": [
+      "E",
+      "V"
+    ],
+    "step-function": [
+      "E",
+      "X"
+    ],
+    "kinesis-stream": [
+      "E"
+    ],
+    "api-gateway-rest": [
+      "E",
+      "W",
+      "T"
+    ],
+    "api-gateway-websocket": [
+      "E",
+      "EE",
+      "T"
+    ],
+    "iam-role-policy": [
+      "F"
+    ],
+    "kms-key": [
+      "F"
+    ],
+    "cognito-identity": [
+      "F",
+      "T"
+    ],
+    "secrets-config-store": [
+      "F",
+      "DD",
+      "MM"
+    ],
+    "cloudtrail-config-audit": [
+      "G",
+      "Y"
+    ],
+    "cloudwatch-observability": [
+      "G",
+      "GG"
+    ],
+    "llm-bedrock-integration": [
+      "H",
+      "AA"
+    ],
+    "athena-glue-analytics": [
+      "H",
+      "GG"
+    ],
+    "ai-agent-tooling": [
+      "AA",
+      "H",
+      "T"
+    ],
+    "vector-store-rag": [
+      "AA",
+      "S"
+    ],
+    "nextjs-app": [
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "BB",
+      "KK"
+    ],
+    "react-spa": [
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "BB",
+      "KK"
+    ],
+    "frontend-auth-flow": [
+      "J",
+      "K",
+      "L",
+      "T"
+    ],
+    "vercel-deployment": [
+      "O",
+      "J",
+      "DD"
+    ],
+    "stripe-integration": [
+      "P",
+      "Z",
+      "W"
+    ],
+    "twilio-integration": [
+      "Q",
+      "Z",
+      "W"
+    ],
+    "elevenlabs-integration": [
+      "R",
+      "Z",
+      "W"
+    ],
+    "generic-payment-provider": [
+      "P",
+      "Z",
+      "W"
+    ],
+    "generic-messaging-provider": [
+      "Q",
+      "Z",
+      "FF"
+    ],
+    "webhook-consumer": [
+      "Z",
+      "W",
+      "MM"
+    ],
+    "webhook-producer": [
+      "Z",
+      "MM"
+    ],
+    "public-api-surface": [
+      "W",
+      "T",
+      "E"
+    ],
+    "graphql-api": [
+      "W",
+      "T"
+    ],
+    "multi-tenant-data-access": [
+      "S",
+      "T"
+    ],
+    "authn-authz-session": [
+      "T",
+      "MM",
+      "S"
+    ],
+    "ci-cd-pipeline": [
+      "U",
+      "BB",
+      "CC"
+    ],
+    "background-worker": [
+      "V",
+      "E",
+      "KK"
+    ],
+    "cron-scheduled-job": [
+      "V",
+      "G"
+    ],
+    "resiliency-dr-posture": [
+      "X",
+      "G"
+    ],
+    "compliance-privacy-surface": [
+      "Y",
+      "S",
+      "G"
+    ],
+    "realtime-websocket-sse": [
+      "EE",
+      "T",
+      "KK"
+    ],
+    "email-sending": [
+      "FF",
+      "Z"
+    ],
+    "cost-finops-review": [
+      "GG",
+      "G"
+    ],
+    "mobile-native-app": [
+      "HH",
+      "LL",
+      "K",
+      "T"
+    ],
+    "monorepo-build-tooling": [
+      "BB",
+      "U"
+    ],
+    "terraform-iac-stack": [
+      "CC",
+      "F",
+      "GG"
+    ],
+    "feature-flags-remote-config": [
+      "DD"
+    ],
+    "money-billing-logic": [
+      "JJ",
+      "P",
+      "MM"
+    ],
+    "booking-scheduling-logic": [
+      "JJ",
+      "S"
+    ],
+    "crypto-token-code": [
+      "MM",
+      "T"
+    ],
+    "test-suite": [
+      "NN",
+      "U"
+    ],
+    "node-typescript-codebase": [
+      "KK",
+      "NN"
+    ],
+    "swift-apple-codebase": [
+      "LL",
+      "HH",
+      "NN"
+    ]
   }
 }

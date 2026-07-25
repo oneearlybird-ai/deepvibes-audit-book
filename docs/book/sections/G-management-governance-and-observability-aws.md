@@ -93,3 +93,29 @@ truth that provisions the resource (resource references, SSM parameters) over pa
 on rare events) — distinguish "resource gone" from "metric quiet" by checking the resource, not
 the metric; alarms pre-created for resources that a pending deployment is about to create
 (verify the deployment actually lands).
+## G:19 - Log groups provisioned without a customer-managed key while carrying identity, payment, or tenant data
+
+**Statement.** Managed log groups are created without an explicit customer-managed encryption key,
+inheriting the provider's default service-owned encryption. Data is encrypted at rest, so automated
+scanners that check only "is it encrypted" pass - but the key is outside the organization's control:
+there is no key policy to restrict decryption to named principals, no audit trail of key use
+attributable to the log data, no independent revocation or rotation lever, and no cryptographic
+separation between logs holding authentication traces, payment records, or tenant-scoped data and
+logs holding build output. The gap is usually silent and partial: an organization's own standard
+mandates a key, the newest resources comply because a module sets it, and everything provisioned by
+older modules, console actions, or provider-implicit creation does not - so the posture is a
+per-resource coin flip nobody has counted.
+
+**Detect.** Enumerate every log group in the account from the live provider API, not from the IaC, and
+count how many lack a key reference - provider-implicit creation (a compute runtime creating its own
+group on first write) never sets one, so IaC review systematically misses these. Classify the unkeyed
+groups by what actually flows through them (authentication and session handlers, payment and ledger
+paths, per-tenant data services) rather than treating the count alone as the severity. State the ratio
+and name the sensitive subset. Distinguish this from retention: retention being correctly set
+everywhere is not evidence about keys.
+
+**False positives.** Log groups carrying only non-sensitive operational output (build logs, health
+probes, infrastructure metrics) where a documented data-classification policy exempts them; groups
+whose provider default is a customer-managed key at the account level (verify the account setting
+rather than assuming); environments where a documented, dated decision accepts service-owned keys
+with a named revisit condition.

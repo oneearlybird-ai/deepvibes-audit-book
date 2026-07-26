@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 671,
+ "rule_count": 672,
  "sections": [
   {
    "id": "A",
@@ -1793,7 +1793,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "U:1",
@@ -1882,6 +1882,10 @@
     {
      "id": "U:22",
      "title": "Only the destructive half of a replace-in-place refactor is published, leaving the integration branch worse than either endpoint"
+    },
+    {
+     "id": "U:23",
+     "title": "The test suite is wired to no enforcement point, so the only branch goes red and stays red"
     }
    ]
   },

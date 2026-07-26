@@ -121,3 +121,28 @@ Permissions: CI workflow tokens (GITHUB_TOKEN) with default write-all permission
 **Detect.** Do not read the working tree — it is the one place the defect cannot be seen. Materialize the integration branch by itself (a fresh clone, an archive export, or the pipeline's own checkout) and run compile, lint, and build against it; a green local tree beside a red materialized branch is the finding, and the distance between them is its size. The cheapest evidence of all is the integration pipeline's own recorded result for the branch tip: an unwatched failure on the mainline is routine, and reading it costs one query. Without a build, triage statically: for every commit that removes source files, list the removed paths and search the branch's own contents for surviving references — both module-graph imports the compiler would catch and string references in task-runner targets and checker file lists, which it would not. A commit whose diff is overwhelmingly deletions while live referents remain is the signature. Then invert the search: inventory untracked files and unstaged edits in every shared working tree and ask which published deletion each was supposed to accompany, which catches the same defect before another consumer pays for it.
 
 **False positives.** Deliberate staged retirements where the removal is published first and every referent is removed in the same change, so the branch stays coherent at each step; deletions of genuinely unreferenced code; replacements delivered as a separate published artifact — a dependency version bump, a generated bundle — rather than as tracked source in the same repository.
+
+## U:23 — The test suite is wired to no enforcement point, so the only branch goes red and stays red
+
+**Statement.** The repository has a real test suite and a documented command to run it, but no
+mechanical actor ever runs it: no CI provider is configured, and no pre-push or pre-merge hook
+invokes the suite. Enforcement is a sentence in a contributor doc. With one careful contributor
+this fails occasionally; with several concurrent lanes committing to a single trunk it fails
+structurally — each lane runs at most the tests for its own scope, cross-scope regressions land
+silently, and trunk accumulates failures nobody saw happen. The suite's redness then becomes
+ambient: the next actor who runs it inherits failures they cannot tell from their own, failures
+get attributed away as pre-existing, and the suite loses its authority as evidence — which is
+precisely when regressions in the highest-stakes code (billing, auth) ride in unnoticed.
+
+**Detect.** Enumerate enforcement points: CI configs (workflow directories, pipeline files),
+`core.hooksPath`, committed hook scripts, and any deploy pipeline step that runs tests — confirm
+by reading what they execute, not what they are named. If none runs the suite, run the FULL suite
+on a clean checkout of trunk and count failures; any nonzero count is the finding, and the delta
+between "suite documented" and "suite enforced" is the mechanism. Check the repo's own docs for
+claims that a gate exists (NN:15 overlap) and whether recent trunk commits could have passed the
+suite they landed on.
+
+**False positives.** Suites genuinely enforced by an external system (org-level CI the repo
+cannot see, a deploy pipeline that provably runs them) — verify the wiring end to end before
+crediting it. Deliberately quarantined tests explicitly marked skipped/known-failing with an
+owner and a date are hygiene, not this finding — silent redness is.

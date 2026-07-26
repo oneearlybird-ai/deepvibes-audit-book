@@ -146,3 +146,30 @@ suite they landed on.
 cannot see, a deploy pipeline that provably runs them) — verify the wiring end to end before
 crediting it. Deliberately quarantined tests explicitly marked skipped/known-failing with an
 owner and a date are hygiene, not this finding — silent redness is.
+
+## U:24 — Governance names a repository that no shared remote serves, so every other environment silently operates without it
+
+**Statement.** The organization's governing documents — trunk rules, audit scopes, toolchain
+inventories — name a repository as a first-class member of the fleet, but no remote any other
+environment can reach actually serves it: it was never pushed, or it lives only on one
+workstation's disk, or on a private server that is usually offline. Every workspace assembled
+anywhere else clones what the remotes offer, comes up one repository short, and nothing
+complains: the governance that names the repo has no liveness check, audits scoped to it
+silently skip it, and cross-repo tooling that reads it degrades to covering the repos that
+exist. The missing repo is typically the tooling repo itself — validators, contract ledgers,
+cartography — which is exactly the one whose absence removes the means of noticing absences.
+Meanwhile the single copy accretes unpushed history and becomes a single point of loss: one
+disk failure deletes a governance-load-bearing repository that, per every document, still
+exists.
+
+**Detect.** Diff the set of repositories the governance names against the set the shared
+remotes actually serve (the org listing, authenticated-user listing, and any self-hosted
+forge — probe each, and treat an unreachable forge as unresolved, not absent). For each
+governance-named repo missing from every reachable remote, search the documents for pinned
+absolute paths — a workstation-local path in a doc is the tell that the repo lives on exactly
+one machine. Check the audit instance's scope config for repos it can never have audited.
+
+**False positives.** Repositories deliberately retired with their governance references
+removed in the same change; repos on a private forge that is verifiably reachable from the
+environments that need it (verify reachability, don't assume); scratch tooling explicitly
+documented as single-machine and named in no governing rule.

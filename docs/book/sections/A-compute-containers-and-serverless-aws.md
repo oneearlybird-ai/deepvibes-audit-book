@@ -141,3 +141,43 @@ Lambda: Multiple unrelated responsibilities packed into one "do-everything" func
 ## A:34 — Compute: AMI/image pipeline lacking automated rebuild on upstream CVE disclosure (golden…
 
 Compute: AMI/image pipeline lacking automated rebuild on upstream CVE disclosure (golden image rot).
+
+## A:35 — Lambda: Tenant-keyed warm-sandbox caches with TTL-on-read but no eviction or size bound
+
+**Statement.** Handlers cache per-tenant artifacts (API tokens, config rows, SDK clients) in module-scope Maps keyed by tenant or resource id, checking a TTL only on the read path. Keys are never deleted and the Map has no size bound, so cardinality grows monotonically with the number of distinct tenants routed to the container over its lifetime; entries that expired are still retained, and heavy values (SDK clients holding socket pools) amplify the footprint. The result is a slow, unobservable memory leak proportional to tenant fan-in per container.
+
+**Detect.** Module-scope `new Map()` caches keyed by tenant/customer/resource ids; `.set()` on miss or expiry; TTL comparison on read; absence of `.delete()` of expired keys, LRU wrapping, or a max-entry bound; values that hold clients or sockets rather than plain data.
+
+**False positives.** Caches keyed by a small closed set (enum-like codes) where cardinality is structurally bounded; per-invocation maps; caches that evict-and-replace on the read path (stale entry removed when detected, so per-key at most one live value AND key cardinality is bounded by tenancy scale the deployment actually plans for); runtimes with aggressive container recycling documented as the bound.
+
+## A:36 — Handler implements the partial-batch-failure contract but the event source does not enable it, so reported failures are discarded and the records are lost
+
+**Statement.** A batch consumer is written correctly for partial-batch reporting: it wraps per-record
+work in try/catch, collects the failed record identifiers, and returns the
+`{ batchItemFailures: [...] }` envelope instead of throwing. The event source mapping, however, does
+not declare the corresponding response type, so the runtime never reads that envelope. The
+invocation is therefore recorded as a complete success: the queue deletes the whole batch, or the
+stream checkpoint advances past the failed records. This is strictly worse than having no
+partial-batch handling at all — the usual defect (missing the setting while the handler throws)
+merely re-processes the batch, whereas this combination DELETES data. Every downstream safety net is
+simultaneously disarmed, because bisect-on-error, retry-attempt limits, maximum-record-age, and the
+on-failure destination all trigger only on a function error, and this function never errors. The
+resource graph looks complete and defensible — there is a DLQ, there is a failure destination, there
+are retries, there is an alarm — and not one of them can ever fire. The tell is usually a sibling:
+the same handler bound to a second source WITH the response type declared, proving the omission was
+an oversight rather than a design.
+
+**Detect.** Do not audit the mapping and the handler separately — the defect exists only in their
+pairing. For every event source mapping, read the handler's actual return path and classify it:
+throws on failure, returns a batch-item-failure envelope, or returns success unconditionally. Then
+compare against the mapping's declared response types. A handler returning the envelope while the
+mapping omits the declaration is the finding. Read the LIVE mapping, not just IaC — the setting is a
+common drift point. Where one handler serves several sources, diff the mappings against each other;
+an unconditioned outlier among conditioned siblings is the finding. Confirm the blast radius by
+checking whether the failure destination or DLQ has ever received anything despite the handler's
+error log firing.
+
+**False positives.** Handlers that build the envelope for logging but ALSO rethrow when it is
+non-empty (the throw is what drives retry, so the mapping setting is genuinely optional); sources
+that do not support partial-batch reporting at all; deliberate at-most-once lanes where dropping a
+failed record is the documented, alarmed choice and the drop is counted in a metric.

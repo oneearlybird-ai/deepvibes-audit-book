@@ -72,3 +72,32 @@ in the same column) is conclusive.
 
 **False positives.** Display-only fields that are never sent, joined, or matched; systems that
 normalize at READ time everywhere (verify every reader, not one).
+
+## Q:15 — Media Streams: an entire control document round-tripped by value through a custom `<Parameter>`, past the provider's documented length ceiling
+
+**Statement.** A service needs to hand per-call state (a rendered model prompt, a config document, a
+context bundle) to its OWN downstream socket server, and ships it by value: serialized, signed, and
+embedded in a `<Stream><Parameter>` in the TwiML response, so the provider carries it out and hands
+it back on the media socket. The provider documents a hard ceiling on the combined length of each
+custom parameter's name and value; a rendered instruction document exceeds it by one to two orders
+of magnitude. The integration works only for as long as the provider declines to enforce its own
+published limit — an untested, unversioned dependency on undefined behaviour whose enforcement turns
+100% of inbound calls into a hard failure simultaneously, with no reference-based path to fall back
+to. The same by-value transport is also a confidentiality decision nobody made: the blob is signed,
+not encrypted, so its full contents are readable in the provider's request/response inspector by
+every operator with console access to that account, and it persists there under the provider's log
+retention, not the application's.
+
+**Detect.** Enumerate every custom parameter emitted in TwiML and measure the RENDERED value length
+against realistic production data, not a fixture — assemble the largest plausible document and count
+the characters after serialization and encoding. Compare against the provider's currently published
+limit, fetched at audit time. Then classify the payload: a short opaque reference (call id, session
+handle, per-call ticket) is correct; anything the downstream service could instead resolve for itself
+from a store it already reaches is state that should never have left the trust boundary. Check
+whether the blob is merely signed (readable by anyone holding it) or encrypted, and whether the
+provider's request inspector retains the response body.
+
+**False positives.** Genuinely short references, even when signed, and even when several are present;
+integrations where the published limit has been raised or the provider documents the field as
+unbounded — cite the current published limit as read at audit time, never from memory; parameters
+carrying data the provider is contractually the system of record for.

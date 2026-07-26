@@ -128,3 +128,97 @@ same release train — verify the train, not the intent.
 **Detect.** Walk every state: build the set of payload paths available on ENTRY to each state per incoming edge (including Catch edges — a Catch without ResultPath yields ONLY the error object). Flag any Parameters/Choice/ResultSelector JSONPath not present on some feasible entry edge. Pay special attention to retry lanes duplicated from primary lanes with a different ResultPath, and to Catch blocks lacking ResultPath while their cleanup targets reference business ids.
 
 **False positives.** Paths guaranteed present via the execution input on every edge; Catch targets that genuinely need only the error (pure Fail/notify states referencing nothing); Map/Parallel states whose inner scope intentionally shadows outer paths.
+
+## E:28 — A resource rename leaves out-of-IaC event targets pointing at the pre-rename name, failing every invocation forever behind zero signal
+
+**Statement.** A cleanup pass renames messaging resources — dropping a legacy prefix, restandardising
+a queue or topic name — by editing the IaC and letting the new resource be created. Anything that
+referenced the old name from OUTSIDE that IaC, typically rules and schedules created by hand during
+an earlier phase, keeps its stale ARN. Because those references are unmanaged, no plan diff, no
+apply, and no drift check ever visits them; the rename's own verification passes because everything
+the IaC owns is consistent. The stale rule stays ENABLED and fires on schedule against a target that
+no longer exists, so every single invocation fails permanently — not intermittently, not under load,
+but 100% of the time from the moment of the rename. The failure is inert: a nonexistent target
+produces a delivery failure rather than an application error, so no consumer logs anything, no
+function errors, and no alarm keyed to the consumer can see it. If the target also lacks a
+dead-letter configuration — usual for hand-created rules, since the DLQ pattern normally arrives with
+the IaC — the payload is not merely undelivered but unrecoverable. These lanes are typically
+discovered only by reading the scheduler's own delivery metrics, months later, and they are easy to
+misread as healthy because the rule's trigger and invocation-attempt counts look completely normal:
+only the failure counter distinguishes them.
+
+**Detect.** Reconcile the live scheduler against the live resource inventory rather than against the
+IaC: for every rule and schedule, resolve every target ARN and assert the target actually exists.
+Then pull per-rule delivery metrics and flag any rule whose failure count equals its trigger count
+over a long window — a sustained 100% failure ratio is the signature, and its duration dates the
+regression. Cross-check each such rule against the IaC: a rule absent from every stack is
+unmanaged and will not self-heal. Treat rename/migration scripts as a map of where to look — every
+old→new pair in one is a candidate for a dangling reference somewhere outside the tree the script
+edited. Also confirm whether the surviving consumer would even accept the payload: a renamed target
+that was repointed but whose consumer no longer dispatches that job type is the same dead lane with
+one more layer of disguise.
+
+**False positives.** Rules deliberately left disabled; targets in another account or region that the
+inventory query did not cover; rules whose failures are genuinely intermittent rather than total —
+check the ratio, not the raw count; short windows immediately following a deployment where the
+target is mid-creation.
+
+## E:29 — Fan-out notification chain with no failure capture at any layer, carrying a legally-mandated signal
+
+**Statement.** A regulator-facing or otherwise legally-mandated inbound signal — an unsubscribe
+keyword, a consent revocation, a deletion request — is delivered through a pub/sub topic to a single
+handler, and no layer of that chain can capture a failure. The subscription carries no redrive policy,
+so the broker drops the message once its built-in retries are exhausted. The function has neither a
+dead-letter target nor an on-failure destination, so the asynchronous runtime drops it too. And the
+handler catches its own per-record errors and returns success, so neither of those mechanisms is ever
+reached in the first place — the broker records a successful delivery, the runtime records a
+successful invocation, and the only trace of the lost obligation is a log line nobody is alarmed on.
+The three gaps are individually forgivable and jointly fatal: each layer's designers could reasonably
+assume one of the others would catch it. The severity is set by what the signal means rather than by
+volume, because a single dropped opt-out converts every subsequent message to that recipient into a
+separate statutory violation, and the platform will keep sending precisely because it never learned
+to stop. The configuration that makes this lethal is usually one flag elsewhere declaring that the
+platform, not the provider, owns the obligation.
+
+**Detect.** Start from the obligation, not the topology: find the flag that decides whether the
+platform or the upstream provider processes the keyword or request, and if the platform owns it,
+trace that signal's entire path. At each hop demand a named failure sink — subscription redrive
+policy, function dead-letter or on-failure destination, handler error propagation — and confirm each
+against LIVE configuration, since all three are absent-by-default and none appears in a
+happy-path test. Then close the loop: read the handler's catch blocks and establish whether any
+failure can reach the sinks that do exist. Where the handler swallows, the sinks are decorative
+regardless of how they are configured.
+
+**False positives.** Chains where the provider retains the obligation (auto-processed opt-outs) and
+the handler is advisory only; signals reconciled by an independent periodic sweep that would recover
+a dropped message, where that sweep is itself verified; handlers that swallow only after durably
+recording the obligation, so the swallow follows the commit rather than replacing it.
+
+## E:30 — Orchestrator promotes a downstream secret into workflow state, and execution-data logging persists it to history and logs
+
+**Statement.** A workflow step provisions a credential — a sub-account token, an API key, a
+short-lived password — and the orchestrator lifts that value out of the step's result into its own
+working state so a later step can consume it. The state machine is separately configured to record
+execution data, which is normal and usually desirable for debugging, and the two decisions combine
+into a durable plaintext copy of the credential in two places nobody thinks of as a secret store:
+the orchestration service's own execution history, readable by anyone who can describe executions,
+and the log group it writes to, readable by anyone holding a broad log-read grant. Both persist far
+beyond the workflow, and neither is covered by the secret-manager rotation story that the credential
+otherwise has. Encryption at rest does not mitigate it, because the exposure is to authorized-but-
+unintended readers rather than to storage. The pattern is made much worse by a catch-all failure
+handler that forwards the entire state for diagnostics, which copies the credential again into every
+failure record. The giveaway is that the secret has exactly one legitimate consumer — the step that
+writes it to the real secret store — so it never needed to traverse the orchestrator at all.
+
+**Detect.** Read every result-mapping in the workflow definition and list the fields it promotes into
+state, flagging any whose name or provenance indicates a credential; then check whether execution
+data logging is enabled and at what level. Confirm on the live system rather than inferring: pull a
+real execution's history and search it for the field name, and grep the log group for the value's
+shape. Trace each flagged field to its consumers — a secret with a single downstream consumer should
+be passed inside the producing step, not through the orchestrator. Finally, inspect failure paths for
+whole-state forwarding, which re-exposes every field the happy path carried.
+
+**False positives.** Values that merely look like credentials but are non-secret identifiers
+(account SIDs, public keys, resource ids); workflows with execution data logging disabled AND
+history access restricted to a break-glass role, where that restriction is verified; references to a
+secret (an ARN or a version id) rather than its material.

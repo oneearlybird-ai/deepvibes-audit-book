@@ -74,3 +74,27 @@ into a flow the model demonstrably executes, not adding more prose.
 **False positives.** Tools invoked programmatically (not by the LLM); tools whose triggering instruction
 lives in dynamic variables or retrieved knowledge that IS delivered at runtime — trace the actual
 rendered context before flagging.
+
+## AA:14 — The instruction set that drove an agent's customer-facing actions is not retained per interaction
+
+**Statement.** An agent's runtime instructions are assembled per interaction from several
+independently mutable sources — shared reference text, per-tenant configuration, per-caller flags,
+capability toggles, wall-clock date — sent to the model, and then discarded. The transcript, the
+recording, the outcome, and the billing record are all retained; the instructions that produced them
+are not, not even as a content digest with resolved source versions. When a customer disputes what
+the agent promised, when quality regresses after any upstream source is edited in place, or when a
+reviewer asks what the automated agent was actually told on a specific interaction, the answer is
+unreconstructable: the sources have since changed and nothing recorded which versions applied.
+Recording the assembled prompt's LENGTH is the usual half-measure and proves nothing about content.
+
+**Detect.** Trace the assembly function to its call site and read what is persisted alongside the
+interaction record — the rendered instructions, a digest plus resolved source versions, or nothing.
+Grep the persistence writer for a prompt or digest field; a length-only log is a negative result.
+Then establish that the sources are independently mutable (reference rows editable in place, tenant
+config editable, toggles flippable): mutable sources plus no snapshot means the interaction cannot
+be reconstructed even from backups of the sources.
+
+**False positives.** Wholly static instructions pinned to a released artifact whose version id IS
+persisted per interaction; systems that persist a digest AND keep every source row immutably
+versioned, so the exact text is recoverable by replay; interactions where regulation requires the
+instructions NOT be retained (name the regulation).

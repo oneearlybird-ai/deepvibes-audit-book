@@ -124,3 +124,11 @@ consumers of the same index against one schema. Treat range-only conditions as c
 
 **False positives.** Queries against the base table (no IndexName) keyed on the table's own hash;
 expressions where attribute-name aliases obscure a correct hash-key condition — resolve aliases first.
+
+## D:28 — DynamoDB: Offboarding/deletion funneled through one hard-capped transaction over a growing per-tenant item set
+
+**Statement.** A lifecycle operation (tenant deletion, archival, retirement) collects every item belonging to a tenant and submits them in a single `TransactWriteItems` call. The API hard-caps items per transaction (100); a guard that terminally fails the request when the cap is exceeded converts ordinary data growth into a permanent, user-facing failure of the operation — deletion works for young tenants, then becomes "contact support" precisely for the tenants with the most data, which can breach contractual or regulatory deletion promises (GDPR/CCPA).
+
+**Detect.** Transaction item lists built by iterating query results whose per-tenant cardinality is unbounded (grows with item classes, sub-resources, or age); guards comparing collected length against the transaction cap that respond with a terminal error; absence of an asynchronous or paged fallback (BatchWrite loop, queue worker, Step Functions) for the over-cap case.
+
+**False positives.** Transactions over item sets whose cardinality is schema-bounded below the cap (fixed item classes with enforced limits, and the bound stated in code); designs where the capped transaction is a fast path and an async paged path takes over above the threshold; operations that only stamp a status row transactionally and defer bulk movement to a worker.

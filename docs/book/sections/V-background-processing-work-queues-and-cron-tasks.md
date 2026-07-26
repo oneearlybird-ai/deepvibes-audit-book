@@ -86,3 +86,11 @@ guard). Quantify the collateral: count the write operations per pass times the l
 convergent configuration management, where the subject does reach and hold its healthy state; loops
 bounded by an attempt counter, backoff, or a terminal give-up state that alerts; short-lived
 oscillation during an active incident that resolves once the upstream fault clears.
+
+## V:14 — Full-corpus tenant export executed synchronously in the request path and buffered wholly in memory
+
+**Statement.** A "download my data" style endpoint pages a tenant's entire corpus into process memory, serializes it as one document (pretty-printing multiplies the size), uploads it, and responds — all inside one synchronous invocation behind a fixed gateway timeout. Completion time and memory scale with tenant data while the timeout and memory limit do not, so growth converts the export into 5xx timeouts or out-of-memory kills precisely for the largest tenants. When the gateway timeout is shorter than the function timeout, the client receives an error while the export completes invisibly — retries then double-run the job.
+
+**Detect.** Request-path handlers that loop paginated reads to exhaustion, accumulate results into arrays, `JSON.stringify` the whole corpus, and upload once; compare the gateway's integration timeout against the function timeout; absence of a 202/job-id + async worker + completion-notification pattern; absence of streaming upload (multipart from a paginator stream) bounding memory.
+
+**False positives.** Corpora with schema-bounded small size and a stated bound; endpoints that only enqueue the export job synchronously; streaming implementations with bounded memory; internal/admin-only tools where the operator owns the timeout risk knowingly.

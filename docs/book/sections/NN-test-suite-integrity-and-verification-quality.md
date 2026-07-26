@@ -172,3 +172,140 @@ pre-test with a dated owner decision.
 **Detect.** For each verifier born from an incident (comments usually cite it), restate the incident's failure predicate and the verifier's checked predicate; if the verifier's predicate is satisfiable while the incident predicate recurs (source-present but conditionally unmounted; config-defined but not deployed), the gap is the finding. Enumerate the concrete divergence paths as evidence.
 
 **False positives.** Verifiers explicitly scoped as one layer of several, where a runtime check (e2e, canary, graceful degradation) covers the residual class and is named; failure classes that structurally cannot diverge between source and runtime.
+
+## NN:13 — Blocking gate detects a pattern's syntax instead of its semantics, so it fails on a categorically different construct
+
+**Statement.** A merge- or deploy-blocking verifier encodes a banned pattern as a shape-level match
+(a regex over an operator and a keyword, an AST node type, a name substring) rather than over the
+property the ban is about. A construct that shares the syntax but not the semantics — a default
+value where the rule meant a dependency, a same-named local where the rule meant an import, a
+literal inside an unrelated expression — trips the gate. Because the gate is a hard block, the
+false positive forces one of two outcomes, both worse than no gate: legitimate work is blocked at
+the moment it is most urgent, or the finding is silenced by adding the innocent file to a
+grandfather/baseline list — which permanently exempts that file from the real rule too. A gate that
+has never matched a true positive in the tree it guards is not protecting the invariant; it is
+taxing the team and eroding trust in every other gate beside it.
+
+**Detect.** For each blocking verifier, extract the literal predicate it evaluates and restate the
+prose rule it claims to enforce; where the predicate is broader than the rule, construct the
+innocent construct that satisfies the predicate. Then measure the gate's yield: search the guarded
+tree for the pattern the rule actually bans (the semantically-qualified form) and count true
+positives. Zero true positives plus a live failure is the finding, not a coincidence. Check the
+baseline/allowlist file for entries added to silence a false positive rather than to grandfather a
+real violation — each such entry is a permanently unguarded file, and its presence is corroborating
+evidence.
+
+**False positives.** Deliberately conservative detectors on invariants where a miss is
+catastrophic and the over-match rate is documented with a named review step; gates whose broad
+predicate is paired with an explicit, narrowly-scoped exception mechanism intended for the innocent
+construct (a per-line suppression comment with a required justification, not a whole-file
+baseline).
+
+## NN:14 — Cross-repo contract gate validates against a vendored snapshot whose freshness check silently no-ops in CI
+
+**Statement.** A merge-blocking gate protects consumers against calling an endpoint, field, or
+operation the producer no longer serves — but it evaluates client call sites against a *vendored
+snapshot* of the producer's contract committed into the consumer repo, not against the producer
+itself. The snapshot's freshness is delegated to a sync script that resolves the producer through
+an ambient path (a sibling checkout, a monorepo-relative directory, a local artifact cache) and,
+when that path is absent, takes the "trust the committed copy" branch and exits success. CI checks
+out only the consumer repo, so the absent branch is the *only* branch CI ever runs: the drift
+detector is structurally incapable of failing where it is enforced, and it fails only on developer
+machines that happen to have both repos side by side. The blocking gate downstream then reports a
+precise, confident tally ("N client calls checked against M producer routes — OK") computed
+entirely from a snapshot nothing keeps current. A producer-side removal or rename stays in the
+snapshot, every consumer call to the dead operation is greenlit, and the failure resurfaces in
+production as the exact class the gate was built to prevent.
+
+**Detect.** Trace the gate's reference data to its origin and identify the environment boundary it
+crosses. Read the sync script's not-found branch and confirm the exit code; then read the CI job
+and confirm whether the producer is actually checked out (a bare checkout step with no `repository:`
+override means it is not). Separately, ask what regenerates the snapshot: grep the producer repo for
+the generator's invocation in CI config, task runners, and verifier suites — a generator wired into
+nothing is refreshed only by memory. Prove staleness empirically rather than arguing it: run the
+generator against the live producer and diff against the committed snapshot. Additive-only drift is
+still the finding — the mechanism that permitted it permits a removal just as silently.
+
+**False positives.** Snapshots regenerated by an automated producer-side job that opens the
+consumer PR on every contract change (verify the job exists and has run recently); gates whose CI
+genuinely checks out both repos or pulls the contract from a published, versioned artifact rather
+than a filesystem sibling; consumer repos where a runtime contract test (a smoke call against a
+deployed producer) covers the same class and is named as the compensating control.
+
+## NN:15 — The governing contract names an automated enforcement authority the repository does not contain
+
+**Statement.** A repository's own engineering contract states that its checks are enforced
+automatically at integration time — "the suite runs on every change", "a failing check blocks
+merge", "the gate is required" — and the checks themselves are real: numerous, well-targeted, and
+genuinely capable of catching the classes they name. What does not exist is the *authority*. The
+repository contains no pipeline definition, no required-status or branch-protection configuration,
+no server-side hook — nothing that can observe a change and refuse it. The checks are reachable
+only when a human chooses to invoke a task-runner target, or through client-side version-control
+hooks that live per-clone, are installed by a separate opt-in step, and that the tooling documents
+how to skip. Every incentive then runs against them, because the checks are slowest and most
+irritating exactly when a change is most urgent. The damage exceeds the missing automation: the
+written claim causes reviewers, downstream teams, and remediation plans for other defects to treat
+the checks as satisfied preconditions, so nobody re-derives whether they ran — and a contributor
+who skips them leaves behind no signal that they were skipped. The tell is empirical: run the suite
+against the integration branch and count the failures sitting in history that the contract says
+could never have landed.
+
+**Detect.** Read the enforcement claim literally, then look for its implementation as a deployed
+object *before* reading any code — a pipeline-definition directory, a required-status or
+branch-protection configuration, a server-side hook. Absence of the directory is dispositive;
+presence is not, so enumerate which jobs actually invoke the named check. Separately, inventory
+every check the claim covers and classify each by how it can be reached: server-enforced,
+client-hook (name the documented skip flag), or manual invocation only. A suite-runner target that
+aggregates the checks is routinely mistaken for their enforcement — trace every caller of that
+target and confirm whether any caller is automatic. Where client hooks are the only mechanism,
+check whether they are installed by checkout or require a separate step, and whether anything
+rejects a push that bypassed them. Then prove the gap empirically rather than arguing it: execute
+the checks against the committed head of the integration branch; any failure that is purely static
+(needing no credentials or deployed state) is a violation the contract asserts is impossible, and
+is the finding's strongest evidence. Finally, check whether the contract's stated trigger is even
+reachable under the repository's own workflow policy — a claim keyed to a review event in a
+repository whose policy forbids that event is unimplementable, not merely unimplemented.
+
+**False positives.** Repositories whose enforcement genuinely lives in an external system the
+repository does not contain — a central pipeline service, an organization-level policy, a
+mirror-side gate — where that system is verified and named; single-operator repositories that
+explicitly document manual invocation as the accepted posture with a dated owner decision;
+client-side hooks paired with a server-side re-check that renders the local skip inconsequential.
+
+## NN:16 — The gate checks the declarative registry's shape but not its correspondence to the implementation map it dispatches into, and a missing entry degrades to a legitimate-looking negative
+
+**Statement.** A feature is expressed as a declarative registry — entries carrying an identifier plus metadata — while a separate map supplies each identifier's behavior: a state signal, a handler, a resolver, a formatter. The registry's own header states the correspondence as a requirement, in the imperative: an identifier declared here must have an implementation there. A blocking verifier is then written for the registry and asserts exactly the properties that are easy to express over a single file — required fields present, enumerated values known, budgets respected — and stops, frequently with an explicit note that it checks only what is statically decidable. But the correspondence is *also* statically decidable; both sides are literals in source. It is simply the one clause nobody encoded, and it is the only clause whose violation is silent. A lookup miss yields the language's absent value, which the consuming expression folds into the negative branch of a legitimate binary — not complete, not permitted, not applicable — so the surface renders a plausible, permanent wrong answer instead of failing. Nothing else catches it: the map is typed as an open record keyed by string, so compilation is satisfied; review sees a green gate beside a stated contract and infers the contract is enforced. The pattern is most likely immediately after an earlier gate was retired for over-claiming, because the replacement is deliberately scoped down to defensible checks and the scoping-down is what drops the clause that mattered. A registry that happens to be complete today is not a defence — completeness is exactly what lets the gap survive every review until the next entry is added.
+
+**Detect.** Read the registry's stated invariants as an explicit list and check each one against what the verifier actually asserts; where the verifier's header enumerates its own checks, the omission is mechanical to spot. Grep the verifier for any reference to the implementation module at all — zero references means it can only ever have checked one side of a two-sided contract. Then work from the consumer: find every lookup keyed by a registry identifier and evaluate what the expression yields when the key is absent; if the miss is indistinguishable from a real value rather than throwing or failing the build, the correspondence must be gated rather than documented, and the rendered negative state is the blast radius. Establish whether the registry is currently complete before assigning severity, and say which it is — a latent gate gap and a live wrong answer are different findings with the same root cause.
+
+**False positives.** Maps where an absent entry is a deliberate, documented opt-out with its own rendering path; correspondences the type system genuinely enforces, such as a mapped type keyed by the registry's own literal union so a missing key fails compilation; registries whose implementations are resolved at runtime from a location no static tool can enumerate, where a startup assertion is named and verified as the compensating control.
+
+## NN:17 — Remediation verified by reading the committed diff and closed without confirming the change reached the running system
+
+**Statement.** A finding is remediated, the change is committed, and the tracking entry is closed on
+the strength of the diff — the resource is declared, the destination is configured, the schedule is
+corrected, the guard is added, and anyone re-reading the repository will find exactly the intended
+state. What never happened is the deploy: the declaration lives in version control and nowhere else,
+because applying it is a separate act that no gate ties to the close. The tracker now asserts, with
+evidence, that a live defect is gone while it is entirely intact, and that assertion is more harmful
+than the original defect because it retires the defect from attention. Repositories that gate
+deployment on committed source are especially prone to it, since the commit genuinely is a
+precondition for shipping and is easily mistaken for shipping. The failure compounds when the closed
+finding was itself the mitigation for a second finding, and it hides indefinitely, because every
+subsequent source review confirms the fix and no source review can see the gap.
+
+**Detect.** Treat "closed-fixed" as a claim about the RUNNING system and re-verify it there: for each
+recently closed finding, identify the observable the fix was supposed to create — a destination on a
+function, an attribute on a resource, a schedule value, a policy statement — and query the live
+provider API for exactly that observable, never the repository. Prefer the API call that enumerates
+what actually exists over the one that fetches what you expect (list rather than get, so an absence
+is a visible empty set rather than an exception you might mis-handle), and remember that
+alias-qualified or version-qualified configuration may not appear in the unqualified read. Where
+several findings were closed in one batch, check them all: the un-applied change is usually a whole
+stack, not one resource. Diff the tracker's closed set against live reality on a schedule, not only
+when something breaks.
+
+**False positives.** Findings whose fix is genuinely source-only (a test, a document, a build-time
+check) with no runtime observable; environments where the close is explicitly scoped to the
+repository and a separate deployment record tracks the rollout; changes deployed through a pipeline
+whose success is itself recorded on the finding.

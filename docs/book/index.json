@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 626,
+ "rule_count": 659,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 34,
+   "rule_count": 36,
    "rules": [
     {
      "id": "A:1",
@@ -146,6 +146,14 @@
     {
      "id": "A:34",
      "title": "Compute: AMI/image pipeline lacking automated rebuild on upstream CVE disclosure (golden…"
+    },
+    {
+     "id": "A:35",
+     "title": "Lambda: Tenant-keyed warm-sandbox caches with TTL-on-read but no eviction or size bound"
+    },
+    {
+     "id": "A:36",
+     "title": "Handler implements the partial-batch-failure contract but the event source does not enable it, so reported failures are discarded and the records are lost"
     }
    ]
   },
@@ -154,7 +162,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "B:1",
@@ -271,6 +279,10 @@
     {
      "id": "B:29",
      "title": "Managed rule group attached but constituent rules overridden to count, degrading the control while inventory shows it present"
+    },
+    {
+     "id": "B:30",
+     "title": "S3: Presigned URLs advertising an expiry beyond the signing credentials' remaining lifetime"
     }
    ]
   },
@@ -376,7 +388,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "D:1",
@@ -485,6 +497,10 @@
     {
      "id": "D:27",
      "title": "DynamoDB: GSI queried against a key schema it does not have — runtime ValidationException CI never sees"
+    },
+    {
+     "id": "D:28",
+     "title": "DynamoDB: Offboarding/deletion funneled through one hard-capped transaction over a growing per-tenant item set"
     }
    ]
   },
@@ -493,7 +509,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 27,
+   "rule_count": 30,
    "rules": [
     {
      "id": "E:1",
@@ -602,6 +618,18 @@
     {
      "id": "E:27",
      "title": "Step Functions: inter-state payload contract drift — states reference JSONPaths their predecessors do not produce"
+    },
+    {
+     "id": "E:28",
+     "title": "A resource rename leaves out-of-IaC event targets pointing at the pre-rename name, failing every invocation forever behind zero signal"
+    },
+    {
+     "id": "E:29",
+     "title": "Fan-out notification chain with no failure capture at any layer, carrying a legally-mandated signal"
+    },
+    {
+     "id": "E:30",
+     "title": "Orchestrator promotes a downstream secret into workflow state, and execution-data logging persists it to history and logs"
     }
    ]
   },
@@ -610,7 +638,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 21,
+   "rule_count": 24,
    "rules": [
     {
      "id": "F:1",
@@ -695,6 +723,18 @@
     {
      "id": "F:21",
      "title": "KMS: Service-principal key-policy statements without kms:CallerAccount / kms:ViaService — cross-account confused deputy through the service"
+    },
+    {
+     "id": "F:22",
+     "title": "IAM: Per-tenant physical principals allocated against an account-level hard quota with no telemetry or scale plan"
+    },
+    {
+     "id": "F:23",
+     "title": "IAM: Tenant provisioning continues to mint principals for a decommissioned subsystem"
+    },
+    {
+     "id": "F:24",
+     "title": "Service-principal resource policy scoped to the account only, on the claim that the sender set is uncountable, when the senders carry a deterministic generated name prefix"
     }
    ]
   },
@@ -869,7 +909,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "I:1",
@@ -954,6 +994,10 @@
     {
      "id": "I:21",
      "title": "Guided flows ignore viewer authorization"
+    },
+    {
+     "id": "I:22",
+     "title": "Identity-dependent chrome resolved client-side on a statically-cached page, painting a status placeholder as the first frame"
     }
    ]
   },
@@ -962,7 +1006,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "J:1",
@@ -1007,6 +1051,10 @@
     {
      "id": "J:11",
      "title": "Framework special pages placed outside any root layout in a multi-root-layout app, so the error surface is itself an error"
+    },
+    {
+     "id": "J:12",
+     "title": "A layout-level scroll or focus reset runs unconditionally on mount and defeats the browser's own fragment navigation"
     }
    ]
   },
@@ -1015,7 +1063,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "K:1",
@@ -1104,6 +1152,10 @@
     {
      "id": "K:22",
      "title": "Server-substituted resources never reconciled in the confirmation UI"
+    },
+    {
+     "id": "K:23",
+     "title": "Identity teardown clears a hand-maintained list of persisted keys, so every key introduced later survives sign-out by default"
     }
    ]
   },
@@ -1449,7 +1501,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "Q:1",
@@ -1506,6 +1558,10 @@
     {
      "id": "Q:14",
      "title": "Phone-format drift: multiple writers persist unnormalized numbers, breaking E.164-keyed delivery and consent joins"
+    },
+    {
+     "id": "Q:15",
+     "title": "Media Streams: an entire control document round-tripped by value through a custom `<Parameter>`, past the provider's documented length ceiling"
     }
    ]
   },
@@ -1624,7 +1680,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "T:1",
@@ -1713,6 +1769,10 @@
     {
      "id": "T:22",
      "title": "Authorization-check transport failure rendered as definitive denial"
+    },
+    {
+     "id": "T:23",
+     "title": "Verification gate conditioned on optional configuration silently degrades to the weak factor"
     }
    ]
   },
@@ -1721,7 +1781,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 17,
+   "rule_count": 22,
    "rules": [
     {
      "id": "U:1",
@@ -1790,6 +1850,26 @@
     {
      "id": "U:17",
      "title": "Gate Liveness: a pipeline gate's per-item client retry worst-case exceeds the gate's own kill timeout, with no progress output — one wedged connection reads as \"gate too slow\" and the control gets bypassed or deleted"
+    },
+    {
+     "id": "U:18",
+     "title": "Concurrent workers share one checkout, so a plain `git commit` captures whatever another worker had staged"
+    },
+    {
+     "id": "U:19",
+     "title": "Scan stage invoked so that every branch exits success, while the pipeline counts it as a gate"
+    },
+    {
+     "id": "U:20",
+     "title": "A second, weaker lane writes the reviewed artifact to the path the strong lane's apply step admits on existence alone"
+    },
+    {
+     "id": "U:21",
+     "title": "An auto-fixing commit hook normalizes a file property that the version control system's own checkout filter re-applies in reverse, so the gate can never converge and the commit path deadlocks"
+    },
+    {
+     "id": "U:22",
+     "title": "Only the destructive half of a replace-in-place refactor is published, leaving the integration branch worse than either endpoint"
     }
    ]
   },
@@ -1798,7 +1878,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "V:1",
@@ -1851,6 +1931,10 @@
     {
      "id": "V:13",
      "title": "Automated remediator self-certifies success for a failure class it has no handler for, producing a non-convergent detect-repair loop"
+    },
+    {
+     "id": "V:14",
+     "title": "Full-corpus tenant export executed synchronously in the request path and buffered wholly in memory"
     }
    ]
   },
@@ -1936,7 +2020,7 @@
    "title": "Resiliency, High Availability & Disaster Recovery",
    "group": "saas-core",
    "file": "sections/X-resiliency-high-availability-and-disaster-recovery.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "X:1",
@@ -1985,6 +2069,10 @@
     {
      "id": "X:12",
      "title": "Quotas: Service limits (Lambda concurrency, SES rate, connection caps) unmonitored until…"
+    },
+    {
+     "id": "X:13",
+     "title": "A shared account-level vendor quota is the real ceiling for several unrelated capabilities, so exhausting it anywhere takes them all down at once"
     }
    ]
   },
@@ -2111,7 +2199,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "AA:1",
@@ -2164,6 +2252,10 @@
     {
      "id": "AA:13",
      "title": "Dead capability: agent tool registered and callable but never referenced by any prompt or workflow"
+    },
+    {
+     "id": "AA:14",
+     "title": "The instruction set that drove an agent's customer-facing actions is not retained per interaction"
     }
    ]
   },
@@ -2225,7 +2317,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 10,
+   "rule_count": 12,
    "rules": [
     {
      "id": "CC:1",
@@ -2266,6 +2358,14 @@
     {
      "id": "CC:10",
      "title": "Orphans: Resources removed from code but left running (state rm misuse) — unmanaged, unp…"
+    },
+    {
+     "id": "CC:11",
+     "title": "Behavior-defining reference data exists only as hand-authored production rows, with no IaC, seed, or repository artifact"
+    },
+    {
+     "id": "CC:12",
+     "title": "Two IaC stacks each declare the whole of a singleton resource-policy attribute, so every apply silently reverts the other"
     }
    ]
   },
@@ -2274,7 +2374,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 10,
+   "rule_count": 13,
    "rules": [
     {
      "id": "DD:1",
@@ -2315,6 +2415,18 @@
     {
      "id": "DD:10",
      "title": "Enforcement mode read from remote config with a permissive default, and the key was never authored"
+    },
+    {
+     "id": "DD:11",
+     "title": "Machine-readable resource contract describes one of several live key families, and the gate guarding it validates only the described subset"
+    },
+    {
+     "id": "DD:12",
+     "title": "Entry points migrate to the resource contract while the shared libraries they delegate to keep resolving the same identifiers from ambient defaults"
+    },
+    {
+     "id": "DD:13",
+     "title": "The central contract registers whole classes of identifier that its client library exposes no accessor for, so those classes can only be resolved from the environment"
     }
    ]
   },
@@ -2812,7 +2924,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 12,
+   "rule_count": 17,
    "rules": [
     {
      "id": "NN:1",
@@ -2861,6 +2973,26 @@
     {
      "id": "NN:12",
      "title": "Post-incident static verifier asserts source presence for a runtime-absence failure class"
+    },
+    {
+     "id": "NN:13",
+     "title": "Blocking gate detects a pattern's syntax instead of its semantics, so it fails on a categorically different construct"
+    },
+    {
+     "id": "NN:14",
+     "title": "Cross-repo contract gate validates against a vendored snapshot whose freshness check silently no-ops in CI"
+    },
+    {
+     "id": "NN:15",
+     "title": "The governing contract names an automated enforcement authority the repository does not contain"
+    },
+    {
+     "id": "NN:16",
+     "title": "The gate checks the declarative registry's shape but not its correspondence to the implementation map it dispatches into, and a missing entry degrades to a legitimate-looking negative"
+    },
+    {
+     "id": "NN:17",
+     "title": "Remediation verified by reading the committed diff and closed without confirming the change reached the running system"
     }
    ]
   },

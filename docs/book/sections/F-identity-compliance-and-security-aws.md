@@ -107,3 +107,49 @@ policy, not just IaC.
 the account id (equivalent pinning); metadata-only actions (`kms:DescribeKey`) deliberately split
 into an unconditioned statement because they carry no encryption context; services that reject
 the conditions (verify against current AWS documentation before accepting this excuse).
+
+## F:22 — IAM: Per-tenant physical principals allocated against an account-level hard quota with no telemetry or scale plan
+
+**Statement.** The tenancy model mints K physical IAM roles (or users/policies) per tenant at provisioning time. IAM roles per account default to 1,000 and cap out around 5,000 even after quota increases, so tenant growth hits an account-wide provisioning wall at roughly quota/K tenants: every new tenant's onboarding fails at once, and nothing warns beforehand because the role count is not monitored against the quota. The per-tenant isolation pattern itself may be a sound, deliberate security choice — the defect is the unmonitored, unplanned ceiling, not the pattern.
+
+**Detect.** Per-tenant `CreateRole` in provisioning code; count role types K minted per tenant; compute quota/K against the business's tenant projections; check for Service Quotas monitoring or a CloudWatch alarm on the IAM role count; check for a documented plan (quota raise request, cell/account sharding, role consolidation to session-tag ABAC) that engages before the wall.
+
+**False positives.** Cell-based architectures where accounts shard before the quota binds, with the trigger documented; per-tenant principals minted in tenant-owned accounts; deployments whose documented tenant ceiling times K stays far under the default quota AND the ceiling is enforced somewhere real.
+
+## F:23 — IAM: Tenant provisioning continues to mint principals for a decommissioned subsystem
+
+**Statement.** A subsystem is removed from the platform, but the per-tenant provisioning path still creates — and the repair/inspect loops recreate or demand — its roles and policies for every new tenant. Dead principals accumulate with tenant growth, inflate the account's role count toward quota, and enlarge the audit surface with trust policies nobody exercises. A sweep-only cleanup regresses because the factory still runs: retirement must land in the provisioning code first, then the strays are deleted.
+
+**Detect.** Diff the set of role types minted by provisioning code against the set actually assumed anywhere (STS AssumeRole call sites, federation flows, service configurations). A minted-but-never-assumed role type — especially one whose policies reference removed services — is the signature. Confirm the repair path would recreate it if deleted, which proves sweep-first cleanup regresses.
+
+**False positives.** Roles for a dormant-but-planned plane with the plan documented; break-glass roles deliberately never assumed in normal operation; retirements already landed in provisioning code where only stray instances await deletion.
+
+## F:24 — Service-principal resource policy scoped to the account only, on the claim that the sender set is uncountable, when the senders carry a deterministic generated name prefix
+
+**Statement.** A resource policy grants an AWS service principal write access to a queue, topic, or
+bucket and conditions it on the source ACCOUNT alone, deliberately omitting the source-ARN condition.
+The omission is documented and reasoned: the senders are provisioned dynamically, one per tenant, so
+their ARNs cannot be enumerated at deploy time and any fixed list would be wrong by the next
+onboarding. The reasoning is sound but the conclusion is not, because dynamically created does not
+mean unpatterned — provisioning code almost always mints these names from a deterministic template
+with a fixed literal prefix, which a wildcard ARN condition matches exactly and permanently. The
+result is a grant far wider than intended: every resource of that type in the account, including ones
+belonging to entirely unrelated subsystems and ones that are internet-exposed, can drive writes into
+the target through the shared service principal. The danger is that the comment makes the statement
+look audited — a reviewer reads a considered justification for a wildcard and moves on, and the
+policy then survives every subsequent review on the strength of its own explanation.
+
+**Detect.** For every resource-policy statement naming a service principal, list the conditions and
+flag any that pin the account without pinning the source resource. Do not accept the accompanying
+justification: find the provisioning code that actually creates the sender and read the name it
+builds. A template with any fixed literal segment means a wildcard ARN condition was available and
+the justification fails. Then quantify the real grant by listing every resource of that type in the
+account and asking which of them the current condition admits — naming the unrelated and
+externally-reachable ones is what converts this from pedantry into a finding. Where a genuinely
+random name is generated, check whether provisioning could tag or prefix it instead.
+
+**False positives.** Senders whose names are wholly caller-supplied or externally assigned with no
+controlled segment; services that do not populate the source-ARN key for this action (verify against
+current vendor documentation, not assumption); statements already narrowed by an equivalent pin such
+as a resource tag or encryption-context condition; single-tenant accounts whose entire resource
+inventory is the intended sender set and where that scope is stated.

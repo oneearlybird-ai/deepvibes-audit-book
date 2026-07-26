@@ -139,3 +139,11 @@ counts on a rule left in count mode quantify exactly what is passing through.
 compensating control covering the same class; rules counted deliberately during an initial tuning
 window that is still open and tracked; rules irrelevant to the workload's actual data plane where the
 override is a documented noise-reduction decision rather than a weakened control.
+
+## B:30 — S3: Presigned URLs advertising an expiry beyond the signing credentials' remaining lifetime
+
+**Statement.** A presigned URL is generated with `expiresIn: N` using temporary credentials (assumed role / STS session) whose session lifetime is shorter than N. S3 enforces min(URL expiry, signing-credential expiry), so the link dies the moment the session credentials lapse — clients that trusted the advertised expiry see intermittent 403s that no server-side log explains, because nothing server-side failed. Cached signing clients make it worse: a client reused near the end of its session signs URLs that die within seconds of issuance.
+
+**Detect.** On the credential path that constructs the signing client, compare `getSignedUrl`'s `expiresIn` against the `AssumeRole` `DurationSeconds` minus the client-cache reuse window. Flag any advertised expiry exceeding the minimum remaining session lifetime at signing time.
+
+**False positives.** Signing with long-horizon credentials (instance/execution-role provider chains that auto-refresh BEFORE signing, noting the URL still pins the snapshot used at signing); clients that fetch a fresh URL immediately before each use and treat the advertised expiry as an upper bound — verify the actual client contract before accepting this.

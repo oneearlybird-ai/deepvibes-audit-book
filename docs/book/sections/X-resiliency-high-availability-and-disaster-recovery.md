@@ -53,3 +53,34 @@ SPOFs: Single NAT/queue/region/third-party dependencies with no documented fallb
 ## X:12 — Quotas: Service limits (Lambda concurrency, SES rate, connection caps) unmonitored until…
 
 Quotas: Service limits (Lambda concurrency, SES rate, connection caps) unmonitored until production hits the wall.
+
+## X:13 — A shared account-level vendor quota is the real ceiling for several unrelated capabilities, so exhausting it anywhere takes them all down at once
+
+**Statement.** Multiple independent capabilities — an authentication factor, transactional customer
+notifications, internal operational alerts — are delivered through one vendor channel governed by a
+single account-scoped quota (a monthly spend cap, a daily send allowance, a shared rate ceiling).
+Per-tenant metering and per-recipient rate limits exist and are correct, but they all draw from the
+same pool, so the pool, not the per-tenant limit, is the true bound. Any one consumer exhausting it
+— an attacker pumping the cheapest unauthenticated entry point, one tenant's legitimate burst, or
+ordinary aggregate growth — silently disables every other capability on that channel, including
+ones far more valuable than the consumer that drained it. Two properties turn this from a capacity
+issue into an incident with no fast exit: the failure is usually a soft vendor-side rejection that
+application code logs and swallows rather than surfacing, and the quota's self-service maximum
+often equals its current value, so raising it requires a vendor support request measured in hours
+or days rather than a config change.
+
+**Detect.** Enumerate every capability that reaches users through each external delivery channel and
+group them by the quota that actually governs them — read the LIVE quota from the vendor's API, not
+the IaC, since an unset limit means an account default applies. Where two or more capabilities share
+a pool, the finding is present unless a per-capability reservation exists; per-tenant limiters do not
+count, because they bound one tenant against the pool rather than the capabilities against each
+other. Divide the pool by realistic unit cost to get the true message/request budget and compare it
+against projected aggregate volume, not per-tenant volume. Then check remediation latency: compare
+the enforced value against the self-service maximum — equal values mean there is no fast lever
+during the incident. Finally, trace the exhaustion response through application code; a vendor
+rejection caught and logged without an alarm means the outage is invisible until users report it.
+
+**False positives.** Channels carrying exactly one capability, where exhaustion degrades only the
+consumer that caused it; quotas with vendor-side per-purpose reservations or separate sub-accounts
+per capability; pools whose headroom over projected peak is large and explicitly monitored with an
+alarm at a fraction of the limit.

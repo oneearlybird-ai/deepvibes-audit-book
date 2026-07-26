@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 659,
+ "rule_count": 665,
  "sections": [
   {
    "id": "A",
@@ -1063,7 +1063,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "K:1",
@@ -1156,6 +1156,10 @@
     {
      "id": "K:23",
      "title": "Identity teardown clears a hand-maintained list of persisted keys, so every key introduced later survives sign-out by default"
+    },
+    {
+     "id": "K:24",
+     "title": "Failure with no rendering: failed loads read as empty, failed actions read as success"
     }
    ]
   },
@@ -2562,7 +2566,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 8,
+   "rule_count": 9,
    "rules": [
     {
      "id": "HH:1",
@@ -2595,6 +2599,10 @@
     {
      "id": "HH:8",
      "title": "ATS: App Transport Security exceptions permitting cleartext HTTP \"temporarily, for one e…"
+    },
+    {
+     "id": "HH:9",
+     "title": "Shared cross-platform module hardcodes the platform or origin discriminator"
     }
    ]
   },
@@ -2672,7 +2680,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 16,
+   "rule_count": 18,
    "rules": [
     {
      "id": "JJ:1",
@@ -2737,6 +2745,14 @@
     {
      "id": "JJ:16",
      "title": "Activation completes while a hard runtime gate guarantees first use fails"
+    },
+    {
+     "id": "JJ:17",
+     "title": "Client declares a value vocabulary the server never accepts, and no affordance for what it does emit"
+    },
+    {
+     "id": "JJ:18",
+     "title": "Two write surfaces for one concept, where the store that governs behavior is not the one that governs what the system says"
     }
    ]
   },
@@ -2806,7 +2822,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "LL:1",
@@ -2859,6 +2875,10 @@
     {
      "id": "LL:13",
      "title": "A11y: gesture-only custom controls, and platform-twin fixes applied to one target only"
+    },
+    {
+     "id": "LL:14",
+     "title": "`async let` siblings that can complete before the parent suspends"
     }
    ]
   },
@@ -2924,7 +2944,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "NN:1",
@@ -2993,6 +3013,10 @@
     {
      "id": "NN:17",
      "title": "Remediation verified by reading the committed diff and closed without confirming the change reached the running system"
+    },
+    {
+     "id": "NN:18",
+     "title": "Golden captures that are content-free, or invariant across the axis they claim to test"
     }
    ]
   },

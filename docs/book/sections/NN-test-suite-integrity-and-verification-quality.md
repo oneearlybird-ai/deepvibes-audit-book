@@ -309,3 +309,28 @@ when something breaks.
 check) with no runtime observable; environments where the close is explicitly scoped to the
 repository and a separate deployment record tracks the rollout; changes deployed through a pipeline
 whose success is itself recorded on the finding.
+
+## NN:18 — Golden captures that are content-free, or invariant across the axis they claim to test
+
+**Statement.** A snapshot, screenshot, or golden-file suite reports green while its artifacts capture
+nothing, or capture the same thing for every variant. Two shapes recur. The capture is structurally
+empty: the subject was rendered without a real layout pass, so the artifact holds only a background or
+container and none of the elements the test is named for — a large file that reads as coverage of a
+surface never observed. Or the variants do not vary: the axis under test (theme, locale, size class,
+feature flag) is read from shared mutable ambient state instead of being pinned per case, so the
+baselines are byte-identical and the variant case cannot fail. Either way the comparison passes by
+construction. A non-deterministic subject — a looping animation, a live clock — compounds both, because
+any genuine capture then flakes, which pressures the team toward a looser comparison rather than a
+fixed subject.
+
+**Detect.** Inspect the artifacts, not the test names. Hash the baselines for variants that must differ:
+identical hashes across a theme or locale pair prove the axis is unpinned. Add a rendered-content guard
+that fails when a capture is flat or near-uniform, so the degenerate case cannot silently return. Verify
+the subject is laid out in a real container before capture, that the axis is injected per case rather
+than read from shared storage, and that animations and clocks are frozen. Confirm the framework is
+actually linked into the test target and that the suite has ever run — an unlinked suite reports nothing
+and blocks nothing.
+
+**False positives.** Variants that legitimately render identically on the axis under test, provided the
+test asserts that equivalence deliberately rather than inheriting it; small golden files whose content
+is a single reviewed value.

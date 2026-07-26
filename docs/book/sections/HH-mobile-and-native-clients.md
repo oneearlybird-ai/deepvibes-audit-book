@@ -37,3 +37,21 @@ WebViews: Remote content loaded in WebViews with JS bridges exposed to arbitrary
 ## HH:8 — ATS: App Transport Security exceptions permitting cleartext HTTP "temporarily, for one e…
 
 ATS: App Transport Security exceptions permitting cleartext HTTP "temporarily, for one endpoint."
+
+## HH:9 — Shared cross-platform module hardcodes the platform or origin discriminator
+
+**Statement.** Code shared across several platform targets stamps a constant identifying the client —
+attribution source, user-agent, device class, analytics channel, telemetry origin — chosen back when
+the module served one platform. Every other target inherits the wrong value. Nothing fails: the write
+succeeds, the field validates, and the record is silently miscategorized wherever it is later grouped,
+filtered, or reported. The defect surfaces as a quietly wrong dashboard rather than an error, so it can
+persist for as long as nobody questions the breakdown.
+
+**Detect.** Grep shared modules for literal platform and client identifiers, and trace each to the set
+of targets that compile it. Any such literal living in shared code — rather than in per-target
+configuration or behind a compile-time platform condition — is the finding. Audit the downstream
+consumers too: a value that has been wrong for a while is already embedded in stored records and
+historical aggregates, so the fix carries a data-correction question with it.
+
+**False positives.** Constants naming the shared module or SDK itself rather than the host platform;
+identifiers genuinely owned by one target, in code compiled only into that target.

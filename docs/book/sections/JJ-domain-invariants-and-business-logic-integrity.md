@@ -213,3 +213,41 @@ match on a computed liveness predicate rather than status equality.
 **Detect.** Enumerate the runtime admission gates on the core action (billing/entitlement checks, required-data lookups, capability flags) and walk every creation/onboarding flow: for each gate, name the flow step that satisfies it. A gate with no satisfying step — or a step whose validation returns unconditionally true / whose skip needs no acknowledgment — is the finding. Test the literal first-use scenario a new user performs (call the number, hit the endpoint, open the feature) against a freshly created resource.
 
 **False positives.** Deliberate pay-first or approve-first products where the flow itself blocks completion until the gate is satisfied (the gate IS a flow step); sandbox/preview modes that explicitly exercise the core function pre-activation; enterprise flows where a named human approval step is the documented gate.
+
+## JJ:17 — Client declares a value vocabulary the server never accepts, and no affordance for what it does emit
+
+**Statement.** A client declares the status or enum set for a shared domain object independently of the
+server's validated set, and the two diverge in both directions: the client can advance a record to a
+value the validator rejects — the write fails at the boundary, usually as an opaque 4xx — and the
+client has no state, filter, or action for values the server legitimately produces, leaving those
+records unreachable or misrendered. Because each client re-declares the set, the same divergence
+recurs independently in every client rather than being fixed once.
+
+**Detect.** Diff each client's declared set against the server's authoritative validator — the
+accepted-values list in the handler or schema, never the documentation. Check both directions: values
+the client can emit that the validator rejects, and values the validator emits that no client branch
+handles. When one client is corrected, immediately check every sibling client for the identical
+divergence. Keep display labels separate from wire values, so renaming a label can never silently mint
+a new wire value.
+
+**False positives.** Deliberately narrowed client subsets that reject unknown values at the decode
+boundary with a clear error; display-only labels mapped from an authoritative wire value.
+
+## JJ:18 — Two write surfaces for one concept, where the store that governs behavior is not the one that governs what the system says
+
+**Statement.** One user-facing concept is editable from two surfaces that persist to two different
+stores, with nothing synchronizing them. One copy drives actual behavior — routing, availability,
+enforcement, scheduling — while the other feeds only what the system *states*: generated prose, a
+summary panel, an assistant's script. Editing the wrong surface makes the product assert one thing and
+do another, and no layer errors: every write succeeds, each store is internally consistent, and only
+someone comparing the promise against the outcome can detect it.
+
+**Detect.** For each concept a user can edit, enumerate every write path and the store it lands in;
+more than one store for one concept is the finding unless a synchronizer is named and tested. Then
+classify the stores by consumer — which does the enforcement or decision path read, and which feeds
+generated text or display? Divergent consumers with independent editors is the high-severity case.
+Retire the redundant editor and point it at the governing store in the same change; do not add a sync
+job to keep both alive.
+
+**False positives.** A deliberate cache or projection with a tested, monitored synchronizer and a named
+source of truth; stores holding genuinely different concepts that merely share a label in the UI.

@@ -177,3 +177,24 @@ sections.
 **Detect.** For every DragGesture/onTapGesture on a drawn shape (not a Button/Slider), require a paired accessibilityElement plus accessibilityAdjustableAction/accessibilityAction providing equivalent operation. When an a11y fix lands, grep the OTHER platform target for the twin view (same scrubber/chart pattern) and verify the same treatment.
 
 **False positives.** Purely decorative/read-only visualizations with an equivalent accessible data representation adjacent; controls where an alternate accessible control (buttons) provides the same operation.
+
+## LL:14 — `async let` siblings that can complete before the parent suspends
+
+**Statement.** Sibling `async let` bindings whose children can finish near-instantly — a stubbed or
+cached transport, an in-memory hit, a synchronous early return — have aborted the task allocator at
+runtime (`swift_task_dealloc` fatal error, process abort) instead of returning normally. The hazard is
+timing-dependent, which inverts the usual reproduction pattern: it fires deterministically behind a
+fast or mocked transport and stays latent against a real network. The crash therefore appears first in
+fixture-backed tests, in CI, or on fast connections, and is absent in ordinary development — so it is
+easily misread as a broken test harness.
+
+**Detect.** Find `async let` sites with two or more siblings awaited together, then ask what the
+fastest possible completion is for each child: a mocked protocol handler, a cache hit, or an early
+return all make instant completion reachable. Prefer explicitly-managed child `Task`s awaited through
+`.value`, cancelling the siblings on throw to preserve structured-concurrency semantics. Exercise the
+cold-start path specifically against a stubbed transport — a crash that reproduces only there is this
+mechanism, not a fixture defect.
+
+**False positives.** A single `async let` awaited immediately; children that always perform real I/O
+with no stub or cache path; a toolchain where the fault is verified fixed — confirm against the runtime
+actually shipping, not the newest available.

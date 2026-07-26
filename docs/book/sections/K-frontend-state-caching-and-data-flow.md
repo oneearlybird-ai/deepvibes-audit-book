@@ -177,3 +177,22 @@ disable/hide ranges a lane cannot honor.
 **Detect.** Enumerate every write to durable client storage across the application — not the teardown list — and diff that set against the keys the teardown removes; anything written but never removed is the finding, and the size of the difference measures how long the list has been drifting. Prefer the structural question to the diff: are keys defined as free string literals at their point of use (drift is then guaranteed) or through a single registry the teardown consumes (drift is then impossible)? Read the teardown's own comment and compare its promise against its implementation, since the gap between them is what defeated the last review. Check every other identity boundary that reuses the same list. Finally, establish whether the corrective authoritative read is mandatory or best-effort — a best-effort read means the stale state has no bounded lifetime, which is the difference between a flash and a session.
 
 **False positives.** Keys holding no per-identity information — theme, locale, layout width, this-device install prompts — which are correctly preserved across sign-out; storage partitioned per identity by construction, where the key embeds the subject identifier or the whole area is scoped and dropped as a unit; teardowns that clear the entire storage area and enumerate only an explicit keep-list, which drift in the safe direction.
+
+## K:24 — Failure with no rendering: failed loads read as empty, failed actions read as success
+
+**Statement.** A surface consumes fetched data as `value ?? []` — or reads only the data field of a
+load state — so a failed request paints the same screen as a genuinely empty result. The user is told
+there is nothing, rather than that nothing could be fetched. The write-side twin discards the error
+from a mutation (`try?`, an empty catch, an unchecked result), leaving the prior or optimistic UI
+standing so a failed save, delete, or toggle reads as success. Both are silent: no error surface, no
+retry affordance, and nothing an operator can see afterward.
+
+**Detect.** For each list or detail surface, trace whether the render branches on the load state's
+error case at all — not merely on emptiness. A view that never references the error case cannot display
+one. Grep coalescing at render sites (`?? []`, `?? 0`, `.data ?? default`) and error-swallowing at
+action sites (`try?`, `catch {}`, discarded results). Sweep siblings in the same change: this defect
+arrives per screen, so one platform or tab is usually already correct while the rest are not.
+
+**False positives.** Surfaces deliberately showing cached last-known-good data behind a staleness
+indicator; fire-and-forget telemetry whose failure has no user consequence — confirm it is metered
+somewhere.

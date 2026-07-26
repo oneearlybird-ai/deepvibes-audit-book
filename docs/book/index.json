@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 678,
+ "rule_count": 683,
  "sections": [
   {
    "id": "A",
@@ -913,7 +913,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "I:1",
@@ -1002,6 +1002,10 @@
     {
      "id": "I:22",
      "title": "Identity-dependent chrome resolved client-side on a statically-cached page, painting a status placeholder as the first frame"
+    },
+    {
+     "id": "I:23",
+     "title": "Post-hydration guard chains serialize independent bootstrap fetches the server could have resolved in parallel"
     }
    ]
   },
@@ -1010,7 +1014,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 12,
+   "rule_count": 14,
    "rules": [
     {
      "id": "J:1",
@@ -1059,6 +1063,14 @@
     {
      "id": "J:12",
      "title": "A layout-level scroll or focus reset runs unconditionally on mount and defeats the browser's own fragment navigation"
+    },
+    {
+     "id": "J:13",
+     "title": "The route-protection allowlist is hand-maintained with no mechanical cross-check against the route set"
+    },
+    {
+     "id": "J:14",
+     "title": "One feature's sibling routes guard inconsistently — the unguarded sibling serves the feature with its backing absent"
     }
    ]
   },
@@ -1172,7 +1184,7 @@
    "title": "Frontend: Browser Security Surfaces",
    "group": "frontend",
    "file": "sections/L-frontend-browser-security-surfaces.md",
-   "rule_count": 19,
+   "rule_count": 21,
    "rules": [
     {
      "id": "L:1",
@@ -1249,6 +1261,14 @@
     {
      "id": "L:19",
      "title": "HSTS: transport pinning scoped to the apex while session cookies are parent-domain scoped"
+    },
+    {
+     "id": "L:20",
+     "title": "A route-class-keyed CSP branch hands the per-request-nonce policy to a statically prerendered page, which then never hydrates"
+    },
+    {
+     "id": "L:21",
+     "title": "The OAuth popup's return URL is pinned to one origin while its opener lives on several, so the completion signal never delivers"
     }
    ]
   },

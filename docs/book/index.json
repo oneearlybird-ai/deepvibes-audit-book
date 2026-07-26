@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 666,
+ "rule_count": 671,
  "sections": [
   {
    "id": "A",
@@ -743,7 +743,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "G:1",
@@ -828,6 +828,10 @@
     {
      "id": "G:21",
      "title": "Custom config-compliance rule calls the resource API for the changed resource without handling deletion notifications"
+    },
+    {
+     "id": "G:22",
+     "title": "Alarm bound to an opt-in metric family that was never enabled on the watched resource"
     }
    ]
   },
@@ -1574,7 +1578,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "R:1",
@@ -1619,6 +1623,10 @@
     {
      "id": "R:11",
      "title": "Concurrency: 429/concurrency-limit responses unhandled — no queueing, retry budget, or d…"
+    },
+    {
+     "id": "R:12",
+     "title": "Per-tool input overrides validate against the LIVE tool schema - config cannot precede the code deploy"
     }
    ]
   },
@@ -2321,7 +2329,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "CC:1",
@@ -2370,6 +2378,10 @@
     {
      "id": "CC:12",
      "title": "Two IaC stacks each declare the whole of a singleton resource-policy attribute, so every apply silently reverts the other"
+    },
+    {
+     "id": "CC:13",
+     "title": "Provider-populated default attribute omitted from IaC - the permanent revert flap"
     }
    ]
   },
@@ -2378,7 +2390,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 13,
+   "rule_count": 15,
    "rules": [
     {
      "id": "DD:1",
@@ -2431,6 +2443,14 @@
     {
      "id": "DD:13",
      "title": "The central contract registers whole classes of identifier that its client library exposes no accessor for, so those classes can only be resolved from the environment"
+    },
+    {
+     "id": "DD:14",
+     "title": "Compatibility floor declared in the config document but read from the environment, with no step propagating one into the other"
+    },
+    {
+     "id": "DD:15",
+     "title": "Auto-rollback monitors bound to alarms that can lose data - idle-period config deploys roll back on nothing"
     }
    ]
   },

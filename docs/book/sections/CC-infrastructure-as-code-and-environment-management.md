@@ -104,3 +104,29 @@ replacing the document; one stack declaring the resource while the other only re
 source without writing any policy; deliberate hand-off where the inline attribute is paired with
 `lifecycle { ignore_changes = [policy] }` so ownership is unambiguous (verify the ignore is actually
 present, and note that this masks drift per CC:4).
+
+## CC:13 - Provider-populated default attribute omitted from IaC - the permanent revert flap
+
+**Statement.** Cloud services periodically start auto-populating a new attribute on existing
+resources, usually a security tightening, with a service-side default. IaC written before the
+attribute existed omits it; from that day the provider reads the live value, compares it to the
+declared absence, and every apply "reverts" the attribute to empty - which the service re-adds
+minutes later. The plan permanently shows a phantom change on that resource: every apply churns it,
+reviewers learn to skim past the familiar diff (masking real changes to the same resource), automated
+drift detection cries wolf, and in the window after each apply the - typically protective - default
+is actually stripped from the live resource until the service restores it. The fix is one line:
+declare the service default (or the deliberately chosen value) so declared state equals live state
+and the flap disappears.
+
+**Detect.** Run two plans some minutes apart with no intervening code change: an attribute diff that
+reappears both times on the same resource is the flap - real one-shot drift does not come back after
+an apply. Confirm by inspecting the live resource between applies and watching the service re-add
+the value. Then check the resource block in code: the attribute entirely undeclared (not set to a
+conflicting value) completes the signature. Provider changelogs and service release notes usually
+name the attribute.
+
+**False positives.** Genuine drift from a console edit - reverts once and stays reverted; an
+organization that deliberately wants a value different from the service default - declaring that
+value equally ends the flap, so the finding is only the omission, never the preference;
+lifecycle-ignore masking of the attribute, which silences the plan while abandoning the field - that
+is its own defect (CC:4), not a fix for this one.

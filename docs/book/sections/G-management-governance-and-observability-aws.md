@@ -177,3 +177,32 @@ service - resources with a stale verdict and no recent evaluation timestamp.
 resources themselves and never receive per-resource deletion notifications; handlers that already
 catch not-found and submit a not-applicable verdict; evaluators whose scope legitimately excludes the
 resource type carrying the deletions.
+
+## G:22 - Alarm bound to an opt-in metric family that was never enabled on the watched resource
+
+**Statement.** Several cloud metric families are opt-in per resource - autoscaling-group group
+metrics, per-instance detailed monitoring, container/cluster insights: the resource exists, the
+alarm's namespace and dimension names are exactly right, but the service publishes nothing for that
+resource until collection is explicitly enabled on it. An alarm written against such a family passes
+every name-level review and every "does the resource exist" check, yet can never evaluate real data.
+With missing data treated as breaching it latches ALARM permanently the moment it is created - pages
+once, then never transitions again, so the page is dismissed as noise and the alarm is mentally
+written off. With missing data treated as missing it sits INSUFFICIENT_DATA forever. Either way the
+alarm cannot signal the condition it was written for while dashboards and coverage reviews count it
+as protection. This is distinct from alarms whose dimensions reference nonexistent resources (G:18):
+here everything is spelled correctly - the telemetry is simply switched off at the source, and the
+fix is one enablement attribute on the watched resource, not a rewrite of the alarm.
+
+**Detect.** For every alarm on a namespace with opt-in families, read the watched RESOURCE's
+enablement state live (e.g. the scaling group's enabled-metrics list) instead of trusting that the
+metric name looks right. Treat an alarm that has never left its birth state - ALARM or
+INSUFFICIENT_DATA since creation with zero datapoints in the underlying series - as this defect
+until proven otherwise. Cross-check the IaC: the alarm resource present while the enablement
+attribute is absent from the watched resource's declaration is the code-side signature, and the fix
+must land on the resource, in the same change set that relies on the alarm.
+
+**False positives.** Alarms deliberately documented as enablement tripwires ("this fires until
+collection is turned on") - rare and must be written down; metric-math alarms whose missing member
+is declared optional; families that emit unconditionally for the resource class (load-balancer
+request counts, queue depth), where absence of data genuinely means absence of the resource's
+activity.

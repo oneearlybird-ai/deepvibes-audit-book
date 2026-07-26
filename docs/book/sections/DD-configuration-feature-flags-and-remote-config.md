@@ -180,3 +180,66 @@ inventory before treating the data as trustworthy.
 infrastructure pipeline rather than by runtime code; identifiers genuinely scoped to a deployment
 rather than to the contract (region, log level, concurrency tunables); estates where a documented
 adapter already resolves the section through a different, verified path.
+
+## DD:14 — Compatibility floor declared in the config document but read from the environment, with no step propagating one into the other
+
+**Statement.** A client of a versioned remote configuration implements a compatibility gate: it
+refuses to start if the served document is older than the minimum version its code requires. The
+floor is parameterised rather than hardcoded — read from an environment variable with a permissive
+default so it can be raised per consumer — and the config document itself dutifully records the
+required floor for every consumer, so the registry reads as though the mechanism is fully operated.
+Nothing propagates the declared value into the deployment: the infrastructure templates that build
+each consumer's environment never set the variable, so every consumer runs at the permissive default
+and the gate passes against any document new enough to satisfy a floor nobody has raised in years.
+The mechanism is complete in three places and connected in none, which is why it survives review —
+the client has the check, the document has the value, and the only missing piece is a propagation
+step that no artifact is obviously responsible for. The damage appears when a client is shipped that
+depends on a newly added section: instead of refusing to start with an explicit version error, it
+starts happily against the older document and fails later, deep inside a request path, with an
+error naming a missing key rather than a stale contract. Deployment ordering silently becomes
+load-bearing — the config must ship before any consumer that needs it — while the guard designed to
+make ordering irrelevant sits inert.
+
+**Detect.** Establish the floor three times and compare: the default compiled into the client, the
+value the configuration document declares for each consumer, and the value actually present in the
+running consumer's environment (read it from the live platform, not the templates). Divergence
+between the second and third is the finding, and a floor still sitting at its original default while
+the document has advanced many versions is the signature. Then test the consequence directly: list
+the config sections the current client code dereferences and check each against the document version
+actually being served, since any section newer than the served version is a latent runtime failure
+the gate should have caught at load. Finally, look for the propagation step by name — a template
+loop, a generator, a deploy task that reads the declared value — and if none exists, the connection
+was never built rather than broken.
+
+**False positives.** Single-consumer deployments where the compiled default IS the intended floor and
+the document's per-consumer field is documentation only; clients that additionally assert the presence
+of every section they use at load, making the version number redundant; estates where the config
+plane is guaranteed to deploy before consumers by a pipeline dependency that is itself verified.
+
+## DD:15 - Auto-rollback monitors bound to alarms that can lose data - idle-period config deploys roll back on nothing
+
+**Statement.** Config-deployment services with alarm-driven rollback fail closed on monitor health:
+a monitor whose alarm reports insufficient data during the deploy or bake window is treated as "in
+alarm" and the deployment rolls back. Alarms on request-driven metrics with missing data treated as
+missing oscillate between OK and INSUFFICIENT_DATA with ambient traffic, so at quiet hours - or in a
+pre-launch environment with no traffic at all - config deployments roll back nondeterministically.
+The safety rail becomes the outage of the config pipeline, and each rollback is misread as a config
+defect when the true cause is monitor eligibility. The same fail-closed posture applies to the role
+the deployment service assumes to read the monitors: an over-conditioned trust policy (a condition
+key the service does not send) fails the deployment within seconds of start. A monitor is eligible
+only if it is structurally unable to lose data: missing data treated as not-breaching, or a metric
+that emits continuously for as long as the watched resource exists, independent of traffic.
+
+**Detect.** List the environment's rollback monitors and for each read treat-missing-data plus the
+metric's emission model (request-driven vs continuous). Pull each alarm's state history across a
+quiet day and look for OK to INSUFFICIENT_DATA transitions with "datapoint was unknown" reasons -
+oscillation is the disqualifier. Read the deployment event log for rollbacks whose named alarms show
+NO state transition at the rollback timestamp: that is the insufficient-data signature, not a real
+alert. For the monitor role, verify the trust policy carries only condition keys the service
+actually sends - a live deployment that dies in seconds citing inability to assume the monitor role,
+while every monitor alarm is healthy, is the trust-condition signature.
+
+**False positives.** Monitors on continuous metrics with treat=missing that cannot lose data in
+practice while the resource exists; environments that deliberately accept idle-hour deploy freezes
+as a conservative posture - only with that trade-off written down; genuine mid-bake alerts where the
+alarm really transitioned to ALARM on real datapoints - that is the rail working, not this defect.

@@ -53,3 +53,11 @@ Identifiers: Guessable sequential tenant/workspace IDs doubling as authorization
 ## S:12 — Analytics: Cross-tenant aggregate reporting computed without anonymization thresholds —…
 
 Analytics: Cross-tenant aggregate reporting computed without anonymization thresholds — small-N tenants identifiable in "anonymous" stats.
+
+## S:13 — Caller-controlled value concatenated into a delimited composite key forges the segments that follow it
+
+**Statement.** A composite sort/range key is built by string-joining segments with a delimiter (`ENTITY#{id}#{channel}#{purpose}#{timestamp}`) from a value the caller supplies, with no rejection or escaping of the delimiter inside that value. A caller who embeds the delimiter forges every segment after it: the stored row lands under a prefix the validated fields never authorized, and — where readers select the newest row by descending key order — a crafted trailing timestamp segment makes the forged row permanently win that read. Every field-level validator still passes, because none of them examines the key grammar; the type check that guards the segment (`typeof id === 'string'`) is orthogonal to the injection.
+
+**Detect.** List every composite-key builder and mark which segments come from request input. For each, read what the READER does with the key: `begins_with` prefix queries and descending-order `Limit: 1` reads are the amplifiers — a forged row need only share the prefix and sort above the genuine ones. Confirm the writer constrains the segment's charset rather than just its type. Then check the supersede path (revoke, close, cancel): if it rebuilds the key from the same unvalidated input, it writes a correctly-dated row that sorts BELOW the forgery, so the forged state can never be retracted.
+
+**False positives.** Builders whose caller-supplied segments are server-minted opaque ids (UUID/ULID) validated against a charset excluding the delimiter; keys whose readers select by exact match rather than by prefix or ordering; delimiters that cannot occur in the segment's validated format.

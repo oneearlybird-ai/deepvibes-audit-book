@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 673,
+ "rule_count": 678,
  "sections": [
   {
    "id": "A",
@@ -1635,7 +1635,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "S:1",
@@ -1684,6 +1684,10 @@
     {
      "id": "S:12",
      "title": "Analytics: Cross-tenant aggregate reporting computed without anonymization thresholds —…"
+    },
+    {
+     "id": "S:13",
+     "title": "Caller-controlled value concatenated into a delimited composite key forges the segments that follow it"
     }
    ]
   },
@@ -1692,7 +1696,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "T:1",
@@ -1785,6 +1789,10 @@
     {
      "id": "T:23",
      "title": "Verification gate conditioned on optional configuration silently degrades to the weak factor"
+    },
+    {
+     "id": "T:24",
+     "title": "Delegated-auth token exchange routed by callback-supplied data, validated on scheme rather than host"
     }
    ]
   },
@@ -1963,7 +1971,7 @@
    "title": "Advanced API Security, Management & Rate Limiting",
    "group": "saas-core",
    "file": "sections/W-advanced-api-security-management-and-rate-limiting.md",
-   "rule_count": 17,
+   "rule_count": 19,
    "rules": [
     {
      "id": "W:1",
@@ -2032,6 +2040,14 @@
     {
      "id": "W:17",
      "title": "Generated or templated API contract edited by replacement, silently retiring live routes, with no gate comparing the contract's route set to the deployed API"
+    },
+    {
+     "id": "W:18",
+     "title": "Unauthenticated edge route proxies an unconstrained path segment into an internal-only service"
+    },
+    {
+     "id": "W:19",
+     "title": "Backtracking-prone regex inside a universal defensive transform, applied to unbounded input"
     }
    ]
   },
@@ -3057,11 +3073,15 @@
    "title": "Documentation & Comment Truthfulness",
    "group": "cross-cutting",
    "file": "sections/OO-documentation-and-comment-truthfulness.md",
-   "rule_count": 1,
+   "rule_count": 2,
    "rules": [
     {
      "id": "OO:1",
      "title": "Decision-bearing comments and headers contradict live wiring"
+    },
+    {
+     "id": "OO:2",
+     "title": "A fail-open branch justified in-comment by a compensating control that does not cover the same risk"
     }
    ]
   }

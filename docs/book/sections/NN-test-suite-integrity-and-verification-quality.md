@@ -334,3 +334,32 @@ and blocks nothing.
 **False positives.** Variants that legitimately render identically on the axis under test, provided the
 test asserts that equivalence deliberately rather than inheriting it; small golden files whose content
 is a single reviewed value.
+
+## NN:19 — The contract generator's hand-maintained sidecar makes freshly generated output wrong, and every consumer gate inherits it
+
+**Statement.** A generated contract (route manifest, endpoint catalog, event schema registry) is
+assembled from a machine-readable source of truth plus a hand-maintained sidecar list covering
+resources created outside that source — secondary IaC states, escape-hatch resources, cross-stack
+additions bolted onto a spec-managed surface. Adding a resource through the out-of-band path
+requires a human to remember the sidecar; nothing diffs the sidecar against the system that
+actually owns those resources. The generator then emits a complete-looking contract, and every
+downstream gate — in every consumer repo that vendors it — validates confidently against a
+contract that was wrong the moment it was generated. Consumers get legitimate calls flagged as
+dead (blocking real work at the gate) or removed resources kept alive (greenlighting dead calls).
+The defining property: this is invisible to snapshot-freshness checks, because regeneration is not
+stale — the freshly generated output itself omits live resources. The sidecar usually carries its
+own confession: a comment saying "when you add a route here, remember to add it there."
+
+**Detect.** Open the generator and identify every emitted entry whose provenance is a literal
+array or map in the generator source rather than the parsed source of truth. Diff the generated
+output against the live control plane for that resource class (the deployed gateway's route table,
+the broker's topic list, the registry's schema set — not the IaC files, which can themselves lag).
+Each side's extras are findings. Then ask what performs this diff automatically: if the answer is
+nothing, the sidecar drifts again after the hand-fix. An in-generator comment instructing humans to
+keep the list current is the tell that no gate exists.
+
+**False positives.** Resources deliberately excluded from the contract (internal-only,
+deprecated-pending-delete) are not drift when the generator names them as explicit exclusions —
+absence alone is never a documented exclusion. A sidecar that is itself generated from the owning
+IaC state is a different (acceptable) architecture, provided that generation runs in the same
+build as the primary parse.

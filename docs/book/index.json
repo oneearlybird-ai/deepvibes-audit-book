@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 665,
+ "rule_count": 666,
  "sections": [
   {
    "id": "A",
@@ -2944,7 +2944,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "NN:1",
@@ -3017,6 +3017,10 @@
     {
      "id": "NN:18",
      "title": "Golden captures that are content-free, or invariant across the axis they claim to test"
+    },
+    {
+     "id": "NN:19",
+     "title": "The contract generator's hand-maintained sidecar makes freshly generated output wrong, and every consumer gate inherits it"
     }
    ]
   },

@@ -251,3 +251,11 @@ job to keep both alive.
 
 **False positives.** A deliberate cache or projection with a tested, monitored synchronizer and a named
 source of truth; stores holding genuinely different concepts that merely share a label in the UI.
+
+## JJ:19 — A guard's query predicate is written against a key grammar the table never uses, so it always returns empty and the guard silently passes everything
+
+**Statement.** A safety guard decides by QUERYING for the thing it must block — a pending order, an existing booking, a prior consent — and the query's key predicate does not match the key grammar the writers actually use: it ranges a sort key over calendar dates while the live sort key is an opaque UUID, or begins_with a prefix the writer never emits, or reads a base table when the ordering lives on an index. The query is syntactically valid and the call succeeds, so nothing errors and no log fires; it simply returns zero items forever. Because "no rows found" is the guard's PASS condition, a control written to fail closed fails open on every invocation, for every tenant, from the day it shipped. A sibling implementation elsewhere in the codebase frequently has the query right, which is what makes the divergence invisible in review.
+
+**Detect.** Never read a guard's query in isolation — read it against the key builder the writers actually call, and against a real row. For each guard, name the exact sk/pk shape its predicate assumes, then find the module that mints that key (the shared key builder, the contract sk template) and diff the two. Where an index carries the ordering the guard needs, confirm the query names that index rather than the base table. Fastest live check: run the guard's own query against production and look for a result set that is empty when you know a matching row exists. Also compare against any sibling guard enforcing the same invariant on another plane — if two implementations disagree about the key shape, one of them is dead.
+
+**False positives.** Guards whose empty result is genuinely the common case and whose PASS is independently re-checked downstream; queries against a table whose key grammar the same commit also changes; predicates that look wrong but are satisfied by a denormalized attribute the writer really does stamp (verify the writer, not the reader's comment).

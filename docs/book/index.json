@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 683,
+ "rule_count": 686,
  "sections": [
   {
    "id": "A",
@@ -743,7 +743,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "G:1",
@@ -832,6 +832,10 @@
     {
      "id": "G:22",
      "title": "Alarm bound to an opt-in metric family that was never enabled on the watched resource"
+    },
+    {
+     "id": "G:23",
+     "title": "Detective alarm whose trigger datapoint an unauthenticated party can mint — pageable at will, and pinnable to suppress the real event"
     }
    ]
   },
@@ -2255,7 +2259,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "AA:1",
@@ -2312,6 +2316,10 @@
     {
      "id": "AA:14",
      "title": "The instruction set that drove an agent's customer-facing actions is not retained per interaction"
+    },
+    {
+     "id": "AA:15",
+     "title": "Untrusted text fenced into a prompt by a literal delimiter the untrusted text is free to emit — a forgeable boundary read as isolation"
     }
    ]
   },
@@ -2744,7 +2752,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "JJ:1",
@@ -2817,6 +2825,10 @@
     {
      "id": "JJ:18",
      "title": "Two write surfaces for one concept, where the store that governs behavior is not the one that governs what the system says"
+    },
+    {
+     "id": "JJ:19",
+     "title": "A guard's query predicate is written against a key grammar the table never uses, so it always returns empty and the guard silently passes everything"
     }
    ]
   },

@@ -206,3 +206,11 @@ collection is turned on") - rare and must be written down; metric-math alarms wh
 is declared optional; families that emit unconditionally for the resource class (load-balancer
 request counts, queue depth), where absence of data genuinely means absence of the resource's
 activity.
+
+## G:23 — Detective alarm whose trigger datapoint an unauthenticated party can mint — pageable at will, and pinnable to suppress the real event
+
+**Statement.** A detective alarm counts a signal emitted by a handler on an UNAUTHENTICATED endpoint, unconditionally, before any origin or signature check — so the datapoint the alarm exists to notice is one any anonymous caller can produce on demand. Two harms follow, and the second is the serious one. The obvious harm is nuisance paging. The severe harm is suppression: alarms notify on STATE TRANSITION, not on continued breach, so an attacker who keeps the metric above threshold holds the alarm in ALARM permanently, and the genuine event the control was built to catch then arrives with the alarm already firing and pages nobody. The control reads as healthy and loud right up until it matters.
+
+**Detect.** For every alarm, trace its metric back to the line that emits it and ask who can reach that line. Any metric filter over a log statement on a route with no authorizer, no signature verification, and no origin allowlist is attacker-mintable — check the route's live authorization type, not just the IaC. Then check the alarm's shape: a Sum/Count threshold with no corroborating dimension is both forgeable and pinnable. The tell that suppression is possible is a low threshold plus a short period plus notification only on transition, which is the CloudWatch default.
+
+**False positives.** Alarms whose emitting path is authenticated, signature-verified, or reachable only from a private network; alarms on infrastructure-emitted metrics the application cannot influence; alarms whose action is idempotent enrichment (a ticket, a dashboard annotation) rather than a page, where forged datapoints cost noise but suppress nothing.

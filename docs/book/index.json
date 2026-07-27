@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 687,
+ "rule_count": 693,
  "sections": [
   {
    "id": "A",
@@ -291,7 +291,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "C:1",
@@ -380,6 +380,10 @@
     {
      "id": "C:22",
      "title": "A permissive network rule is replaced by \"properly scoped\" rules that enumerate only some of the principals that were riding it"
+    },
+    {
+     "id": "C:23",
+     "title": "Listener forwards to an attached target group with zero registered or zero healthy targets"
     }
    ]
   },
@@ -509,7 +513,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 30,
+   "rule_count": 33,
    "rules": [
     {
      "id": "E:1",
@@ -630,6 +634,18 @@
     {
      "id": "E:30",
      "title": "Orchestrator promotes a downstream secret into workflow state, and execution-data logging persists it to history and logs"
+    },
+    {
+     "id": "E:31",
+     "title": "Deployed API route whose integration targets compute that no longer exists"
+    },
+    {
+     "id": "E:32",
+     "title": "API route target exists but lacks the gateway's invoke grant, so the gateway 5XXs before the function ever runs"
+    },
+    {
+     "id": "E:33",
+     "title": "Merge-only API deployment mode never deletes, so removed routes and empty resources accumulate as permanent live drift"
     }
    ]
   },
@@ -743,7 +759,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "G:1",
@@ -836,6 +852,10 @@
     {
      "id": "G:23",
      "title": "Detective alarm whose trigger datapoint an unauthenticated party can mint — pageable at will, and pinnable to suppress the real event"
+    },
+    {
+     "id": "G:24",
+     "title": "Decommissioned subsystem leaves running remains: parked services, black-holed fronts, and records nobody reaps"
     }
    ]
   },
@@ -2756,7 +2776,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "JJ:1",
@@ -2833,6 +2853,10 @@
     {
      "id": "JJ:19",
      "title": "A guard's query predicate is written against a key grammar the table never uses, so it always returns empty and the guard silently passes everything"
+    },
+    {
+     "id": "JJ:20",
+     "title": "Client call sites reference API routes the live surface no longer serves"
     }
    ]
   },

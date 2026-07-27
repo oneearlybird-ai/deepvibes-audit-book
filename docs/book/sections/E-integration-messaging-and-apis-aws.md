@@ -222,3 +222,75 @@ whole-state forwarding, which re-exposes every field the happy path carried.
 (account SIDs, public keys, resource ids); workflows with execution data logging disabled AND
 history access restricted to a break-glass role, where that restriction is verified; references to a
 secret (an ARN or a version id) rather than its material.
+
+## E:31 — Deployed API route whose integration targets compute that no longer exists
+
+**Statement.** A route on a deployed API — REST, HTTP, or WebSocket — carries an integration whose
+URI names a function or service that has since been deleted or renamed. The route remains fully
+routable: DNS resolves, the gateway accepts the request, auth runs, and then integration dispatch
+fails with a 5XX minted by the gateway itself. Because the target never executes, its own telemetry
+— invocations, errors, logs — stays at zero, so the standard "is anything wrong with this function"
+dashboards show a resource that looks merely idle. The pattern arises when compute is deleted out
+from under an API surface that nothing re-validates: the deletion succeeds because the platform does
+not reference-count integration URIs, and the API keeps advertising a contract it can no longer
+serve. Sibling mechanisms: out-of-IaC event targets after a rename (E:28) and dangling DNS (C:13) —
+this is the API-integration limb of the same family.
+
+**Detect.** Export every deployed API's routes WITH integrations (not the IaC's intent — the live
+export), parse each integration URI to its target identity, and join against the live inventory of
+that target type. Any route whose parsed target has no live counterpart is a confirmed hit — no
+traffic test needed; the config alone proves the 5XX. Cover v2/WebSocket APIs too: tooling that only
+models REST integrations misses them.
+
+**False positives.** Integrations that intentionally point at cross-account or cross-region targets
+your inventory does not include (resolve the target in ITS account before flagging); mock
+integrations (no target by design); routes behind a feature gate that the owner documents as
+awaiting a target that ships in the same change set.
+
+## E:32 — API route target exists but lacks the gateway's invoke grant, so the gateway 5XXs before the function ever runs
+
+**Statement.** A route's integration points at a real, healthy function — but the function's
+resource policy does not (or no longer does) grant the gateway service permission to invoke it for
+this API. Every call fails inside the gateway with a 5XX and a permissions error only visible in
+gateway-side logs; the function is never invoked, so its metrics and logs remain empty. The trap has
+two halves. First, the failure is invisible from the function's side — zero invocations reads as
+"unused", which is precisely the opposite of the truth ("every use fails"). Second, the grant and
+the function have different lifecycles: deleting and recreating a function silently discards its
+resource policy while the route keeps pointing at the (new) function, so a rebuild or rename that
+"changed nothing" severs every route wired to it. Alias-qualified integrations sharpen it further:
+a grant on the unqualified function does not satisfy an alias-qualified invocation and vice versa,
+so a policy can exist and still not be the one the route needs.
+
+**Detect.** For every live route integration, fetch the target's resource policy for the exact
+qualifier the integration URI names (alias, version, or unqualified) and require a statement whose
+principal is the gateway service and whose source condition matches the fronting API's identity.
+Absence of a policy, absence of a gateway statement, or a source that names other APIs but not this
+one are all confirmed hits. Zero invocation counts on the target corroborate but never clear it —
+silence is the symptom, not the exoneration.
+
+**False positives.** Integrations that authenticate with an execution role on the integration
+itself (credentials-based invoke needs no resource policy — check the integration's credentials
+field first); targets invoked through a private link or service mesh where authorization is
+enforced by a different layer that you have verified actually grants the gateway.
+
+## E:33 — Merge-only API deployment mode never deletes, so removed routes and empty resources accumulate as permanent live drift
+
+**Statement.** The IaC deploys the API definition in a merge mode: present paths are created or
+updated, but paths absent from the source are never removed from the live API. Every route deletion
+in source silently becomes a no-op live — the deployed API is the union of every definition ever
+applied. Over time the live surface accretes ghost routes that still execute old handlers,
+method-less resource stubs left when a route family was retired, and an inventory that no longer
+matches any version of the source. IaC-vs-live diffing normalizes to "in sync" because the tool only
+asserts what should exist, not what should not. The residue is not cosmetic: ghost routes are
+reachable attack surface with whatever auth they last had, and they anchor drift baselines that grow
+monotonically.
+
+**Detect.** Read the deployment mode in the IaC (merge vs overwrite semantics). Then diff the live
+route inventory against the current source-of-truth definition in BOTH directions: source-minus-live
+shows unapplied intent, live-minus-source shows the accumulated ghosts. Method-less leaf resources
+in the live tree are the fossil record of merge-mode deletions and are hits on their own.
+
+**False positives.** Merge mode chosen deliberately to compose one API from multiple ownership
+boundaries — legitimate only when a compensating reaper (a job or verifier that enumerates and
+deletes live-minus-source residue) demonstrably exists and runs; routes intentionally live-managed
+outside IaC that are tracked by an explicit, shrinking baseline with a gate that blocks new drift.

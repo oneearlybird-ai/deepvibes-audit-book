@@ -118,3 +118,28 @@ this defect.
 **False positives.** Rules whose only riders are demonstrably decommissioned resources; changes where
 an equivalent path exists through another rule that the review verified; deliberate severance of
 access as the point of the change, documented as such.
+
+## C:23 — Listener forwards to an attached target group with zero registered or zero healthy targets
+
+**Statement.** A load balancer listener's forwarding action points at a target group that is
+attached and configured — health checks defined, ports set — but contains no registered targets at
+all, or none that pass health checks. The front door is fully open: DNS resolves to the balancer,
+the listener accepts the connection, and then the request black-holes (TCP hangs/resets on a network
+balancer; 503s on an application balancer). The common producers are backends scaled to zero and
+never scaled back (a parked service whose desired count went to zero while the balancer stayed up),
+deregistration during an incident that was never reversed, and auto-scaling groups detached from the
+target group during a migration. Because the balancer itself is healthy by every load-balancer
+metric that defaults onto dashboards, the emptiness persists silently — the failure only exists from
+the client's side.
+
+**Detect.** For every target group, fetch its registered-target set and health states, and join
+against listener rules to establish attachment — an EMPTY but ATTACHED group is the hit; an empty
+unattached group is mere debris. Cross-check the backing service's desired/running counts: a
+deliberate scale-to-zero behind a live listener is still a hit unless the listener is also disabled.
+Graph or inventory tooling that only models the balancer→target-group edge misses registration
+entirely — the target-health API is the only truth.
+
+**False positives.** Blue/green or failover groups that are empty by design in the passive color
+WHILE a routing policy verifiably keeps traffic off them; groups mid-deploy during instance refresh
+(re-check after the deploy window); scale-to-zero-with-wakeup architectures where a documented
+scale-up path triggers on demand and the listener's idle timeout accommodates it.

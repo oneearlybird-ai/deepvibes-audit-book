@@ -214,3 +214,29 @@ activity.
 **Detect.** For every alarm, trace its metric back to the line that emits it and ask who can reach that line. Any metric filter over a log statement on a route with no authorizer, no signature verification, and no origin allowlist is attacker-mintable — check the route's live authorization type, not just the IaC. Then check the alarm's shape: a Sum/Count threshold with no corroborating dimension is both forgeable and pinnable. The tell that suppression is possible is a low threshold plus a short period plus notification only on transition, which is the CloudWatch default.
 
 **False positives.** Alarms whose emitting path is authenticated, signature-verified, or reachable only from a private network; alarms on infrastructure-emitted metrics the application cannot influence; alarms whose action is idempotent enrichment (a ticket, a dashboard annotation) rather than a page, where forged datapoints cost noise but suppress nothing.
+
+## G:24 — Decommissioned subsystem leaves running remains: parked services, black-holed fronts, and records nobody reaps
+
+**Statement.** A subsystem is retired — its core compute deleted or its service scaled to zero — but
+decommissioning stops there. The rest of its estate keeps running: the load balancer and target
+group stay attached and listening (now black-holing), the container service sits ACTIVE at desired
+zero on a live cluster, DNS records keep resolving (sometimes to private addresses in public zones,
+or to nothing), certificates keep renewing, and API fronts keep advertising routes into the void.
+None of it is IaC-managed — retirement happened by console or by deleting only the piece someone
+remembered — so no plan ever shows the residue and no drift check owns it. The remains cost money,
+enlarge the attack surface with whatever auth they last had, confuse every inventory pass ("is this
+load-bearing?"), and poison tooling that assumes named resources are live intent. The signature is
+correlated debris under one naming family: an empty-but-attached target group, a desired=0 service,
+a dangling record, and a dead API front that all share a prefix.
+
+**Detect.** Cluster inventory by naming family and lifecycle signals: attached target groups with
+zero targets (C:23), services at desired=0 on live clusters, API routes integrating to missing
+compute (E:31), DNS records resolving to private or unallocated space, and certificates with no
+consuming endpoint. When two or more of these correlate under one name family, treat the family as
+a decommission-residue candidate and sweep EVERYTHING carrying the family name across every
+resource type before disposing. The disposal is a delete, not a repair — dead legacy gets deleted,
+not converted.
+
+**False positives.** Deliberate scale-to-zero architectures with a verified wake path; seasonal or
+blue/green capacity kept warm by documented intent; resources whose naming merely collides with a
+retired family (verify by creation date and references, not name alone).

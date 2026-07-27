@@ -259,3 +259,28 @@ source of truth; stores holding genuinely different concepts that merely share a
 **Detect.** Never read a guard's query in isolation — read it against the key builder the writers actually call, and against a real row. For each guard, name the exact sk/pk shape its predicate assumes, then find the module that mints that key (the shared key builder, the contract sk template) and diff the two. Where an index carries the ordering the guard needs, confirm the query names that index rather than the base table. Fastest live check: run the guard's own query against production and look for a result set that is empty when you know a matching row exists. Also compare against any sibling guard enforcing the same invariant on another plane — if two implementations disagree about the key shape, one of them is dead.
 
 **False positives.** Guards whose empty result is genuinely the common case and whose PASS is independently re-checked downstream; queries against a table whose key grammar the same commit also changes; predicates that look wrong but are satisfied by a denormalized attribute the writer really does stamp (verify the writer, not the reader's comment).
+
+## JJ:20 — Client call sites reference API routes the live surface no longer serves
+
+**Statement.** A client codebase composes requests to routes that do not exist on the deployed API —
+retired paths, moved paths, renamed methods, or routes that only ever existed on another host or
+API of the same platform. The client and server route inventories evolve independently, and no
+mechanical parity check joins them, so a server-side retirement leaves callers in place. Each
+stranded call site is a landmine that detonates only when a user walks that exact flow: the request
+draws a gateway-level 404/403 (often the gateway's unauthenticated-shape error, not the app's),
+the client surfaces a generic failure, and nothing server-side logs an application error. Debug
+or flag-gated surfaces rot first — they are exercised least — but the same mechanism strands
+production lanes whenever a contract migration moves N-1 of N callers (the missed caller class).
+
+**Detect.** Build the client's emitted route set mechanically: find the transport wrapper(s), then
+resolve every call site's method + path template (including proxy/rewrite layers that prepend or
+strip prefixes — resolve to the path the SERVER sees). Join against the live API's exported route
+inventory with positional parameter matching. Unmatched client calls are hits; classify by
+reachability (production lane vs flag-gated vs dead code) for severity. Do the join per host: a
+path that exists on a different API of the same product is still a miss on the host the client
+actually calls.
+
+**False positives.** Calls to third-party hosts (join only against your own surfaces); dynamically
+composed paths your resolution genuinely cannot evaluate (report unresolved, never guessed); routes
+served by an edge layer (CDN function, rewrite) that answers the path without origin routing —
+verify the edge actually handles it before clearing, and flag it as edge-served rather than clean.

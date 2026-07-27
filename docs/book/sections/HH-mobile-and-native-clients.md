@@ -55,3 +55,45 @@ historical aggregates, so the fix carries a data-correction question with it.
 
 **False positives.** Constants naming the shared module or SDK itself rather than the host platform;
 identifiers genuinely owned by one target, in code compiled only into that target.
+
+## HH:10 — Debug-only instrumentation guarded at the call site but linked in every configuration, so its private-API symbols ship in the store binary
+
+**Statement.** A development/QA harness — an in-process automation bridge, an inspector, a state
+server — is installed with the intent that it exists only in debug builds, and the *call sites*
+are correctly wrapped in the language's conditional-compilation directive. That guard is real but
+it removes **calls, not linkage**. The dependency is declared unconditionally in the project's
+link phase, or the guarded module depends on the instrumentation module with no configuration
+condition, so the release configuration still compiles and links the whole library. For anything
+whose runtime is name-based — Objective-C selectors, reflection metadata, exported symbol tables
+— the identifiers are then emitted into the shipped binary *whether or not any code path can
+reach them*, because they are string literals in a data section rather than call targets the
+linker can prove dead. Store review scans those sections, not the call graph, so an app whose
+source is provably free of private-API calls is rejected for private-API usage. The harness is
+usually the worst possible payload for this: touch synthesis, view-hierarchy inspection and
+state mutation are implemented *specifically* through the private APIs review prohibits, so a
+single unconditional link converts a QA convenience into a blocked release.
+
+The failure is durable rather than one-off because the instrumentation is typically installed by
+a generator or template, and the generated manifest often *documents* the guard it did not emit —
+a comment asserting a configuration-conditional dependency, and a CI invariant that inspects the
+built binary, neither of which exists in the artifact. The team then reads its own scaffolding as
+proof of safety (see NN:15, and the class of "a claim is not a guard" findings generally).
+
+**Detect.** Never reason from the call sites; read the link. Enumerate what the release
+configuration actually links: every product in the app target's link phase without a
+configuration filter, plus every dependency edge inside the package graph that carries no
+configuration condition — one unconditional edge anywhere in the transitive closure defeats every
+guard above it. Then stop arguing and inspect the artifact: build the release configuration and
+dump the binary's symbol table and string sections, grepping for the instrumentation's module
+name and for the specific private identifiers it is known to use. Absence of the module name is
+not sufficient on its own, since a renamed or vendored copy leaks the same selectors. Where the
+platform publishes the prohibited-API list, match against the list rather than a hand-kept
+subset. Make that inspection a merge-blocking gate on the release build — it is the only check
+that observes what actually ships, and the manifest's claim that such a gate exists is worth
+exactly nothing until you have run it and watched it fail on a dirty binary.
+
+**False positives.** Instrumentation genuinely excluded from the release configuration — verified
+by inspecting the release binary, not by reading the manifest. Test-only targets that are never
+part of the shipped bundle. Symbols that merely resemble private identifiers but belong to the
+app's own namespace; confirm against the platform's published list before filing. A separate
+debug-only application target, distinct from the shipped one, that links the harness deliberately.

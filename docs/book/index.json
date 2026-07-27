@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 686,
+ "rule_count": 687,
  "sections": [
   {
    "id": "A",
@@ -2638,7 +2638,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 9,
+   "rule_count": 10,
    "rules": [
     {
      "id": "HH:1",
@@ -2675,6 +2675,10 @@
     {
      "id": "HH:9",
      "title": "Shared cross-platform module hardcodes the platform or origin discriminator"
+    },
+    {
+     "id": "HH:10",
+     "title": "Debug-only instrumentation guarded at the call site but linked in every configuration, so its private-API symbols ship in the store binary"
     }
    ]
   },

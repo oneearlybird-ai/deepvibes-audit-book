@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 714,
+ "rule_count": 715,
  "sections": [
   {
    "id": "A",
@@ -3120,7 +3120,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "NN:1",
@@ -3209,6 +3209,10 @@
     {
      "id": "NN:22",
      "title": "Fence-store regeneration scoped narrower than the store — the update command silently discards the rest of the fence"
+    },
+    {
+     "id": "NN:23",
+     "title": "The fence was generated in a cleaner environment than the one that enforces it, so the generator sees less than the gate will"
     }
    ]
   },

@@ -438,3 +438,30 @@ whose entry count sawtooths across commits was being ping-ponged.
 
 **False positives.** Genuinely scope-partitioned stores (one file per module); update commands that
 merge; replace-semantics commands hard-pinned to the store's full domain.
+
+## NN:23 — The fence was generated in a cleaner environment than the one that enforces it, so the generator sees less than the gate will
+
+**Statement.** A baseline/suppression fence is regenerated in one working tree and enforced in
+another, and the analyzer's output is not a pure function of the source: it depends on environment
+state the two trees do not share — an initialized dependency or module cache, a lockfile, generated
+clients, a populated build directory. The regeneration therefore under-collects. Every finding the
+enforcement environment can resolve but the generation environment could not is missing from the
+fence, so the next gate run in the real environment reports a pile of "new" findings that are in
+fact the same frozen backlog, and the lane blocks on work nobody introduced. The failure is
+especially easy to walk into where the enforcement environment is a long-lived checkout that has run
+builds (and is therefore rich in caches) while regeneration happens in a fresh clone or an isolated
+agent workspace, which is exactly the setup that makes clean regeneration attractive. The inverse is
+equally possible and worse: generate in the rich environment, enforce in the clean one, and the fence
+carries entries that never match, hiding a rule that stopped firing.
+
+**Detect.** Determine whether the analyzer's findings depend on environment state by running it on
+the identical source in two trees — one freshly cloned, one that has run a build/init — and diffing
+the counts; any difference means the fence is environment-coupled. Then check where regeneration
+actually happens versus where the gate runs (CI container vs developer checkout vs isolated agent
+worktree). Prefer a regeneration path that refuses to run in an environment that cannot see what the
+gate sees, and that unions across every scope the gate is invoked with rather than trusting one
+broad scan to be a superset.
+
+**False positives.** Analyzers whose output is provably source-only (pure AST or text rules with no
+dependency resolution); pipelines that regenerate and enforce in the same ephemeral image; fences
+keyed on something coarser than the environment-sensitive detail.

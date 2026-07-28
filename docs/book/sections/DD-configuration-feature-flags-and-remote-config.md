@@ -270,3 +270,32 @@ from a hand-enumerated subset.
 not assumption); update params constructed from a complete live describe; fields deliberately left at
 defaults where the default is documented as the chosen value; immutable-at-update fields the API
 rejects rather than resets.
+
+## DD:17 — The self-healing drift loop is scoped to the spare pool, so the in-service members it exists to protect are the only ones it never repairs
+
+**Statement.** A fleet keeps its members on the current configuration through a reconciler: a
+scheduled inspect/repair pair that compares each member's stamped version against the code's current
+version and re-applies the generated configuration on mismatch. The loop enumerates its work from the
+POOL table — the inventory of pre-warmed, not-yet-assigned members — because that is where
+provisioning bookkeeping lives. Assignment then removes a member from that inventory (or the
+inventory only ever held spares), so the moment a member starts serving traffic it leaves the
+reconciler's field of view permanently. The result inverts the intent: idle spares are immaculately
+current while every member handling real requests is frozen at whatever generation it was stamped
+with on the day it was claimed. Because the reconciler reports success — it genuinely repaired every
+member it enumerated — dashboards and version scans look clean, and each new generated-config fix
+appears to roll out while silently reaching nobody who matters. The gap compounds: each release
+widens the delta between the in-service members' frozen configuration and the current generator, and
+the divergence is invisible until someone reads a live member's actual configuration.
+
+**Detect.** Find the reconciler's work enumeration and name the exact table/filter it scans, then
+diff that set against the authoritative list of ALL members (the identity provider's tenants, the
+account's roles, the live resource inventory) — members in the authoritative list but absent from the
+scan set are unreachable by the loop. Confirm on a live in-service member rather than in the pool:
+read its actual stamped configuration and compare against the current generator's output; a member
+whose stamp predates several generator releases proves the gap. Ask specifically whether ASSIGNMENT
+deletes the row the loop iterates.
+
+**False positives.** Fleets where assignment keeps the row and only flips a status the scan
+includes; a separate reconciler that covers assigned members (find it and check its schedule is
+enabled, not merely present); deployments where the generated configuration is re-applied on every
+request or boot, making the stamp advisory.

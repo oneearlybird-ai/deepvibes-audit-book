@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 698,
+ "rule_count": 704,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "A:1",
@@ -154,6 +154,10 @@
     {
      "id": "A:36",
      "title": "Handler implements the partial-batch-failure contract but the event source does not enable it, so reported failures are discarded and the records are lost"
+    },
+    {
+     "id": "A:37",
+     "title": "Function imports a bare specifier that only a layer resolves, and the layer is not attached — every invocation dies at module load"
     }
    ]
   },
@@ -658,7 +662,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 25,
+   "rule_count": 27,
    "rules": [
     {
      "id": "F:1",
@@ -759,6 +763,14 @@
     {
      "id": "F:25",
      "title": "Identity: User-pool password policy departs from the audited benchmark with no recorded acceptance — and a pool factory re-stamps it on every tenant"
+    },
+    {
+     "id": "F:26",
+     "title": "Grant names only the base resource ARN while the code reads through a secondary index, whose child ARN the grant never covers — every indexed read is denied"
+    },
+    {
+     "id": "F:27",
+     "title": "Provisioning principal granted the create action but not the post-create hardening calls the same code path makes, so every resource lands half-configured"
     }
    ]
   },
@@ -767,7 +779,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "G:1",
@@ -868,6 +880,10 @@
     {
      "id": "G:25",
      "title": "Compliance findings evaluated across a configuration-recorder gap are testimony about the past, not the present"
+    },
+    {
+     "id": "G:26",
+     "title": "Dead-letter queue given a depth alarm but no drain owner or redrive procedure — the alarm latches on permanently and the messages are never recovered"
     }
    ]
   },
@@ -2547,7 +2563,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 10,
+   "rule_count": 11,
    "rules": [
     {
      "id": "EE:1",
@@ -2588,6 +2604,10 @@
     {
      "id": "EE:10",
      "title": "Subscriptions: per-subscription transient errors unhandled on a live connection"
+    },
+    {
+     "id": "EE:11",
+     "title": "Graceful-completion branch guarded by a conjunction of runtime flags, so a session that finished successfully falls through to the abandonment path and the user gets the failure experience"
     }
    ]
   },
@@ -3068,7 +3088,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "NN:1",
@@ -3145,6 +3165,10 @@
     {
      "id": "NN:19",
      "title": "The contract generator's hand-maintained sidecar makes freshly generated output wrong, and every consumer gate inherits it"
+    },
+    {
+     "id": "NN:20",
+     "title": "Remediation deploys and still fails, differently, at the same boundary — the finding closes on a landed diff and green gates because nothing re-reads the live signal that opened it"
     }
    ]
   },

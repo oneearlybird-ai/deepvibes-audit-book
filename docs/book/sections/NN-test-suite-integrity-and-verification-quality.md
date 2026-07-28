@@ -363,3 +363,40 @@ deprecated-pending-delete) are not drift when the generator names them as explic
 absence alone is never a documented exclusion. A sidecar that is itself generated from the owning
 IaC state is a different (acceptable) architecture, provided that generation runs in the same
 build as the primary parse.
+
+## NN:20 — Remediation deploys and still fails, differently, at the same boundary — the finding closes on a landed diff and green gates because nothing re-reads the live signal that opened it
+
+**Statement.** A control is found dead because its calls to an external service fail; the fix adds a
+new branch that handles the previously-unhandled case and calls the SAME service to report the
+outcome. The change is real, it deploys, and the original error class genuinely disappears. But the
+new branch constructs its request slightly differently from the sibling branch that always worked — a
+timestamp serialized as a string where the sibling passes a native date, a field omitted, an enum
+spelled differently — and the service rejects it. The control remains exactly as dead as before,
+failing at the same boundary with a different exception, and every observation the closure relied on
+still reads as success: the diff shows correct-looking code, the suite passes because it stubs the
+client and asserts the call was MADE rather than that the service accepted it, and the deploy
+genuinely happened, so the "committed but not shipped" check that a mature process does run comes back
+clean. This is strictly harder to catch than a fix that never deployed, because the usual
+verification — confirm the change reached the running system — passes. The distinguishing feature is
+that nobody re-read the live signal the finding was BORN from: the error rate, the evaluation count,
+the delivery count. That number is unchanged, or worse, and it is the only artifact that would have
+said so. The pattern concentrates in remediations of guardrails and reporting paths, where the
+service's response is discarded by design and the caller's own success is decoupled from the outcome.
+
+**Detect.** Close a finding against the metric that opened it, not against the code. For every
+recently closed finding, identify the specific live observable that constituted the original
+evidence — fault count on the function, accepted-evaluation count on the control, delivered count on
+the channel — and re-query exactly that observable over a window that begins AFTER the deploy
+timestamp; a value that did not move is the finding regardless of how correct the diff is. Where a
+fix adds a call path beside an existing one to the same API, diff the two request constructions field
+by field and check every value's TYPE against the API's contract, not just its presence — a client
+that serializes without validating will send a string where the service demands an instant and report
+success locally. Then check whether any test asserts the accepted shape rather than the call: a suite
+whose fake records arguments and returns a canned success can never distinguish an accepted request
+from a rejected one, and its greenness is not evidence.
+
+**False positives.** Fixes whose observable is genuinely expected to lag the deploy (a scheduled
+control that has not yet run its first cycle since shipping — re-verify after one full interval rather
+than filing); metrics whose window still includes pre-fix data points; controls where the residual
+error rate is a known, separately-tracked second defect that the closure explicitly named and scoped
+out.

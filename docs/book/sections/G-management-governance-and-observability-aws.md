@@ -263,3 +263,38 @@ PASSES to surface as new findings then, not now.
 **False positives.** Findings on resources created after the restart (their CIs are necessarily
 fresh); change-triggered rules whose resources changed post-restart; waves observed well after the
 re-baseline completed; recorders that were never stopped.
+
+## G:26 — Dead-letter queue given a depth alarm but no drain owner or redrive procedure — the alarm latches on permanently and the messages are never recovered
+
+**Statement.** A prior audit finds a dead-letter queue with no monitoring and the remediation adds a
+depth alarm, which closes the finding correctly: the queue is now observable. What the remediation
+does not add is the other half — who drains it, by what procedure, and what returns the alarm to OK.
+A depth alarm on a DLQ is structurally different from an alarm on a rate or a latency, because depth
+does not decay: the threshold is crossed by the first undeliverable message and stays crossed until a
+human moves it. The alarm therefore latches on and never clears, and a signal that is always firing
+is operationally identical to no signal at all — worse, because it now suppresses suspicion on the
+whole class ("that queue has an alarm"). Two effects follow. The notification channel trains its
+recipients to ignore it, so the NEXT distinct failure into the same queue is invisible. And the
+messages themselves — each one a real piece of work the system promised to do — accumulate
+indefinitely until the retention period silently deletes them, converting a recoverable backlog into
+permanent data loss with no event at the moment of loss. The pattern is most likely where the alarm
+was added to satisfy a fleet-wide coverage sweep, because coverage sweeps are written against the
+existence of an alarm per queue and cannot express the existence of a drain path.
+
+**Detect.** Treat a DLQ's alarm and its drain path as one control and audit them together. For every
+dead-letter queue, read the LIVE depth and the LIVE alarm state, then compute how long the alarm has
+been continuously in its firing state from the alarm's own history — a firing duration measured in
+days, not minutes, is the finding regardless of how well-formed the alarm is. Ask what the documented
+redrive procedure is and whether anything automated performs it; a queue whose only consumer is a
+human who has not run is undrained by design. Compare the live depth against the queue's retention
+setting to bound the time remaining before the backlog is deleted, and inspect the oldest message's
+age directly. Then read a sample message and establish what the system promised the user it would do —
+that, not the queue depth, is the severity. Finally, check whether the alarm's destination has any
+confirmed recipient at all, since a latched alarm into an unsubscribed channel is two controls failing
+at once.
+
+**False positives.** Queues deliberately used as an inspection buffer with a documented periodic
+review and an owner named in the runbook; alarms configured on message AGE rather than depth, which do
+clear once the backlog is worked; DLQs whose messages are provably duplicates of work completed on a
+retry path, where the accumulation is cosmetic and the accepted posture is documented; queues drained
+by an automated redrive whose schedule is longer than the audit window.

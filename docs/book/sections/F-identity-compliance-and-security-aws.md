@@ -178,3 +178,76 @@ honestly.
 **False positives.** A deliberately length-first policy WITH a documented acceptance and compensating
 controls; pools serving only machine principals; benchmarks the org has explicitly disabled or
 scoped out with recorded rationale.
+
+## F:26 — Grant names only the base resource ARN while the code reads through a secondary index, whose child ARN the grant never covers — every indexed read is denied
+
+**Statement.** Managed data stores expose secondary indexes as child resources with their own ARNs,
+and an authorization decision for a read through an index is made against the CHILD ARN, not the
+parent. A policy that names the table and stops therefore authorizes direct-key access and denies
+every query that names an index — a distinction invisible in the policy, which reads as complete
+coverage of the table, and invisible at the call site, which names the index as an ordinary
+parameter. The same statement usually compounds the gap on the action axis: policies written for a
+writer path enumerate point operations and omit the query action entirely, so the read is denied
+twice over for two unrelated reasons and fixing either one alone leaves it denied. Least-privilege
+discipline makes this MORE likely, not less: a wildcard resource would have covered the index by
+accident, so the projects most careful about scoping are the ones that hit it. The runtime signature
+is an authorization error, not a validation error, so it reads as a provisioning or trust-policy
+problem and sends investigation toward the role's assumption path rather than its statement list.
+When the denied read sits in front of a side effect — a notification, an enrichment, an audit write —
+the effect simply never happens, and because the caller is asynchronous the failure is invisible to
+the user action that triggered it.
+
+**Detect.** Work from the code to the policy, never the reverse. Enumerate every read in the service
+that names a secondary index, and for each, resolve the exact principal that executes it — including
+any session policy or permission boundary that intersects the role, since a session-scoped fence
+produces a differently-worded denial for the same shape. Then check the effective grant for BOTH the
+child ARN pattern and the query action; a statement naming the base ARN with point-operation actions
+is the finding even when the table is otherwise fully covered. Prefer the provider's policy simulator
+against the real principal and the real child ARN over reading the JSON. Do not accept an absence of
+errors as evidence: an asynchronous consumer that is denied on its first read logs and dies without
+touching the surface that invoked it, so confirm from the consumer's own error stream and from
+whether its downstream effect has ever been observed, not from the health of the caller.
+
+**False positives.** Indexes read only through paths that are provably dead; grants that cover the
+child ARN via a trailing wildcard on the table ARN, which does authorize index access; principals
+whose denial is deliberate and handled — the code catches the authorization error and falls back to a
+documented alternative read; environments where the index is a recent addition and the audit is
+reading a policy that has legitimately not yet been applied, which is a deploy-lag finding rather
+than a policy-shape one.
+
+## F:27 — Provisioning principal granted the create action but not the post-create hardening calls the same code path makes, so every resource lands half-configured
+
+**Statement.** Provisioning a resource is rarely one API call. The create succeeds, and the same code
+path immediately follows it with the calls that make the resource fit to use — enable versioning, put
+the encryption configuration, attach the lifecycle policy, block public access, tag it. The role's
+policy is written against the resource the provisioner OWNS and frequently names only the create
+action, because that is the verb in the ticket and the one the author was thinking about. Every
+hardening call after it is then denied. Two failures follow from one gap, and the second is the
+dangerous one. The provisioner throws partway through its sequence, so the resource exists but is
+missing whichever protections came after the first denied call — and it exists, which means an
+existence check, an inventory sweep, or a compliance rule keyed on presence reports it as provisioned.
+The ordering of the calls silently decides which protections a tenant gets, so two resources created
+by the same code differ in posture according to where in the sequence the denial landed. Retries make
+it worse rather than better: each attempt recreates or re-touches the resource, fails at the same
+call, and leaves another partially configured artifact, so the account accumulates half-built
+resources with no single event marking any of them as incomplete. The pattern is most likely where the
+provisioner is asynchronous — a worker, a step in a state machine — because nothing user-facing
+observes the throw.
+
+**Detect.** Read the provisioning function as an ordered sequence of API calls, not as a unit, and
+check the executing role for EVERY verb in that sequence against the exact resource ARN the call
+targets — including the calls that run after the one you assume is the hard part. Names that read as
+one capability are separate authorization decisions. Then verify from the live account rather than the
+code: enumerate the resources this provisioner has created and check each one for the full set of
+post-create properties it is supposed to carry; a population where the same property is missing on
+every member, or missing on everything after a certain date, is the finding. Read the provisioner's
+own error stream for authorization failures — an asynchronous provisioner that dies mid-sequence
+usually logs and is never looked at, and its DLQ or failure destination is the fastest inventory of
+half-built resources. Do not accept a green compliance rule as counter-evidence if that rule keys on
+the resource existing.
+
+**False positives.** Post-create calls that are genuinely optional and whose absence is the documented
+posture; sequences whose later calls are performed by a different, correctly-granted principal (a
+bucket-policy applier, a tagging sweeper) on a schedule; providers that apply the property as an
+account-level default so the explicit call is redundant; provisioners that catch the denial, record it,
+and re-drive the hardening step through a path that does have the grant.

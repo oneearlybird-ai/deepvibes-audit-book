@@ -181,3 +181,34 @@ error log firing.
 non-empty (the throw is what drives retry, so the mapping setting is genuinely optional); sources
 that do not support partial-batch reporting at all; deliberate at-most-once lanes where dropping a
 failed record is the documented, alarmed choice and the drop is counted in a metric.
+
+## A:37 — Function imports a bare specifier that only a layer resolves, and the layer is not attached — every invocation dies at module load
+
+**Statement.** Serverless runtimes let a shared layer publish packages onto the module resolution
+path, so function code imports them by bare specifier exactly as if they were local dependencies.
+Nothing in the function's own manifest records the dependency — that is the point of the layer — so
+the import site carries no evidence of what must be attached for it to resolve. When the layer is
+missing from the function's layer list, the failure is total and immediate: the module graph cannot
+be constructed, so the handler never runs, no application log line is emitted from the function's
+own code, and every invocation returns a generic platform error. The mistake is most likely when a
+function is created by copying a sibling that already had the layer, when a lazy `await import()`
+inside a dependency-builder hides the specifier from any static bundler check, and when the layer
+list is maintained in infrastructure code far from the import. It survives review because both
+halves are individually correct — the import is spelled right and the layer genuinely publishes the
+package — and it survives testing because the suite resolves the same specifier from the repository
+tree, where the package is a real directory. The runtime is the only place the two are ever joined.
+
+**Detect.** Do not read the import list and the layer list separately; the defect exists only in
+their pairing. For every function, extract every bare specifier it imports that is not in its own
+manifest or the runtime's built-ins — including specifiers inside lazy `import()` calls, which are
+the ones static tooling misses — and resolve each against the layer set actually attached to the
+LIVE function, not the set declared in infrastructure code. Diff sibling functions that share a
+dependency: an outlier missing one layer among peers that all carry it is the finding. Confirm the
+blast radius from the platform's own error surface rather than the application's, because a
+module-load failure produces no application log: a function whose logs contain only platform
+init lines and no first-line-of-handler entry is failing before its own code runs.
+
+**False positives.** Specifiers the runtime itself provides; packages genuinely vendored into the
+deployment artifact as well as the layer, where resolution succeeds from the artifact; imports
+inside a branch that is provably unreachable in the deployed configuration; functions whose
+"missing" layer is attached at an alias or version qualifier the audit query did not resolve.

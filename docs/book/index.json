@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 693,
+ "rule_count": 697,
  "sections": [
   {
    "id": "A",
@@ -291,7 +291,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "C:1",
@@ -384,6 +384,10 @@
     {
      "id": "C:23",
      "title": "Listener forwards to an attached target group with zero registered or zero healthy targets"
+    },
+    {
+     "id": "C:24",
+     "title": "VPC: Default security group left with its default allow rules"
     }
    ]
   },
@@ -654,7 +658,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "F:1",
@@ -751,6 +755,10 @@
     {
      "id": "F:24",
      "title": "Service-principal resource policy scoped to the account only, on the claim that the sender set is uncountable, when the senders carry a deterministic generated name prefix"
+    },
+    {
+     "id": "F:25",
+     "title": "Identity: User-pool password policy departs from the audited benchmark with no recorded acceptance — and a pool factory re-stamps it on every tenant"
     }
    ]
   },
@@ -759,7 +767,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "G:1",
@@ -856,6 +864,10 @@
     {
      "id": "G:24",
      "title": "Decommissioned subsystem leaves running remains: parked services, black-holed fronts, and records nobody reaps"
+    },
+    {
+     "id": "G:25",
+     "title": "Compliance findings evaluated across a configuration-recorder gap are testimony about the past, not the present"
     }
    ]
   },
@@ -2580,7 +2592,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 7,
+   "rule_count": 8,
    "rules": [
     {
      "id": "FF:1",
@@ -2609,6 +2621,10 @@
     {
      "id": "FF:7",
      "title": "Criticality Tiers: OTP/security email sharing queues and rate limits with marketing — lo…"
+    },
+    {
+     "id": "FF:8",
+     "title": "Transport: Outbound sending configuration leaves TLS optional — silent downgrade to cleartext SMTP"
     }
    ]
   },

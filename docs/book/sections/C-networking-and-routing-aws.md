@@ -143,3 +143,24 @@ entirely — the target-health API is the only truth.
 WHILE a routing policy verifiably keeps traffic off them; groups mid-deploy during instance refresh
 (re-check after the deploy window); scale-to-zero-with-wakeup architectures where a documented
 scale-up path triggers on demand and the listener's idle timeout accommodates it.
+
+## C:24 — VPC: Default security group left with its default allow rules
+
+**Statement.** A VPC's default security group still carries the rules AWS mints it with — the
+self-referencing allow-all ingress and the allow-all egress. Nothing may reference the group today,
+but the default SG is where every future launch, endpoint, or attachment lands when someone omits an
+explicit group, so its rules are the account's silent fallback posture. The hardened shape is zero
+rules in both directions: anything that then lands there by accident gets no connectivity and fails
+loudly at deploy time instead of running silently open. The gap concentrates in VPCs created outside
+IaC (console experiments, quick-setup wizards), because IaC-managed VPCs usually pin the default SG
+empty with a dedicated resource while unmanaged ones keep the AWS default forever.
+
+**Detect.** For every VPC in the account — explicitly including ones absent from the IaC tree —
+describe the default SG's rule sets and count attached ENIs. Zero attachments plus default rules is
+a free fix; attachments mean something is riding the fallback and needs an explicit group first.
+Check the IaC tree for a resource that pins the default SG empty (e.g. an aws_default_security_group
+with no rules); its absence for any VPC is the durable form of the defect.
+
+**False positives.** A default SG already stripped to zero rules; VPCs mid-deletion; environments
+where the default SG is deliberately used as THE segmentation mechanism with scoped rules and a
+document saying so (rare, and usually still worth converting to explicit groups).

@@ -240,3 +240,26 @@ not converted.
 **False positives.** Deliberate scale-to-zero architectures with a verified wake path; seasonal or
 blue/green capacity kept warm by documented intent; resources whose naming merely collides with a
 retired family (verify by creation date and references, not name alone).
+
+## G:25 — Compliance findings evaluated across a configuration-recorder gap are testimony about the past, not the present
+
+**Statement.** When the configuration recorder was stopped and later restarted — commonly as a side
+effect of enabling a posture-management product that requires it — the first waves of compliance
+findings evaluate whatever configuration items exist at evaluation time: some freshly re-baselined,
+some frozen at the stop date. The wave therefore mixes three populations: true findings, rows already
+remediated during the gap (false FAIL — the live resource passes), and rows broken during the gap
+(false PASS — the live resource fails and nothing flags it). Teams that remediate straight from the
+first wave fix ghosts, suppress real gaps, and burn credibility on tickets for resources that were
+already correct. Resource-level truth during this window requires reading the resource, not the
+finding.
+
+**Detect.** Compare the recorder's lastStopTime/lastStartTime against the findings' first-observed
+timestamps; any batch created within the re-baseline window (hours to a day after restart, longer
+for large estates) is suspect. Live-verify a sample of each control's flagged resources before
+acting; a single mismatch (live passes, finding says FAIL) marks the whole control's wave as stale.
+Expect periodic re-evaluation to converge the findings within a day or two — and expect the false
+PASSES to surface as new findings then, not now.
+
+**False positives.** Findings on resources created after the restart (their CIs are necessarily
+fresh); change-triggered rules whose resources changed post-restart; waves observed well after the
+re-baseline completed; recorders that were never stopped.

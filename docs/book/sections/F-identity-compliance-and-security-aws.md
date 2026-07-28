@@ -153,3 +153,28 @@ controlled segment; services that do not populate the source-ARN key for this ac
 current vendor documentation, not assumption); statements already narrowed by an equivalent pin such
 as a resource tag or encryption-context condition; single-tenant accounts whose entire resource
 inventory is the intended sender set and where that scope is stated.
+
+## F:25 — Identity: User-pool password policy departs from the audited benchmark with no recorded acceptance — and a pool factory re-stamps it on every tenant
+
+**Statement.** The platform's user pools carry a password policy below the compliance benchmark the
+organization itself runs — a character class switched off, or the minimum length parked at the
+benchmark's floor — and no document records the deviation as a decision. Where pools are minted by a
+tenant-provisioning factory (and re-converged by a repair lane that re-states the full policy block),
+the weak shape is not one misconfigured resource but a template: every new tenant is born failing the
+benchmark, every repair pass re-stamps the old shape over any hand-fix, and the finding count grows
+with tenant count. A length-first policy can be the RIGHT call (NIST 800-63B recommends against
+composition rules), but an undocumented deviation from the benchmark the org audits against is a
+decision-hygiene defect even when the cryptographic argument is defensible — the auditor sees only
+failing controls and no recorded reasoning.
+
+**Detect.** Read the factory's create/update parameter sets (and any repair/converge lane — these
+often restate the full policy because the update API resets omitted fields) and diff the password
+policy against the benchmark the account actually runs. Search for a recorded acceptance (ledger,
+ADR, security doc). Enumerate client-side password validators that mirror the rule — a server-side
+tightening without the client sweep produces confusing rejects at signup. Check compensating
+controls (breach-password screening, lockout, MFA, passkey-first sign-in) to calibrate severity
+honestly.
+
+**False positives.** A deliberately length-first policy WITH a documented acceptance and compensating
+controls; pools serving only machine principals; benchmarks the org has explicitly disabled or
+scoped out with recorded rationale.

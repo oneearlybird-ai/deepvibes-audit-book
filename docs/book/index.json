@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 697,
+ "rule_count": 698,
  "sections": [
   {
    "id": "A",
@@ -2474,7 +2474,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "DD:1",
@@ -2535,6 +2535,10 @@
     {
      "id": "DD:15",
      "title": "Auto-rollback monitors bound to alarms that can lose data - idle-period config deploys roll back on nothing"
+    },
+    {
+     "id": "DD:16",
+     "title": "Replace-semantics update API re-stated by hand — every omitted field silently resets, including by the factory's own harden step"
     }
    ]
   },

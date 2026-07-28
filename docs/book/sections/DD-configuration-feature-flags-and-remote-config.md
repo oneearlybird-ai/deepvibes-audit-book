@@ -243,3 +243,30 @@ while every monitor alarm is healthy, is the trust-condition signature.
 practice while the resource exists; environments that deliberately accept idle-hour deploy freezes
 as a conservative posture - only with that trade-off written down; genuine mid-bake alerts where the
 alarm really transitioned to ALARM on real datapoints - that is the rail working, not this defect.
+
+## DD:16 — Replace-semantics update API re-stated by hand — every omitted field silently resets, including by the factory's own harden step
+
+**Statement.** A resource's update API has replace semantics: any field omitted from the call reverts
+to its service default, not to its current value. Callers nonetheless treat it as a patch, re-stating
+only the fields they care about from a hand-maintained list — often with a comment right there
+warning that omitted fields reset, which marks the trap without disarming it. Every call site with an
+incomplete field set becomes a config-regression factory: each invocation of a harden, rename,
+repair, or converge lane quietly reverts some other setting to its default. The nastiest variant is
+the resource factory whose own SECOND call (a rename/harden step issued seconds after create) resets
+what its first call just declared — the declared shape never survives to production, every fleet
+resource diverges identically, and no error is ever raised. Identical divergence across an entire
+fleet is the signature: drift scattered by hand-edits varies; drift stamped by a resetting writer is
+uniform.
+
+**Detect.** For each update-API call site, diff the passed field set against (a) the create-time
+declaration and (b) the API's full mutable surface — every mutable field absent from the update is a
+reset candidate. Live-diff fleet resources against the factory's declared create shape; uniform
+divergence on a field the create call sets means a resetting writer runs after create — find it.
+Treat in-code comments admitting the reset semantics as detection leads, not as evidence of safety.
+Converge scripts must build their params from a full live read (describe → mutate → update), never
+from a hand-enumerated subset.
+
+**False positives.** APIs with true patch semantics (verify against current provider documentation,
+not assumption); update params constructed from a complete live describe; fields deliberately left at
+defaults where the default is documented as the chosen value; immutable-at-update fields the API
+rejects rather than resets.

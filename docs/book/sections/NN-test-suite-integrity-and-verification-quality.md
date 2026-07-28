@@ -400,3 +400,41 @@ control that has not yet run its first cycle since shipping — re-verify after 
 than filing); metrics whose window still includes pre-fix data points; controls where the residual
 error rate is a known, separately-tracked second defect that the closure explicitly named and scoped
 out.
+
+## NN:21 — Fence identity keys derived from invocation-relative context — the same finding matches or misses depending on how the tool was called
+
+**Statement.** A baseline, suppression list, or dedupe fence keys its entries on an identity that
+includes context relative to the invocation — a path relative to the scan target, a module-local
+name, an id that embeds the working directory. The same underlying finding then produces different
+keys depending on which directory the scanner was pointed at, so the fence match becomes an accident
+of invocation shape: a per-module scan reopens findings a whole-tree scan froze (blocking lanes on
+ancient backlog), while double-listed dual-form entries accumulate as operators paper over each
+mismatch by adding the variant the error message showed them. The store's growing pollution is the
+tell — entries that differ only in a path prefix are fossilized invocation histories, not findings.
+
+**Detect.** Read the fence tool's key construction and ask which components vary with invocation
+(scan root, cwd, module prefix). Scan the store for entry pairs identical except for a path prefix.
+Run the tool against the same tree from two roots and diff the computed key sets — any difference is
+the defect.
+
+**False positives.** Stores whose consumers always invoke the tool from one pinned root enforced by
+a wrapper (the instability exists but cannot express); keys intentionally scoped per-module with a
+per-module store to match.
+
+## NN:22 — Fence-store regeneration scoped narrower than the store — the update command silently discards the rest of the fence
+
+**Statement.** The maintenance command that regenerates a baseline/suppression store accepts a scope
+argument (a directory, a module, a subset) but writes the ENTIRE store from only that scope's scan.
+Every entry outside the scope vanishes in the same write that adds the intended one. The next scan of
+any other area then reports the whole frozen backlog as new regressions — or worse, the operator
+re-runs the regenerate against that other area to "fix" it, destroying the first area's entries
+instead, ping-ponging the store between partial views. The failure is invisible at update time
+because the command reports success and the intended entry IS present.
+
+**Detect.** Read the update path: does it merge into the existing store or replace it? If replace,
+does it refuse scopes narrower than the store's domain? Diff store size before/after any regenerate
+in history (version control makes the drops visible as large deletions in baseline files). A store
+whose entry count sawtooths across commits was being ping-ponged.
+
+**False positives.** Genuinely scope-partitioned stores (one file per module); update commands that
+merge; replace-semantics commands hard-pinned to the store's full domain.

@@ -173,3 +173,28 @@ one machine. Check the audit instance's scope config for repos it can never have
 removed in the same change; repos on a private forge that is verifiably reachable from the
 environments that need it (verify reachability, don't assume); scratch tooling explicitly
 documented as single-machine and named in no governing rule.
+
+## U:25 — A deploying command piped into a filter reports the filter's exit code, and the filter's early exit can kill the deploy mid-flight
+
+**Statement.** An operator or script runs a command that ships — build, publish, apply, migrate — and
+pipes it into a pager or filter to trim the output: `deploy | grep -E 'error|done' | head -5`. Two
+independent failures follow. First, a shell pipeline's status is the LAST stage's, so the pipeline
+succeeds whenever the filter succeeds; the deploy's own non-zero exit is discarded and the run is
+recorded as green. Second, a filter that exits early (`head`, `sed q`, a pager the user quits) closes
+the pipe, and the next write from the deploy raises SIGPIPE — terminating it partway through, after
+some gates ran and before the change reached the target. The combination is worse than either half:
+the deploy is killed AND reported successful, so the operator moves on to the dependent step, which
+then fails with a confusing message about a state the first step was supposed to establish. Filters
+whose patterns match the tool's own echoed command lines (recipe echoes, `set -x` traces) hit the
+early-exit path almost immediately, long before any real output.
+
+**Detect.** Grep operational docs, runbooks, Makefile/justfile recipes, and CI steps for a shipping
+verb piped into `head`, `tail`, `grep`, `less`, `more`, `awk`, or `jq` without `set -o pipefail` (or
+`${PIPESTATUS[0]}`, or PowerShell's `$LASTEXITCODE`). Confirm the exposure by checking whether the
+tool's success is asserted anywhere OTHER than the pipeline's exit status. Then verify the deploy's
+own record — its audit log, the published artifact version, the target's last-modified — rather than
+trusting the reported success; a missing audit entry after a "successful" run is the signature.
+
+**False positives.** Read-only commands (status, describe, list) where truncation loses nothing;
+pipelines that set `pipefail` AND use a filter that consumes all input; shipping tools that write
+their own durable audit record which the operator checks independently.

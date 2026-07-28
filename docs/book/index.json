@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 712,
+ "rule_count": 713,
  "sections": [
   {
    "id": "A",
@@ -1881,7 +1881,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "U:1",
@@ -1978,6 +1978,10 @@
     {
      "id": "U:24",
      "title": "Governance names a repository that no shared remote serves, so every other environment silently operates without it"
+    },
+    {
+     "id": "U:25",
+     "title": "A deploying command piped into a filter reports the filter's exit code, and the filter's early exit can kill the deploy mid-flight"
     }
    ]
   },

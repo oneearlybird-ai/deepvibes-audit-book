@@ -184,3 +184,75 @@ completion condition.
 **Detect.** Find every place a token endpoint, issuer, or JWKS URL is computed from callback input rather than static provider config. Then read the validation: a scheme test (`/^https:/`), a `startsWith`, or a substring/suffix match is not host validation — require an exact hostname compared against a fixed per-provider allowlist. Confirm what the credential-bearing request carries (form body or Basic header — both leak), and whether the same value is written into stored connection config that a refresh path later templates into a URL. Check reachability honestly: the exchange usually requires a valid one-time state nonce, which any authenticated tenant can mint for itself.
 
 **False positives.** Hints compared against an exact hostname allowlist before use; providers where the hint is a fixed enum resolved through a lookup table rather than interpolated into a URL; exchanges that carry no long-lived application credential (public client with PKCE and no secret).
+
+## T:25 — The authorization cache's revocation fence compares a version the reader hydrates from a different record than every writer stamps, so the fence is constant-true and revocation silently never takes effect
+
+**Statement.** A permission cache short-circuits the live authorization call for a bounded window and
+documents a version fence as its "instant" revocation mechanism: any permission mutation bumps a
+counter, the cached window recorded the counter it was opened under, and a mismatch voids the window
+on the very next request. The fence is real code and it is unit-tested — but the reader hydrates the
+counter from one record (commonly the user's identity/membership row) while every mutator writes it
+to a different record, and often under a different key shape (a permissions row keyed by tenant +
+subject rather than tenant + user). Both sides then coerce a missing attribute to the same default,
+usually zero, so the comparison is permanently equal. Revocation, disable, and downgrade appear to
+succeed at every layer — the mutation is written, the policies are deleted — while the cache keeps
+authorizing the old grants for the full window. The failure is invisible precisely because it is a
+comparison of two defaults: nothing errors, no log fires, and tests that construct the session object
+by hand (supplying both fields directly) pass, because they never exercise the hydration path where
+the divergence lives. Systems that deliberately do NOT revoke the session on disable — relying on the
+authorization layer to deny instead — convert this into a full authorization bypass for the window.
+
+**Detect.** Do not read the fence; read the two ends of it. Find the single function that hydrates the
+version onto the session and record the exact table and key it reads. Then enumerate EVERY writer of
+that attribute — permission update, role change, disable, delete, per-resource grant and revoke,
+tenant bootstrap — and record the table and key each writes. The finding is the set difference, and
+it is mechanical. Treat a coercion to a default on the read side (`Number(x || 0)`) as an amplifier,
+because it converts "attribute absent" into "fence satisfied" rather than "fence unknown". Check
+whether the fence value is forwarded into any downstream plane's request context; a stale fence is
+inherited by every consumer. Finally, check the tests: if every test supplies both the version and the
+window version as literals on a hand-built session, the hydration path is untested by construction,
+and a green suite is not evidence.
+
+**False positives.** Deployments where the reader and every writer provably resolve to the same table
+AND the same key shape — verify both, since a shared table name with divergent key shapes fails the
+same way; designs that intentionally accept a bounded staleness window and revoke the session itself
+on privilege loss, so the cache is not the enforcement point; and fences whose absent-value behavior
+is fail-closed (an unresolvable version disables the cache rather than satisfying it), which is the
+correct shape even if the records diverge.
+
+## T:26 — A network-asserted originator identifier (caller ID, sender address, forwarded-for) used as the sole ownership proof for cross-record reads and destructive writes
+
+**Statement.** A record is stamped at creation with the identifier the transport reported for whoever
+created it, and every later read, cancellation, or modification is authorized by comparing that stored
+identifier to the one the transport reports for the current requester. The comparison itself is sound
+and often carefully written — fail-closed when the identifier is absent, exact-match, tenant-prefixed
+— which is what makes it persuasive; the defect is upstream, in treating a value the network asserts
+as a credential the requester possesses. Telephone caller ID, email envelope sender, and
+client-supplied forwarding headers are all assertions by the originating network, not proofs of
+control, and can be set by the party placing the request on many carriers and relays. The result is
+that anyone who knows a victim's identifier can read the victim's records and perform destructive
+operations on them, with no token, no session, and no network position — and, where an automated
+agent mediates the request, the platform's own trusted component performs the action on the
+attacker's behalf, so the audit trail shows a normal interaction. The tell is usually an internal
+inconsistency: the same codebase adds a shared secret (a PIN, a confirmation code) to a
+higher-privilege operation on the same transport precisely because the identifier is spoofable, while
+a lower-profile but still sensitive operation continues to rely on it alone.
+
+**Detect.** Enumerate every operation reachable over the transport and classify each as
+identifier-only or identifier-plus-secret. Any cross-record read or state-changing write in the first
+class is the finding. Trace the stored ownership anchor back to where it is stamped and name the
+component that supplied it; if that component received the value from an external network rather than
+deriving it from an authenticated exchange, it is an assertion. Read the comments around the
+comparison — words like "authoritative", "server-attested", or "trusted" applied to a transport-
+supplied value mark the assumption being made and are frequently the only place it is stated. Confirm
+by finding the sibling operation in the same codebase that DOES require a secret and asking what
+distinguishes them; usually nothing but when each was written. Check whether the record owner is
+notified out-of-band when the operation succeeds, since silent success removes the last detective
+control.
+
+**False positives.** Transports where the originator identifier is cryptographically attested end to
+end and the attestation is actually verified on this path; flows where the identifier only selects a
+candidate set and a second factor (confirmation code, callback to the number on file, an
+authenticated session) gates the operation; read-only disclosure of information the requester
+demonstrably already holds; and operations whose blast radius is genuinely self-limited — verify by
+reading what the handler returns and writes, not by the operation's name.

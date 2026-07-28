@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 706,
+ "rule_count": 712,
  "sections": [
   {
    "id": "A",
@@ -1768,7 +1768,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 24,
+   "rule_count": 26,
    "rules": [
     {
      "id": "T:1",
@@ -1865,6 +1865,14 @@
     {
      "id": "T:24",
      "title": "Delegated-auth token exchange routed by callback-supplied data, validated on scheme rather than host"
+    },
+    {
+     "id": "T:25",
+     "title": "The authorization cache's revocation fence compares a version the reader hydrates from a different record than every writer stamps, so the fence is constant-true and revocation silently never takes effect"
+    },
+    {
+     "id": "T:26",
+     "title": "A network-asserted originator identifier (caller ID, sender address, forwarded-for) used as the sole ownership proof for cross-record reads and destructive writes"
     }
    ]
   },
@@ -2043,7 +2051,7 @@
    "title": "Advanced API Security, Management & Rate Limiting",
    "group": "saas-core",
    "file": "sections/W-advanced-api-security-management-and-rate-limiting.md",
-   "rule_count": 19,
+   "rule_count": 22,
    "rules": [
     {
      "id": "W:1",
@@ -2120,6 +2128,18 @@
     {
      "id": "W:19",
      "title": "Backtracking-prone regex inside a universal defensive transform, applied to unbounded input"
+    },
+    {
+     "id": "W:20",
+     "title": "The size cap is evaluated on the materialized collection, so the guard runs after the allocation it exists to prevent"
+    },
+    {
+     "id": "W:21",
+     "title": "Generated spreadsheet exports quote for the CSV parser but never neutralize leading formula characters, so stored third-party text executes in the operator's spreadsheet"
+    },
+    {
+     "id": "W:22",
+     "title": "The attempt limiter is keyed to a scope the attacker creates for free, so every new session restores a full budget and the lockout bounds nothing"
     }
    ]
   },
@@ -2563,7 +2583,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "EE:1",
@@ -2608,6 +2628,10 @@
     {
      "id": "EE:11",
      "title": "Graceful-completion branch guarded by a conjunction of runtime flags, so a session that finished successfully falls through to the abandonment path and the user gets the failure experience"
+    },
+    {
+     "id": "EE:12",
+     "title": "Pre-authentication frame buffer bounded by entry count while each entry is attacker-sized, so the real ceiling is count × max-payload"
     }
    ]
   },

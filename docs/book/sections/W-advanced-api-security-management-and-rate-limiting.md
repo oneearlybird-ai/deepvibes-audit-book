@@ -135,3 +135,107 @@ a wildcard or proxy integration that still matches.
 **Detect.** Inventory the regexes in shared masking/sanitizing/normalizing helpers and classify each for super-linear behavior on NON-matching input; an unbounded quantifier over a character class followed by a required literal is the common quadratic shape. Then trace the helper's callers for any string not length-bounded before the call — queue payload fields, message bodies, headers, user-supplied names. A clamp applied after the transform does not help. Finally check what shares the thread: an event-loop stall that starves a heartbeat converts a CPU issue into a replacement event, so the blast radius is larger than the request that triggered it.
 
 **False positives.** Helpers whose every caller clamps length first; regexes proven linear (no nested or adjacent unbounded quantifiers over overlapping character classes); runtimes using a linear-time engine (RE2) or enforcing a per-match timeout.
+
+## W:20 — The size cap is evaluated on the materialized collection, so the guard runs after the allocation it exists to prevent
+
+**Statement.** A handler expands a caller-supplied range — a time window, a page span, a quantity, a
+coordinate box — into one in-memory object per unit of granularity, then checks whether the resulting
+collection is too large and rejects it. The check is correct, the error is well-typed, and the limit
+is well chosen; it simply cannot fire before the cost it is guarding against has already been paid,
+because its input is the length of the array whose construction is the expense. Where each element's
+construction is itself costly (a formatter, a timezone resolution, a regex compile), the multiplier is
+far worse than object count alone suggests. The caller does not need a large request body: two
+timestamps or one integer expand into millions of elements, so the attack is indistinguishable from a
+normal request at every upstream layer — payload-size limits, WAF rules and gateway throttles all see
+a small, well-formed call. Sibling call sites of the same expansion helper commonly differ: one
+applies the post-hoc cap and another applies none at all, which is the strongest evidence that the
+bound belongs inside the helper rather than at its callers.
+
+**Detect.** For every expansion helper, read its loop and establish whether it has an internal
+ceiling; a helper that loops from a start to an end by a step with no counter check is unbounded by
+construction. Then enumerate its call sites and, for each, trace the range endpoints back to the
+request boundary and record every validation between. A validation that only asserts ordering
+(end > start) or finiteness bounds nothing. Where a cap exists, check whether its input is the
+materialized collection (`result.length`) or an arithmetic projection of the range
+((end − start) / step); only the latter can run first. Compute the worst case the boundary permits and
+compare it to the process memory and timeout budget. Because the request is small, look also at what
+shares the compute pool — a per-invocation exhaustion becomes a shared-capacity outage when
+concurrency is unreserved.
+
+**False positives.** Ranges structurally bounded upstream by a schema (a date type that cannot express
+a century, an enum of allowed spans); helpers that stream or generate lazily so no collection is
+materialized; caps computed arithmetically before expansion even if the error is raised later; and
+paths where the expansion is bounded by a resource the caller cannot inflate — verify the caller
+cannot supply the granularity as well as the range, since a caller-controlled step defeats an
+otherwise sound range bound.
+
+## W:21 — Generated spreadsheet exports quote for the CSV parser but never neutralize leading formula characters, so stored third-party text executes in the operator's spreadsheet
+
+**Statement.** An export endpoint serializes stored records to CSV through an escape helper that
+handles the CSV grammar correctly — it quotes values containing the delimiter, doubles embedded
+quotes, quotes embedded newlines — and stops there. CSV quoting and formula neutralization are
+different problems: spreadsheet applications interpret a cell whose first character is one of
+`= + - @`, tab or carriage return as a formula regardless of quoting, so a correctly quoted value is
+still executed. The consequence lands outside the service, on the workstation of whoever opens the
+file, and the injected text is usually not authored by that person or even by a user of the product:
+free-text fields are commonly populated from an external party (a caller's spoken name, an inbound
+message, a form on a public page), so an unauthenticated outsider writes the payload and a trusted
+operator executes it. Because the value is stored, it fires on every future export until the record is
+edited, and one poisoned record reaches everyone who exports. Even where command execution is blocked
+by the spreadsheet's own protections, link-shaped formulas exfiltrate neighbouring cells — which in an
+export are other records' contact details — to an attacker-controlled URL on a single click.
+
+**Detect.** Find every path that produces a file for human download (CSV, TSV, and the text paths of
+spreadsheet writers) and read the escape helper. If its predicate is a test for the delimiter, quote
+or newline, it is a CSV-grammar escaper and formula neutralization is absent — confirmed by reading,
+without needing a payload. Then walk each exported column back to its writer and mark which are
+externally influenced; the finding's severity is set by whether an unauthenticated party can reach
+any exported field, so trace the ingestion path rather than assuming only authenticated users write.
+Check the columns nobody thinks of as free text — tags, source, category, display names assembled
+from parts — since these are frequently populated by automated flows. Where the same record fields
+are sanitized on one path and not another, the asymmetry is the evidence.
+
+**False positives.** Exports rendered into a binary spreadsheet format through a library that writes
+values as typed cells rather than parsed text; downloads whose content type and extension make
+spreadsheet interpretation implausible and which are consumed only by machines; fields provably
+constrained to a character set excluding the formula triggers at the write boundary — verify the
+constraint is enforced server-side on every writer, not in one client; and pipelines that neutralize
+at ingestion rather than at export, which is a valid alternative placement as long as every writer is
+covered.
+
+## W:22 — The attempt limiter is keyed to a scope the attacker creates for free, so every new session restores a full budget and the lockout bounds nothing
+
+**Statement.** A secret-verification path enforces a maximum number of failed attempts, and the
+counter is keyed by the current session, connection, or request identifier rather than by the identity
+being authenticated or the source attempting it. Within one session the limit holds exactly as
+designed, which is what the tests assert; across sessions it does nothing, because the attacker
+obtains a fresh key — and therefore a fresh budget — by reconnecting, and reconnecting is free. The
+effective bound on guessing becomes the attacker's session-establishment rate, not the configured
+limit, so a short secret drawn from a small space falls in a number of attempts that the presence of
+a lockout makes everyone believe is impossible. Two aggravators usually travel with it: the counter
+lives in process memory, so it is also lost on restart, deploy, and any instance that did not serve
+the earlier attempts; and the counter is evicted by a size bound, so a high-volume attacker can flush
+their own record. This pattern most often appears as the remediation of an earlier finding that the
+path had NO attempt limit — the limiter was added at the scope that was convenient to the request
+context rather than the scope that identifies the principal, converting an absent control into an
+ineffective one while closing the original finding.
+
+**Detect.** For every attempt counter, name the key and ask what it costs the attacker to change it.
+A key derived from a session, connection, call, or request id is defeated by reconnecting; a key
+derived from the account, subject, or credential being tested is not. Check the store: an in-process
+map cannot bound attempts across instances or restarts, so a horizontally scaled or supervised
+service has no durable budget regardless of key. Compute the real search space — read the validator
+that constrains the secret's length and alphabet at the WRITE boundary, not the comment describing it,
+since the two frequently disagree — and divide by the per-session budget to get the number of sessions
+required; state that number, because it is what makes the finding concrete. Where the limiter was
+added to close a prior finding, re-read that finding's claim and confirm whether the remediation
+addressed the scope or only the presence of a control. Finally, check for a detective control:
+repeated failures against one identity across distinct sessions should be alarmable, and usually are
+not.
+
+**False positives.** Limiters keyed to the principal or the source with the session id used only as a
+secondary dimension; paths where establishing a new session is itself metered by an independent
+control that binds the same attacker (a per-source connection limit that is actually enforced); and
+secrets whose space is large enough that the session-establishment rate is not the binding constraint
+— compute it rather than assuming, and remember that a durable, principal-keyed lockout is still the
+correct shape even when the arithmetic is currently comfortable.

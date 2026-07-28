@@ -87,3 +87,38 @@ path and the degradation is genuinely unreachable; bridges whose abandonment pat
 a finished session (a silent hangup rather than an error announcement); deployments where the
 completion branch is deliberately disabled behind a flag during a staged rollout, with the degraded
 experience accepted and documented for that window.
+
+## EE:12 — Pre-authentication frame buffer bounded by entry count while each entry is attacker-sized, so the real ceiling is count × max-payload
+
+**Statement.** A connection handler buffers inbound frames that arrive before the peer has
+authenticated — typically so the first moments of a session are not lost while a downstream
+dependency is still connecting — and bounds that buffer by NUMBER OF ENTRIES. Separately, the socket
+layer caps the size of a single frame. Neither limit is wrong alone, but their product is the actual
+memory an unauthenticated peer can pin: an entry cap sized for small protocol frames multiplied by a
+payload cap sized for the largest legitimate message. The entry cap is usually chosen against an
+implicit frame size ("N seconds of audio at M frames/second"), and that assumption is never enforced,
+so a peer that sends maximum-size frames reaches hundreds of times the intended footprint. Because
+the buffering happens before any credential is checked, no quota, tenancy, or per-account limit
+applies, and the cost of the attack is one socket. Where the process is supervised with a memory
+ceiling that restarts it, the restart is the exploit: a supervised restart commonly enters a drain or
+refuse-new-work state for a bounded period, so a few sockets can hold the whole service in a
+degraded mode indefinitely. A per-frame log line emitted once the cap is reached is a second,
+independent amplifier — it converts the same traffic into unbounded log volume and write pressure.
+
+**Detect.** Find every buffer that accumulates before the authentication decision and ask what bounds
+it in BYTES, not entries. Multiply the entry cap by the transport's maximum payload and compare the
+product to the process memory ceiling and to any supervisor restart threshold; if the product exceeds
+either, the finding is confirmed by arithmetic and needs no exploit. Read the comment next to the
+entry cap: an entry cap justified by a duration or frame-rate assumption is the signature, because
+that assumption is a statement about well-behaved senders. Confirm the ordering by tracing a frame
+that is not the authentication message through the handler — if it reaches the buffer without a
+guard on the authenticated identity, every pre-auth frame is retained. Check whether the overflow
+branch logs per frame, and whether the health endpoint deliberately keeps reporting healthy while
+the process is draining, which prevents the load balancer from rotating the instance out.
+
+**False positives.** Buffers whose entry cap is multiplied by a transport payload cap small enough
+that the product is immaterial against the process ceiling; handlers that authenticate during the
+transport handshake (so no unauthenticated frame is ever buffered) and buffer only post-auth;
+prebuffers bounded by accumulated byte length rather than entry count; and deployments where the
+socket is reachable only from an allowlisted, authenticated network path, so "unauthenticated peer"
+is not reachable in the first place — verify that at the edge configuration, not from a comment.

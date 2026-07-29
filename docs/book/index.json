@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 723,
+ "rule_count": 724,
  "sections": [
   {
    "id": "A",
@@ -1905,7 +1905,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "U:1",
@@ -2006,6 +2006,10 @@
     {
      "id": "U:25",
      "title": "A deploying command piped into a filter reports the filter's exit code, and the filter's early exit can kill the deploy mid-flight"
+    },
+    {
+     "id": "U:26",
+     "title": "The promotion step between \"artifact built\" and \"fleet points at it\" is documented as automated, was provisioned, and was never wired"
     }
    ]
   },

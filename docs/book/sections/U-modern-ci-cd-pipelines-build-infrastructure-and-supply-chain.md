@@ -198,3 +198,29 @@ trusting the reported success; a missing audit entry after a "successful" run is
 **False positives.** Read-only commands (status, describe, list) where truncation loses nothing;
 pipelines that set `pipefail` AND use a filter that consumes all input; shipping tools that write
 their own durable audit record which the operator checks independently.
+## U:26 - The promotion step between "artifact built" and "fleet points at it" is documented as automated, was provisioned, and was never wired
+
+**Statement.** A release path has three parts: build the immutable artifact, move the pointer the
+fleet reads (an SSM parameter, a tag, a channel alias, a "current" symlink), and roll. The pointer
+move is declared as automated — a publisher function exists, IaC describes the parameter as
+"managed by <event> -> <function> on success", and the function is provisioned and healthy — but no
+trigger was ever created, so the automation has never executed once. Nothing surfaces this: the
+build step succeeds loudly, the function reports Active, the parameter holds a real (older) value
+rather than a placeholder, and the fleet keeps running the previous artifact exactly as it did
+before. The promotion silently falls to whichever human knows the undocumented manual command, and
+the gap is normally discovered only when something else forces the versions apart — a config change
+that ships ahead of the code, an instance replacement that boot-loops, an incident. The danger is
+proportional to how long the two halves stay compatible: a pointer that lags harmlessly for months
+trains everyone to trust a step that has never run.
+
+**Detect.** For every pointer a fleet resolves at launch, name the writer and prove it has executed:
+a function with NO log group has never been invoked at all, and enumerating every rule/trigger's
+targets for that function's ARN proves whether anything could invoke it. Compare the pointer's
+last-modified timestamp against the newest artifact's creation timestamp — a pointer older than the
+latest build is the symptom. Then read the release runbook and the build command's closing output:
+if neither performs the promotion and no automation does, the step exists only in someone's head.
+
+**False positives.** Deliberately manual promotion gates (a human approval between build and roll)
+where the manual step is documented and the IaC does not claim automation; pointers written by the
+build job itself rather than by an event-driven function; brand-new automation that has genuinely
+not had a triggering event yet — check whether a qualifying event has occurred since it was wired.

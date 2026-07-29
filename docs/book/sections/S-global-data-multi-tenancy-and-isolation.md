@@ -61,3 +61,23 @@ Analytics: Cross-tenant aggregate reporting computed without anonymization thres
 **Detect.** List every composite-key builder and mark which segments come from request input. For each, read what the READER does with the key: `begins_with` prefix queries and descending-order `Limit: 1` reads are the amplifiers — a forged row need only share the prefix and sort above the genuine ones. Confirm the writer constrains the segment's charset rather than just its type. Then check the supersede path (revoke, close, cancel): if it rebuilds the key from the same unvalidated input, it writes a correctly-dated row that sorts BELOW the forgery, so the forged state can never be retracted.
 
 **False positives.** Builders whose caller-supplied segments are server-minted opaque ids (UUID/ULID) validated against a charset excluding the delimiter; keys whose readers select by exact match rather than by prefix or ordering; delimiters that cannot occur in the segment's validated format.
+
+## S:14 — Rows written under a retired provisioning flow persist in live tenant tables — current code refuses or misreads them
+
+**Statement.** Tenant-plane tables carry rows minted by an earlier generation of the provisioning
+flow: key prefixes the current grammar retired, lifecycle states the current state machine cannot
+produce, or anchor rows missing fields every current writer stamps. Current code meets them in
+three bad ways: guards refuse them by design (turning them into permanent un-repairable objects),
+key-joins silently miss them (they become unreachable and uncounted), or probes misread them (a
+malformed row satisfies or breaks an idempotency check). None of this errors in aggregate — the
+debris surfaces only when a specific flow touches a specific stale row.
+
+**Detect.** Scan each tenant table for key prefixes and lifecycle values outside the current
+grammar (enumerate the grammar from the isolation contract or key-builder module, not from memory).
+For each stale family: count rows, find what minted them (git history of the retired flow), and
+trace what current code does on contact — refuse, miss, or misread. Rows reachable by live flows
+rank above orphans.
+
+**False positives.** Rows a documented migration/reaper is scheduled to process (verify the reaper
+exists and runs); intentionally-retained historical records under a recorded retention decision;
+prefixes that are still-legal aliases per the current contract.

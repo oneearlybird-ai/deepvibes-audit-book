@@ -284,3 +284,22 @@ actually calls.
 composed paths your resolution genuinely cannot evaluate (report unresolved, never guessed); routes
 served by an edge layer (CDN function, rewrite) that answers the path without origin routing —
 verify the edge actually handles it before clearing, and flag it as edge-served rather than clean.
+
+## JJ:21 — A settled cross-surface decision ships one half; the unshipped half exists nowhere — no code, no tracking row, no revised decision
+
+**Statement.** An owner/product decision settles a change with two or more coupled parts (e.g.
+"gate the purchase on funding AND give the buyer a way to evaluate before paying"). One part ships
+completely; the other is never built, and — the actual defect — it exists nowhere: no backlog row,
+no tracking id, no revised decision recording that the scope was cut. The shipped half changes
+system behavior in a way the unshipped half was meant to balance, so the product silently lands in
+a state nobody chose. Everyone downstream reads the shipped half as the whole decision.
+
+**Detect.** For each settled decision with multiple parts (from decision records, incident notes,
+design docs), enumerate the parts and locate each one's implementation or its tracking artifact. A
+part with neither is a hit — the finding is the untracked gap, independent of whether building it
+is currently the right call. Confirm the decision was genuinely settled (not a brainstorm) before
+flagging.
+
+**False positives.** Scope cuts that were explicitly re-decided and recorded; parts tracked under
+a different name after a legitimate redesign; decisions superseded wholesale by a later recorded
+decision.

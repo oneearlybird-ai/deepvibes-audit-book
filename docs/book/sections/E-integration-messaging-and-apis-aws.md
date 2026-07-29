@@ -294,3 +294,26 @@ in the live tree are the fossil record of merge-mode deletions and are hits on t
 boundaries — legitimate only when a compensating reaper (a job or verifier that enumerates and
 deletes live-minus-source residue) demonstrably exists and runs; routes intentionally live-managed
 outside IaC that are tracked by an explicit, shrinking baseline with a gate that blocks new drift.
+
+## E:34 — Event-bus input-transformer template authored through a JSON encoder that escapes angle brackets — placeholders never substitute
+
+**Statement.** Input-transformer templates reference their variables as `<name>`, but the IaC or
+codegen path builds the template string through a JSON encoder that escapes `<` and `>` to their
+six-character unicode escape sequences (backslash-u-0-0-3-c / backslash-u-0-0-3-e — several
+encoders, including HCL's jsonencode, do this by default as an HTML-safety measure). The bus stores the
+escaped form, so the literal placeholder token never appears and substitution never occurs: every
+delivery carries the template verbatim, with unresolved placeholder text where data should be. The
+target API then rejects on missing/null required fields (filling a DLQ with byte-identical bodies)
+— or worse, accepts placeholder text as data. Every target authored by the same encoder fails
+identically, silently, from birth; nothing errors at plan or apply time.
+
+**Detect.** Read the RAW template back from the bus API (not from source) and search for the
+unicode escape of `<` (the literal five characters u003c preceded by a backslash). Sample the
+target's DLQ: many messages sharing one body hash is the signature, and the bodies show the
+unsubstituted `<name>` tokens escaped that same way. Cross-check the downstream API's error
+(null/missing required members named in the template). Sweep every rule authored by the same
+encoding path — the defect is per-encoder, not per-rule.
+
+**False positives.** Encoders configured not to escape HTML characters; templates that use no
+placeholders (static payloads); transformations expressed purely through input paths, which have no
+angle-bracket syntax.

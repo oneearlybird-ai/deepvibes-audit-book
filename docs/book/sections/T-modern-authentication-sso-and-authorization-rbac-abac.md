@@ -256,3 +256,25 @@ candidate set and a second factor (confirmation code, callback to the number on 
 authenticated session) gates the operation; read-only disclosure of information the requester
 demonstrably already holds; and operations whose blast radius is genuinely self-limited — verify by
 reading what the handler returns and writes, not by the operation's name.
+
+## T:27 — System-context credential path carries an end-user identity attribute the privilege boundary forbids — the lane fails on every invocation
+
+**Statement.** A machine-context execution path (event-driven worker, scheduler, queue consumer)
+calls a credential-minting or role-assumption seam passing a caller-identity attribute (a user id,
+often a placeholder like "SYSTEM"), and the boundary hard-rejects identity attributes on
+system-scoped credential profiles as a security invariant. The rejection is correct; the caller is
+wrong — and it fails on 100% of invocations, from the first deploy. When the caller also swallows
+the error and reports success (the fan-out-swallow class), a mandatory outbound lane is dead from
+birth with every layer individually "working." The same codebase frequently demonstrates the
+correct call shape in an adjacent client of the same seam — the lesson was learned once and not
+propagated.
+
+**Detect.** Enumerate the boundary's forbidden-attribute list for system profiles, then grep every
+caller that resolves credentials under a system/machine context for those attributes in its call
+arguments. For each hit, check whether the lane has EVER succeeded: error logs at the seam,
+downstream table counts, delivery records. Zero successes since deploy plus a hard throw at the
+seam is conclusive.
+
+**False positives.** User-context paths where the identity attribute is required and permitted;
+boundaries that ignore rather than reject extra attributes (dead config, not an outage);
+placeholder identities the boundary explicitly whitelists as service principals.

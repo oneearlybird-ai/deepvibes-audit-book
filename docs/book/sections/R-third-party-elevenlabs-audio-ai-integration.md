@@ -78,3 +78,40 @@ window, and ends with a coverage verification that fails on any uncovered tool.
 independent of the live server - config-first is then safe and preferable; parameters already
 declared by the deployed server, where seeding order is free; an apparent 200-no-op that is
 eventual consistency - re-read after a delay before concluding the endpoint ignores the field.
+
+## R:13 - Agent-platform orchestration artifacts hand-authored in the vendor console with no repository source - two authorities compete for the conversation sequence
+
+**Statement.** Conversation procedures/workflows/graphs exist live on the agent platform, authored
+by hand in the vendor console, matching no committed artifact: the repo's prompt-builder also
+encodes step sequencing, the catalog/spec documents describe artifacts that do not exist live (and
+name an apply script that was never written), and the live artifacts are partially wired (empty
+triggers, no hub edges). Behaviour becomes whichever authority the platform consults for a given
+turn; edits to either side diverge silently, and no gate can see console-side changes. The repo may
+even state a single-authority principle that the live console state contradicts.
+
+**Detect.** List the live orchestration artifacts via the vendor API and diff against every
+committed spec/catalog/apply script. Check wiring completeness (triggers, edges, referenced tool
+ids). Grep the repo for the apply pipeline the docs reference. Compare observed call transcripts
+against the artifact's declared first steps - a live call that follows the prompt rather than the
+procedure proves the split authority.
+
+**False positives.** Platforms where the console is the declared single source of truth and the
+repo is intentionally silent, recorded as a sanctioned posture; vendor-supplied read-only demo
+artifacts that nothing routes to.
+
+## R:14 - Post-call analysis consumer reads collection fields the agent is not configured to collect - the branch is structurally dead
+
+**Statement.** A post-call webhook or completion handler resolves the call outcome from the agent
+platform's analysis/data-collection output, but the live agent configuration's collection block is
+empty (or lacks the fields the reader names). The reader returns null on every call, so the
+fallback lane - timeouts, re-dials, abandonment classification - silently becomes the de-facto
+primary path. Every layer succeeds; the intended lane has simply never produced a value.
+
+**Detect.** Diff the reader's field list against the live agent configuration's collection block
+(fetched via API, not from docs). Search history for the reader ever yielding a non-null outcome
+(logs, metrics, downstream state transitions). A fallback lane whose counters equal the total call
+count is the signature.
+
+**False positives.** Fields populated by a different producer (server-side injection into the same
+payload); readers that are deliberate forward-compatibility for a collection rollout that is
+tracked and imminent; optional enrichment where the null path is the designed primary.

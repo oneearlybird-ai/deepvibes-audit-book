@@ -130,3 +130,25 @@ organization that deliberately wants a value different from the service default 
 value equally ends the flap, so the finding is only the omission, never the preference;
 lifecycle-ignore masking of the attribute, which silences the plan while abandoning the field - that
 is its own defect (CC:4), not a fix for this one.
+
+## CC:14 — An honest apply of a singleton policy enumerates only the consumers IaC knows — out-of-band consumers are revoked silently
+
+**Statement.** A resource's access policy is a singleton document managed by IaC, and the live
+estate also contains consumers created outside IaC (console-created rules, hand-built schedules,
+legacy senders). When the IaC narrows or regenerates the policy — often as a correct, well-intended
+tightening — it enumerates the consumers it knows about: exactly the ones in its own state. Every
+out-of-band consumer is silently revoked on that apply. Nothing fails at apply time; the orphaned
+consumers begin failing on their next invocation, often with no DLQ or alarm because the same
+out-of-band birth that excluded them from IaC also excluded them from monitoring. The root defect
+is the unmanaged consumer, but the visible incident is manufactured by the honest apply — and the
+team that ran the apply has no reason to connect the two events.
+
+**Detect.** Before any singleton-policy change, diff the policy's CURRENT live principal/source
+list against the IaC-declared list; every live-only entry is an out-of-band consumer that the apply
+will cut off. After the fact: correlate the consumer's first failure timestamp with CloudTrail's
+policy-write events — an exact match names the apply. Sweep for siblings: any other singleton
+policy the same stack regenerates.
+
+**False positives.** Deliberate revocations of known-rogue consumers (recorded as such); policies
+where the narrowing was itself the incident response; consumers that were already dead before the
+apply (verify last-success predates the policy write).

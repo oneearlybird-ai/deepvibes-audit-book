@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 715,
+ "rule_count": 723,
  "sections": [
   {
    "id": "A",
@@ -295,7 +295,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "C:1",
@@ -392,6 +392,10 @@
     {
      "id": "C:24",
      "title": "VPC: Default security group left with its default allow rules"
+    },
+    {
+     "id": "C:25",
+     "title": "Near-duplicate security-group twins split the authority — rule resources target one while workloads (or nothing) attach the other"
     }
    ]
   },
@@ -521,7 +525,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 33,
+   "rule_count": 34,
    "rules": [
     {
      "id": "E:1",
@@ -654,6 +658,10 @@
     {
      "id": "E:33",
      "title": "Merge-only API deployment mode never deletes, so removed routes and empty resources accumulate as permanent live drift"
+    },
+    {
+     "id": "E:34",
+     "title": "Event-bus input-transformer template authored through a JSON encoder that escapes angle brackets — placeholders never substitute"
     }
    ]
   },
@@ -1650,7 +1658,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 12,
+   "rule_count": 14,
    "rules": [
     {
      "id": "R:1",
@@ -1699,6 +1707,14 @@
     {
      "id": "R:12",
      "title": "Per-tool input overrides validate against the LIVE tool schema - config cannot precede the code deploy"
+    },
+    {
+     "id": "R:13",
+     "title": "Agent-platform orchestration artifacts hand-authored in the vendor console with no repository source - two authorities compete for the conversation sequence"
+    },
+    {
+     "id": "R:14",
+     "title": "Post-call analysis consumer reads collection fields the agent is not configured to collect - the branch is structurally dead"
     }
    ]
   },
@@ -1707,7 +1723,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "S:1",
@@ -1760,6 +1776,10 @@
     {
      "id": "S:13",
      "title": "Caller-controlled value concatenated into a delimited composite key forges the segments that follow it"
+    },
+    {
+     "id": "S:14",
+     "title": "Rows written under a retired provisioning flow persist in live tenant tables — current code refuses or misreads them"
     }
    ]
   },
@@ -1768,7 +1788,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "T:1",
@@ -1873,6 +1893,10 @@
     {
      "id": "T:26",
      "title": "A network-asserted originator identifier (caller ID, sender address, forwarded-for) used as the sole ownership proof for cross-record reads and destructive writes"
+    },
+    {
+     "id": "T:27",
+     "title": "System-context credential path carries an end-user identity attribute the privilege boundary forbids — the lane fails on every invocation"
     }
    ]
   },
@@ -2453,7 +2477,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "CC:1",
@@ -2506,6 +2530,10 @@
     {
      "id": "CC:13",
      "title": "Provider-populated default attribute omitted from IaC - the permanent revert flap"
+    },
+    {
+     "id": "CC:14",
+     "title": "An honest apply of a singleton policy enumerates only the consumers IaC knows — out-of-band consumers are revoked silently"
     }
    ]
   },
@@ -2848,7 +2876,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "JJ:1",
@@ -2929,6 +2957,10 @@
     {
      "id": "JJ:20",
      "title": "Client call sites reference API routes the live surface no longer serves"
+    },
+    {
+     "id": "JJ:21",
+     "title": "A settled cross-surface decision ships one half; the unshipped half exists nowhere — no code, no tracking row, no revised decision"
     }
    ]
   },

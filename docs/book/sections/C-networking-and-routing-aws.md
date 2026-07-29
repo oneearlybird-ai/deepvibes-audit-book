@@ -164,3 +164,24 @@ with no rules); its absence for any VPC is the durable form of the defect.
 **False positives.** A default SG already stripped to zero rules; VPCs mid-deletion; environments
 where the default SG is deliberately used as THE segmentation mechanism with scoped rules and a
 document saying so (rare, and usually still worth converting to explicit groups).
+
+## C:25 — Near-duplicate security-group twins split the authority — rule resources target one while workloads (or nothing) attach the other
+
+**Statement.** Two security groups with near-identical names exist in the same VPC — typically a
+hand-created original and an IaC-created successor (or two generations of IaC naming). Discrete
+rule resources in the IaC target one twin; the workload's interfaces (or no interfaces at all)
+attach the other. Each side reads as authoritative in its own frame: the IaC plan manages rules
+nothing enforces, while the attached (or orphaned) twin carries hand-era rules — often stale and
+alarming-looking (world-open ports, residential /32 SSH) — that no plan can ever surface. When the
+whole plane is dead (zero attachments on all twins), the debris additionally inflates every future
+audit's surface.
+
+**Detect.** Group the VPC's security groups by normalized name (strip prefixes/suffixes like
+environment markers); for each group with >1 member, map (a) which member the IaC rule resources
+target and (b) which member live ENIs attach. A mismatch is the finding. Zero ENIs across all
+members plus no reference from any live rule's source field marks the plane deletable — confirm
+against the service's desired/running counts before calling it dead.
+
+**False positives.** Blue/green or migration windows where both twins are intentionally live and
+tracked; name-similar groups that genuinely serve different planes (verify by attachment, not by
+name).

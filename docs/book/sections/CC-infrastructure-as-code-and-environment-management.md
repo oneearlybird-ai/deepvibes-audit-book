@@ -152,3 +152,51 @@ policy the same stack regenerates.
 **False positives.** Deliberate revocations of known-rogue consumers (recorded as such); policies
 where the narrowing was itself the incident response; consumers that were already dead before the
 apply (verify last-success predates the policy write).
+
+## CC:15 — lifecycle.ignore_changes on a deployment pointer freezes live traffic on stale code while the repo believes itself deployed
+
+**Statement.** A deployment pointer — a function alias, a task-definition revision reference, a
+release channel record — carries `lifecycle.ignore_changes` on the very attribute that names the
+version it points at. Every subsequent build still publishes a new version, so the pipeline reports
+success and the repository's own "is it deployed" check (which compares the published artifact to
+source) passes; only the pointer stays where it was the day it was created. Live traffic runs the
+version that happened to be current at birth, indefinitely. The failure is invisible while
+successive builds produce byte-identical artifacts — a parity check that hashes code cannot see a
+pointer that never moved — and surfaces only on the first build whose bytes actually differ, by
+which time the pointer may be many versions and many weeks stale. The ignore is almost always
+inherited from an earlier out-of-band deploy era whose reason no longer exists.
+
+**Detect.** Enumerate every deployment pointer in the estate and diff the version it resolves to
+against the newest published version; a pointer that is not the newest, on a resource whose IaC
+declares no deliberate pinning strategy, is the finding. Grep the IaC for `ignore_changes`
+containing the pointer's version attribute and demand a recorded reason for each. A fleet sweep is
+the strongest evidence: when 142 of 143 pointers track the version and one does not, the one is a
+defect, not a policy. Compare the pointer's own last-modified timestamp against the function's.
+
+**False positives.** Deliberate pinning with a recorded owner and rollback plan (canary/blue-green
+pointers that a separate promotion step advances — but verify that step exists and has run);
+pointers advanced by a deploy tool outside IaC where the ignore is what prevents the two owners from
+fighting (that is CC:12, and the fix is one owner, not the ignore); resources mid-migration where
+the pin is scoped to a dated change.
+
+## CC:16 — A resource name over a service-side identifier length cap fails mid-apply, after earlier resources in the same run are already created
+
+**Statement.** A naming scheme composes a resource name from a prefix, a subsystem, and a suffix,
+and the composed string exceeds a hard identifier length limit the target service enforces at create
+time. Nothing in the IaC toolchain knows the limit: the plan is clean, the graph is valid, and the
+failure arrives only when the API call runs. Because it is an apply-time API rejection, it lands
+*mid-run* — every resource ordered before it in the graph is already created, the state file records
+a partial estate, and the operator is left reconciling a half-applied stack under time pressure. The
+scheme itself is usually correct; only the two or three longest members overflow, which is why it
+survives review and why the same scheme keeps producing new violations as subsystem names grow.
+
+**Detect.** For every resource type in a change, look up the service's documented name-length and
+character-class constraints and compute the rendered name at plan time. The durable form is a
+plan-time assertion in the IaC itself (a precondition on `length(name)`) so the next over-limit name
+dies in the gate rather than mid-apply — a fix that only shortens today's three names leaves the
+next one to be found the same way. Check character-class rules in the same pass; length and
+allowed-character rejections are the same class of apply-time surprise.
+
+**False positives.** Names the provider truncates or auto-generates rather than rejecting; limits
+that differ by partition or by name-vs-ARN, where the constraint applies to a different field than
+the one being asserted; resources whose name is server-assigned.

@@ -251,3 +251,52 @@ posture; sequences whose later calls are performed by a different, correctly-gra
 bucket-policy applier, a tagging sweeper) on a schedule; providers that apply the property as an
 account-level default so the explicit call is redundant; provisioners that catch the denial, record it,
 and re-drive the hardening step through a path that does have the grant.
+
+## F:28 — An inline session policy grown past the credential service's packed-size budget turns the least-privilege fence into a total outage
+
+**Statement.** A per-request credential fence is expressed as an *inline* session policy passed at
+assume-role time, and the fence is attribute-pinned: it enumerates resources, conditions, and tag
+constraints that grow with every capability added to the lane. The credential service compresses and
+size-limits that document, and when the packed size crosses the budget the assume-role call itself
+fails — not the action the policy was meant to constrain. Every request on the lane dies before any
+business logic runs, and because the failure is raised by the credential layer it surfaces as an
+opaque infrastructure error rather than an authorization decision: an unhelpful generic 5xx at the
+edge, with the real exception name only in the function's own logs. The defect is created by the
+safest-looking possible edit — tightening the fence with one more explicit resource — so it is
+shipped by exactly the reviewer who is being careful.
+
+**Detect.** Measure, do not estimate: probe the real credential service with each built policy and
+record the returned packed size against the budget as a ground-truth pin, then gate on drift from
+that pin. Anything already near the ceiling must move to a managed policy referenced by ARN, since
+only the ARN counts toward the packed budget. Sweep every profile in one pass — the profiles that
+are closest to the cliff are rarely the ones being edited. Byte-identical twin profiles that fall
+out of the sweep are a second finding: two lanes for one job.
+
+**False positives.** Profiles whose policy is generated per-request from a bounded set (measure the
+worst case, not the median); lanes already on managed policies where the inline document is only a
+narrowing overlay; a one-off spike from a debugging build that never shipped.
+
+## F:29 — A role granted the data-plane action on a customer-managed-key-encrypted store, but not the key action, fails 100 percent of the time at the key service
+
+**Statement.** A store is encrypted with a customer-managed key, and a principal is granted exactly
+the data-plane action it needs — read, write, or delete — with correctly scoped resource ARNs. The
+grant looks complete and passes least-privilege review, because the reviewer is checking the store's
+permissions. But every data-plane call against a CMK-encrypted store also requires the corresponding
+key action on the key, and that statement is absent. The result is not a partial degradation: it is
+a 100 percent failure rate for that principal on that store, raised by the key service, with an error
+text that names the key rather than the store — so the failure reads as a key-policy problem and is
+triaged away from the role that is actually missing the grant. The tell is a sibling: another
+function in the same subsystem, written at the same time, that does carry the key statement. The one
+without it was the one whose access pattern looked simple enough not to need it.
+
+**Detect.** For every store encrypted with a customer-managed key, enumerate all principals holding
+a data-plane action on it and assert each also holds the matching key action on that key — the check
+is mechanical and should be a verifier, not a review habit. Live-confirm by comparing the failing
+principal's inline policies against its siblings' in the same subsystem; a missing whole statement
+(not a narrowed one) is the signature. Failure-rate evidence settles it: count the principal's
+invocations against its logged failures over a window; equality proves it has never once succeeded.
+
+**False positives.** Stores encrypted with a service-owned key, where no key grant is required;
+principals whose key access is granted by the key policy rather than an identity policy (check
+both sides before filing); read paths against a store whose encryption context the caller never
+touches because it only reads metadata the service returns unencrypted.

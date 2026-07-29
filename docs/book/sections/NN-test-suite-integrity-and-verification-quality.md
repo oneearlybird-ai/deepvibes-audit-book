@@ -465,3 +465,29 @@ broad scan to be a superset.
 **False positives.** Analyzers whose output is provably source-only (pure AST or text rules with no
 dependency resolution); pipelines that regenerate and enforce in the same ephemeral image; fences
 keyed on something coarser than the environment-sensitive detail.
+
+## NN:24 — A machine-written artifact has a canonical serializer but no gate asserting it, so every hand-edit reformats the whole file and buries the real change
+
+**Statement.** A long-lived structured artifact — a ledger, a lockfile, a generated manifest, a
+baseline — is written by one tool with a fixed serializer, and is also edited by ad-hoc scripts and
+by hand. Nothing asserts the canonical form. An editor that re-serializes with a different
+indent, key order, or line ending rewrites every line, and the commit that carries a three-line
+semantic change arrives as a whole-file diff. The harm is not cosmetic: review of that commit
+becomes impossible, so the one change that mattered ships unreviewed, and a genuine
+loss — a dropped entry, a silently reverted status — is indistinguishable from reformatting noise.
+The failure recurs and alternates, because each side's writer "fixes" the format back, and each
+correction is itself another whole-file commit. Reviewers learn to skip diffs on that file, which is
+the durable damage.
+
+**Detect.** Identify the artifact's authoritative writer and read its exact serialization call, then
+assert byte-identity against it in whatever gate the workflow already passes through — a validator,
+a pre-commit hook, a CI check. Byte-identity, not a formatter run: a formatter is a second writer
+with its own opinion and reintroduces the problem. Historical evidence is easy to find and worth
+gathering: search the artifact's log for commits whose line count approximates the file's length,
+and read their messages — a commit that exists only to restore formatting proves the gate is absent
+and dates the first occurrence.
+
+**False positives.** Artifacts deliberately maintained by hand where the tool is the secondary
+writer (invert the assertion, do not add it); one-time intentional reformats that are isolated in
+their own commit and stated as such; files whose churn is genuine because the generator's output
+legitimately depends on inputs that changed.

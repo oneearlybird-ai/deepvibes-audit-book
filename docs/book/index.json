@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 724,
+ "rule_count": 731,
  "sections": [
   {
    "id": "A",
@@ -670,7 +670,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 27,
+   "rule_count": 29,
    "rules": [
     {
      "id": "F:1",
@@ -779,6 +779,14 @@
     {
      "id": "F:27",
      "title": "Provisioning principal granted the create action but not the post-create hardening calls the same code path makes, so every resource lands half-configured"
+    },
+    {
+     "id": "F:28",
+     "title": "An inline session policy grown past the credential service's packed-size budget turns the least-privilege fence into a total outage"
+    },
+    {
+     "id": "F:29",
+     "title": "A role granted the data-plane action on a customer-managed-key-encrypted store, but not the key action, fails 100 percent of the time at the key service"
     }
    ]
   },
@@ -787,7 +795,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "G:1",
@@ -892,6 +900,10 @@
     {
      "id": "G:26",
      "title": "Dead-letter queue given a depth alarm but no drain owner or redrive procedure — the alarm latches on permanently and the messages are never recovered"
+    },
+    {
+     "id": "G:27",
+     "title": "An injected instrumentation layer writes its own failures at the application's error level, so every level-based error alarm fires on telemetry"
     }
    ]
   },
@@ -2018,7 +2030,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "V:1",
@@ -2075,6 +2087,10 @@
     {
      "id": "V:14",
      "title": "Full-corpus tenant export executed synchronously in the request path and buffered wholly in memory"
+    },
+    {
+     "id": "V:15",
+     "title": "A safety pre-check that loses its permission degrades to a logged warning, and the job proceeds unguarded on every run"
     }
    ]
   },
@@ -2481,7 +2497,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 14,
+   "rule_count": 16,
    "rules": [
     {
      "id": "CC:1",
@@ -2538,6 +2554,14 @@
     {
      "id": "CC:14",
      "title": "An honest apply of a singleton policy enumerates only the consumers IaC knows — out-of-band consumers are revoked silently"
+    },
+    {
+     "id": "CC:15",
+     "title": "lifecycle.ignore_changes on a deployment pointer freezes live traffic on stale code while the repo believes itself deployed"
+    },
+    {
+     "id": "CC:16",
+     "title": "A resource name over a service-side identifier length cap fails mid-apply, after earlier resources in the same run are already created"
     }
    ]
   },
@@ -3156,7 +3180,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "NN:1",
@@ -3249,6 +3273,10 @@
     {
      "id": "NN:23",
      "title": "The fence was generated in a cleaner environment than the one that enforces it, so the generator sees less than the gate will"
+    },
+    {
+     "id": "NN:24",
+     "title": "A machine-written artifact has a canonical serializer but no gate asserting it, so every hand-edit reformats the whole file and buries the real change"
     }
    ]
   },

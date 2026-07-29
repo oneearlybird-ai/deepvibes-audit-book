@@ -29,7 +29,24 @@ const errors = [];
 
 // ---- ledger ----
 const ledgerPath = path.join(instanceDir, cfg.ledger);
-const ledger = JSON.parse(fs.readFileSync(ledgerPath, "utf8"));
+const ledgerRaw = fs.readFileSync(ledgerPath, "utf8");
+const ledger = JSON.parse(ledgerRaw);
+
+// Canonical serialization gate. merge-runs.mjs writes the ledger as
+// JSON.stringify(ledger, null, 1) + "\n"; any other writer that reformats it
+// produces a whole-file diff that buries the real change (paid for twice:
+// a69b6c1 and 34f3b7f each reformatted ~20k lines). Assert byte-identity so an
+// off-format write fails the gate every run already passes through.
+const canonical = JSON.stringify(ledger, null, 1) + "\n";
+if (ledgerRaw !== canonical) {
+  console.error("LEDGER INVALID — 1 error(s):");
+  console.error(
+    "  - ledger is not in canonical form (JSON.stringify(ledger, null, 1) + newline). " +
+      "An editor rewrote it with different formatting, which turns any real change into a whole-file diff. " +
+      "Rewrite it canonically before committing.",
+  );
+  process.exit(1);
+}
 if (!Array.isArray(ledger)) {
   console.error("ledger must be a JSON array");
   process.exit(1);

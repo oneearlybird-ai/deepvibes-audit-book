@@ -298,3 +298,30 @@ review and an owner named in the runbook; alarms configured on message AGE rathe
 clear once the backlog is worked; DLQs whose messages are provably duplicates of work completed on a
 retry path, where the accumulation is cosmetic and the accepted posture is documented; queues drained
 by an automated redrive whose schedule is longer than the audit window.
+
+## G:27 — An injected instrumentation layer writes its own failures at the application's error level, so every level-based error alarm fires on telemetry
+
+**Statement.** A platform adds a caught-error signal by filtering the application's own structured
+logs at the error level, and the same runtime also carries an injected observability layer — an
+agent, an exporter, a wrapper — that the application did not write and cannot control. That layer
+logs its own operational faults, most commonly export timeouts to a collector, through the same
+console at the same level and in the same structured envelope. The filter cannot tell them apart:
+the level is a property of the record, and the record is indistinguishable. The alarm therefore
+fires on telemetry health rather than application health. Two harms compound. The alarm flaps or
+latches on a fault the on-call cannot act on, training the team to ignore it; and the metric is
+permanently non-zero, so a real caught error on that function raises no transition and pages
+nobody. The signal is at its least trustworthy on the functions that carry the heaviest
+instrumentation — usually the ones on the critical path.
+
+**Detect.** Sample the log records that actually drive the error metric, do not assume they are the
+application's — read the stack frames, and any frame pointing into an injected layer's own bundle
+rather than the function's code is the finding. Cross-check: a function whose alarm is latched or
+flapping on a fixed cadence while its business metrics are healthy is the signature. The durable fix
+excludes the injected layer's records at the filter (by source, logger name, or message shape)
+instead of by widening the threshold, which only moves the blindness; a separate alarm on the
+instrumentation layer's own health keeps that fault visible where it belongs.
+
+**False positives.** A layer whose export failures genuinely indicate application distress (memory
+pressure, event-loop starvation) — confirm by correlating with the function's own duration and error
+metrics before dismissing; functions where the noisy records are the application's, merely poorly
+levelled, which is a logging-hygiene defect in the application and not this rule.

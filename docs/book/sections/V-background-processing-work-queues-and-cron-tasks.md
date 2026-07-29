@@ -94,3 +94,30 @@ oscillation during an active incident that resolves once the upstream fault clea
 **Detect.** Request-path handlers that loop paginated reads to exhaustion, accumulate results into arrays, `JSON.stringify` the whole corpus, and upload once; compare the gateway's integration timeout against the function timeout; absence of a 202/job-id + async worker + completion-notification pattern; absence of streaming upload (multipart from a paginator stream) bounding memory.
 
 **False positives.** Corpora with schema-bounded small size and a stated bound; endpoints that only enqueue the export job synchronously; streaming implementations with bounded memory; internal/admin-only tools where the operator owns the timeout risk knowingly.
+
+## V:15 — A safety pre-check that loses its permission degrades to a logged warning, and the job proceeds unguarded on every run
+
+**Statement.** A periodic job opens with a pre-check that exists to make it safe to run: is a
+sibling execution already in flight, is a circuit breaker tripped, is another writer holding the
+lease. The pre-check queries a control-plane API, and the job's role lacks that API's permission —
+either it never had it or a later policy tightening removed it. The call raises an authorization
+error, the handler catches it, logs a warning, and continues, because the author reasonably decided
+that a failed check should not take down the job. The job then completes and reports success on
+every run. The result is a guard that has never once guarded: the condition it exists to detect is
+undetectable, and the failure it exists to prevent — the double execution, the write during a
+tripped breaker — will occur silently the first time the underlying race actually happens, with a
+successful-looking log line for every prior run as evidence that the guard was working.
+
+**Detect.** Read the job's own warning-level log lines, not just its errors — the signature is an
+authorization error inside a message whose name ends in check_failed or similar, on every
+invocation, alongside a normal completion record. Grep every catch block that wraps a safety
+pre-check and ask what the code does when the check cannot answer; warn-and-continue on an
+authorization failure is always the finding, because an authorization failure is a permanent
+condition, not a transient one. Then confirm from the live policy that the permission is genuinely
+absent rather than conditioned away.
+
+**False positives.** Pre-checks that are advisory by design and documented as such, where a second,
+authoritative guard exists downstream (find it and prove it runs); transient throttling or timeout
+failures on the check, which are a retry concern and not this rule; jobs whose concurrency is
+genuinely prevented by the scheduler or by a reserved-concurrency setting, making the in-code check
+redundant — verify the setting exists before accepting this.

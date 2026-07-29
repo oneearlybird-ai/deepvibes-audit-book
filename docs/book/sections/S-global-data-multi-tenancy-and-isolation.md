@@ -81,3 +81,36 @@ rank above orphans.
 **False positives.** Rows a documented migration/reaper is scheduled to process (verify the reaper
 exists and runs); intentionally-retained historical records under a recorded retention decision;
 prefixes that are still-legal aliases per the current contract.
+
+## S:15 — One shared external sender identity serves every tenant, so inbound replies cannot be attributed and provider reputation is a shared fate
+
+**Statement.** A messaging or notification channel (SMS originator, sending email
+domain, push certificate, webhook callback address) is provisioned once at the
+platform level and used for every tenant. Two consequences follow that no amount
+of correct internal data modelling fixes. First, an inbound reply carries only
+the sender's identity and the message body — the destination, which would name
+the tenant, is constant and therefore carries no information — so any reply that
+must be attributed to a tenant is attributed by heuristic (recency, "last
+conversation"), and a heuristic that attributes a CONSENT or opt-out artifact to
+the wrong tenant is a compliance record with the wrong party's name on it, not a
+UX bug. Second, provider-side reputation attaches to the shared identity, so one
+tenant's behaviour degrades delivery for every other tenant with no isolation
+available. The regulatory layer often compounds it: registration regimes bind a
+sender identity to one declared brand and use case, so a shared originator may
+also be outside the terms it was registered under.
+
+**Detect.** Find where the outbound sender identity is resolved and check whether
+the lookup takes a tenant argument at all — a platform-level config value with no
+tenant key is the signature. Then, for each inbound path, ask what field the code
+uses to decide which tenant the message belongs to; if the answer is "the most
+recent outbound" or "the newest pending request", the attribution is a heuristic.
+Test it with the concrete case: one end user who is a legitimate contact of two
+tenants, with a pending interaction from each. Separately, read the identity's
+registration record and compare its declared brand and use case against the set
+of tenants actually sending through it.
+
+**False positives.** Channels where the reply is always self-identifying (a
+tenant-specific code or link in the body, a per-tenant reply-to address) so the
+shared identity carries no attribution load; genuinely single-tenant products;
+transactional-only one-way channels with no inbound path and a reputation profile
+the platform deliberately owns.

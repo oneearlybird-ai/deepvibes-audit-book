@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 731,
+ "rule_count": 732,
  "sections": [
   {
    "id": "A",
@@ -1735,7 +1735,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "S:1",
@@ -1792,6 +1792,10 @@
     {
      "id": "S:14",
      "title": "Rows written under a retired provisioning flow persist in live tenant tables — current code refuses or misreads them"
+    },
+    {
+     "id": "S:15",
+     "title": "One shared external sender identity serves every tenant, so inbound replies cannot be attributed and provider reputation is a shared fate"
     }
    ]
   },

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 732,
+ "rule_count": 733,
  "sections": [
   {
    "id": "A",
@@ -670,7 +670,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "F:1",
@@ -787,6 +787,10 @@
     {
      "id": "F:29",
      "title": "A role granted the data-plane action on a customer-managed-key-encrypted store, but not the key action, fails 100 percent of the time at the key service"
+    },
+    {
+     "id": "F:30",
+     "title": "A caller granted sts:AssumeRole on a stamped role family is never admitted by the family's trust template, so the grant's two halves ship apart and the path is dead on first exercise"
     }
    ]
   },

@@ -300,3 +300,32 @@ invocations against its logged failures over a window; equality proves it has ne
 principals whose key access is granted by the key policy rather than an identity policy (check
 both sides before filing); read paths against a store whose encryption context the caller never
 touches because it only reads metadata the service returns unencrypted.
+
+## F:30 — A caller granted sts:AssumeRole on a stamped role family is never admitted by the family's trust template, so the grant's two halves ship apart and the path is dead on first exercise
+
+**Statement.** Assuming a role requires two artifacts that live in two different places: the
+identity-side grant (sts:AssumeRole, plus sts:TagSession when sessions are tagged) on the caller's
+role, and resource-side admission of the caller in the target role's trust policy. When targets are
+per-tenant roles stamped from a shared trust template, those halves have different owners and review
+paths — the grant sits in the caller's own IaC, the admission in the template a provisioner renders —
+so wiring a new consumer routinely ships the grant and forgets the template. Nothing fails at deploy:
+gates stay green, the caller's policy review looks complete, and the defect waits for the first real
+exercise of the path, where it fails 100 percent of the time at AssumeRole (TagSession denials
+surface first when sessions are tagged, which reads as a tagging bug rather than a missing trust
+entry). Rarely-exercised paths — first activation, account deletion, month-end jobs — carry it
+dormant for weeks and are then discovered by a customer, not a gate. The tell is the caller's own
+sibling: the same template already admits a role added for an adjacent flow at an earlier version,
+proving additions were known to be required and this one was simply missed.
+
+**Detect.** Enumerate every principal holding sts:AssumeRole on the role-family ARN pattern in IaC,
+and diff that set against the union of the trust template's principal lists — every consumer absent
+from the template is a finding; the check is mechanical and should be a verifier, not a review
+habit. Assert action parity too: a trust statement admitting AssumeRole but not TagSession breaks
+every tagged-session caller identically. Live-confirm on one stamped instance: read the actual trust
+policy of a rendered role and check the caller's ARN is present.
+
+**False positives.** Callers admitted by a different trust statement in the same policy (service
+principals, federation, a separate user-context statement in a dual-trust design — check every
+statement before filing); grants that are deliberately dormant behind an unreleased feature, but
+demand a dated note saying so; families whose trust is intentionally managed outside the template —
+then the finding is that split, not the missing entry.

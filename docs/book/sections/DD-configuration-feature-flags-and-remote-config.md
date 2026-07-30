@@ -299,3 +299,28 @@ deletes the row the loop iterates.
 includes; a separate reconciler that covers assigned members (find it and check its schedule is
 enabled, not merely present); deployments where the generated configuration is re-applied on every
 request or boot, making the stamp advisory.
+
+## DD:18 — The drift repairer advances the fleet's version marker while re-applying only one class of the versioned artifacts, so the other classes drift forever behind a converged-looking version
+
+**Statement.** A fleet's members are stamped from versioned templates spanning more than one
+artifact class — e.g. per-member access policies AND the trust/admission documents governing who
+may use them. The reconciler's drift branch, on version mismatch, re-generates one class (usually
+the one the last incident was about), then advances the member's version marker to current. The
+marker certifies the whole template set, but only part of it was delivered: every change to the
+other classes rides the same version ratchet, is never re-applied, and the mismatch that would have
+flagged it is erased the moment the marker moves. The fleet reads as converged in every inventory;
+the stale class surfaces only when a member is exercised through it. The tell is a member whose
+version equals current but whose artifact of the unrefreshed class predates changes the changelog
+attributes to older versions.
+
+**Detect.** Enumerate the artifact classes the version marker claims to certify (read the template
+module: what does it generate?), then read the drift-repair path and list what it actually
+re-applies — any class in the first set and not the second is drifting silently. Live-confirm by
+diffing one converged member's artifacts of the suspect class against the current generator output.
+Pin it with a unit test asserting the drift path writes every class (count the write calls per
+class).
+
+**False positives.** Version markers explicitly scoped to one artifact class, with the other
+classes carrying their own markers or delivered by a different reconciler — verify that second path
+exists and runs, then audit its coverage instead; members intentionally pinned or frozen by an
+operator hold, which must be recorded visibly on the member, not inferred from staleness.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 733,
+ "rule_count": 734,
  "sections": [
   {
    "id": "A",
@@ -2578,7 +2578,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "DD:1",
@@ -2647,6 +2647,10 @@
     {
      "id": "DD:17",
      "title": "The self-healing drift loop is scoped to the spare pool, so the in-service members it exists to protect are the only ones it never repairs"
+    },
+    {
+     "id": "DD:18",
+     "title": "The drift repairer advances the fleet's version marker while re-applying only one class of the versioned artifacts, so the other classes drift forever behind a converged-looking version"
     }
    ]
   },

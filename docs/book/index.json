@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 734,
+ "rule_count": 738,
  "sections": [
   {
    "id": "A",
@@ -525,7 +525,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "E:1",
@@ -662,6 +662,10 @@
     {
      "id": "E:34",
      "title": "Event-bus input-transformer template authored through a JSON encoder that escapes angle brackets — placeholders never substitute"
+    },
+    {
+     "id": "E:35",
+     "title": "Stream handler wraps deterministic record validation and transient I/O in one try/catch that reports every throw as a retryable batch-item failure, so one malformed record becomes an ordered-shard poison pill"
     }
    ]
   },
@@ -670,7 +674,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "F:1",
@@ -791,6 +795,10 @@
     {
      "id": "F:30",
      "title": "A caller granted sts:AssumeRole on a stamped role family is never admitted by the family's trust template, so the grant's two halves ship apart and the path is dead on first exercise"
+    },
+    {
+     "id": "F:31",
+     "title": "Grant names a hierarchical resource by a path-truncated ARN, so the authorization decision is made against a resource that does not exist and every call is denied"
     }
    ]
   },
@@ -799,7 +807,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "G:1",
@@ -908,6 +916,10 @@
     {
      "id": "G:27",
      "title": "An injected instrumentation layer writes its own failures at the application's error level, so every level-based error alarm fires on telemetry"
+    },
+    {
+     "id": "G:28",
+     "title": "Detective alarm on a privileged identity whose filter also matches the platform's own service-attributed calls under that identity, so the control oscillates on background noise and the real event is indistinguishable"
     }
    ]
   },
@@ -2505,7 +2517,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "CC:1",
@@ -2570,6 +2582,10 @@
     {
      "id": "CC:16",
      "title": "A resource name over a service-side identifier length cap fails mid-apply, after earlier resources in the same run are already created"
+    },
+    {
+     "id": "CC:17",
+     "title": "Shell command-substitution syntax written into an IaC string literal, which the IaC engine has no shell to evaluate, so the expression itself ships as the live value"
     }
    ]
   },

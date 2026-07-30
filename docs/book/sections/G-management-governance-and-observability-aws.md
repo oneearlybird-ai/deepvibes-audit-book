@@ -325,3 +325,40 @@ instrumentation layer's own health keeps that fault visible where it belongs.
 pressure, event-loop starvation) — confirm by correlating with the function's own duration and error
 metrics before dismissing; functions where the noisy records are the application's, merely poorly
 levelled, which is a logging-hygiene defect in the application and not this rule.
+
+## G:28 — Detective alarm on a privileged identity whose filter also matches the platform's own service-attributed calls under that identity, so the control oscillates on background noise and the real event is indistinguishable
+
+**Statement.** Controls that watch a privileged identity — the account root, a break-glass role, a
+deployment principal — are written as "any activity by this identity is an event," because for a
+human that is true. Cloud platforms, however, attribute a growing set of their OWN managed calls to
+those same identities: notification polling, entitlement and subscription reads, marketplace and
+support plumbing, health and billing readers. These arrive on a fixed cadence and carry the watched
+identity in the audit record, so a filter keyed on identity alone matches them exactly as it matches
+a human sign-in. Unlike a permanently latched control, this one keeps transitioning: the background
+cadence is usually shorter than the alarm's evaluation window but not continuous, so the alarm
+oscillates indefinitely, delivering a steady stream of notifications that are all benign. The control
+now fails in the worst available way — it is not silent, so no gap shows on any inventory or
+compliance report, and it is not trustworthy, so operators mute it, filter it, or stop reading it.
+When a genuine privileged action does occur it produces a notification identical in shape to the
+hundreds already ignored. Attempts to fix it by excluding read-only actions frequently do not, because
+the exclusion is written with a wildcard the log-filter grammar compares literally rather than as a
+glob, so the exclusion silently matches nothing.
+
+**Detect.** Do not judge these by existence or by wiring. Pull the alarm's transition history over a
+multi-week window and count transitions: a detective control on a rare event that has transitioned
+tens of times is reporting noise, whatever its dashboard state. Then resolve the actual events behind
+the metric — query the audit log for the filter's own pattern over one interval and group by the
+calling service principal and event name, not by identity. Any group whose source is a platform
+service domain is noise the filter should never have matched. Verify every exclusion clause in the
+pattern against the log-filter grammar's real comparison semantics by testing it against a known
+matching record, since wildcard-looking exclusions in equality comparisons are compared as literal
+strings. Finally, ask the operator-facing question: given the last month of notifications from this
+alarm, would a real privileged action have been distinguishable? If not, the control is dead
+regardless of its configuration.
+
+**False positives.** Alarms whose filter already constrains on the calling service principal or on a
+session/credential-type attribute that excludes service-attributed calls; environments where the
+watched identity genuinely performs frequent legitimate work and the control is scoped to a specific
+high-risk action set rather than to the identity; controls whose notification target is an
+aggregation or ticketing pipeline that deduplicates by design; short-lived alarms during a documented
+break-glass window.

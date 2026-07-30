@@ -317,3 +317,39 @@ encoding path — the defect is per-encoder, not per-rule.
 **False positives.** Encoders configured not to escape HTML characters; templates that use no
 placeholders (static payloads); transformations expressed purely through input paths, which have no
 angle-bracket syntax.
+
+## E:35 — Stream handler wraps deterministic record validation and transient I/O in one try/catch that reports every throw as a retryable batch-item failure, so one malformed record becomes an ordered-shard poison pill
+
+**Statement.** Ordered stream consumers report per-record failures back to the event-source mapping
+so the failed record alone is redriven. The classification of a failure as retryable is therefore a
+correctness decision, not a logging detail. A handler that encloses BOTH the record's parse/validate
+step and its downstream I/O in a single `try` and, in the `catch`, reports the record as a batch-item
+failure, has silently asserted that every possible throw is transient. Validation throws are not:
+they are a pure function of the record's own bytes, so the redrive re-runs the identical computation
+and fails identically until the mapping's retry budget is exhausted. Because the shard is ordered,
+every later record behind the poison pill is blocked for the whole retry sequence, so a single
+malformed row converts into a shard-wide stall whose duration is set by the retry policy, and then
+into a dead-letter record that requires manual handling. The comment above such a `catch` usually
+states the assumption explicitly ("infrastructure failure — retryable by definition"), which is true
+of the I/O the author was thinking about and false of the parser the same `try` also covers. The
+tell-tale artifact is a handler that computes its own retryable/permanent tally and still reports a
+failure count larger than the retryable count — the code already knows the failure is permanent and
+asks for a retry anyway.
+
+**Detect.** For each stream handler, list every statement inside the `try` whose failure is a
+deterministic function of the record (schema validation, id/format assertions, key construction,
+enum mapping, required-field checks) and confirm each one is either outside the retry-reporting path
+or classified as permanent before the report is built. Compare the handler's own counters in its
+completion log: a run where the permanent-failure count is non-zero while the retryable count is zero
+AND the reported batch-item-failure count is non-zero is the defect, observable without reading the
+code. Then confirm the consequence from the mapping's failure destination — a dead-letter record
+whose condition is retry-exhaustion while the function's own response status was success means the
+retries were spent on a computation that could never succeed. Check the shard's processing latency
+across the retry window to size the stall.
+
+**False positives.** Handlers whose validation genuinely depends on mutable external state (a schema
+registry, a feature flag, a reference table), where a re-read can legitimately change the outcome;
+pipelines with a bisect-on-failure setting that isolates the poison record by design; consumers where
+the retry budget is deliberately set to zero or one so the record reaches the dead-letter path
+immediately and ordering is explicitly not guaranteed; unordered consumers, where a blocked record
+delays nothing behind it.

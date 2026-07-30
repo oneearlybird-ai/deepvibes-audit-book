@@ -329,3 +329,39 @@ principals, federation, a separate user-context statement in a dual-trust design
 statement before filing); grants that are deliberately dormant behind an unreleased feature, but
 demand a dated note saying so; families whose trust is intentionally managed outside the template —
 then the finding is that split, not the missing entry.
+
+## F:31 — Grant names a hierarchical resource by a path-truncated ARN, so the authorization decision is made against a resource that does not exist and every call is denied
+
+**Statement.** Services whose resources live in a name hierarchy — parameter stores, secret stores,
+object prefixes, IAM paths — encode the FULL path inside the resource ARN, and the authorization
+decision is an exact match against that path, not against the leaf name. A policy that names the
+resource by its leaf, or by any prefix-truncated variant of its real path, therefore authorizes a
+resource that does not exist and denies the one the code actually requests. Nothing in the policy
+looks wrong: it names a plausible path, passes every syntax and lint check, and reads at review as
+precise least-privilege scoping. Nothing in the IaC catches it either, because the grant and the
+resource are usually declared in different stacks or different files and no reference binds them —
+the ARN is a hand-written string, so the two drift the moment either side is renamed or re-homed
+under a new prefix. The defect is invisible until runtime and then total: not a degraded path but a
+100% denial, from the first call, forever. Its blast radius is set by what the caller does with the
+denial, and callers that treat "cannot load the credential" as "the feature is unavailable" convert
+a hard authorization fault into a silent, permanently-suppressed feature that reports success to its
+own caller.
+
+**Detect.** Do not read policies for plausibility — bind them to reality. Extract every literal
+(non-wildcard) resource ARN granted across the tree for hierarchical services, parse the path out of
+each, and diff that set against the live inventory of resources actually provisioned; any granted
+path with no live resource behind it is either this defect or a dead grant, and both are findings.
+Drive the check from the consumer as well: for each caller, resolve the exact resource identifier it
+passes at runtime (from live configuration, not from source defaults, since the path usually arrives
+by environment or contract) and confirm the effective policy for its principal covers that exact
+string. Confirm the consequence in the audit log rather than by inspection — a denial on a
+hierarchical read is recorded with the requested ARN, so the log states the real path and the policy
+states the granted one, side by side. Where the caller has a failure branch, check what that branch
+does before sizing severity: a suppressed-and-continue branch hides the fault from every health
+signal that is not the audit log.
+
+**False positives.** Statements where a sibling clause covers the same resource by wildcard or by a
+trailing-slash prefix, which does authorize the full path; paths that legitimately do not exist yet
+because the grant ships ahead of the resource in a documented ordering; resources addressed by alias
+or by a service-resolved name where the ARN is not the authorization key; deliberately dead grants
+retained for a documented future consumer, which are a hygiene finding rather than a denial one.

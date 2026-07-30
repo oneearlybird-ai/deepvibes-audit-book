@@ -200,3 +200,35 @@ allowed-character rejections are the same class of apply-time surprise.
 **False positives.** Names the provider truncates or auto-generates rather than rejecting; limits
 that differ by partition or by name-vs-ARN, where the constraint applies to a different field than
 the one being asserted; resources whose name is server-assigned.
+
+## CC:17 — Shell command-substitution syntax written into an IaC string literal, which the IaC engine has no shell to evaluate, so the expression itself ships as the live value
+
+**Statement.** Declarative IaC languages interpolate with their own syntax and have no shell. A value
+authored as a shell expression — command substitution, backticks, a variable expansion in shell
+rather than template form — is therefore not evaluated, not rejected, and not warned about: it is
+carried through plan, apply, and drift detection as an ordinary opaque string and materializes in the
+live resource verbatim. This most often reaches a field whose whole purpose is to record a fact about
+the deployment — a build stamp, a rotation timestamp, a version or commit marker — usually copied out
+of a shell script or a runbook where the same line was correct. The result is configuration that
+states something false about the system in the exact place an operator will look for the truth,
+during exactly the incident where the fact matters: a rotation timestamp that is a literal `date`
+expression tells a responder nothing about when the secret last rotated, and reads as a real value
+until someone looks closely. Nothing detects it, because every layer treats the field as free-form
+text: the type checks pass, the plan is clean, the resource converges, and drift detection compares
+the literal against itself forever. Where such a field IS read by code, the same defect becomes a
+parse failure or a silently wrong comparison instead of merely a lie.
+
+**Detect.** Grep the IaC tree for shell-only syntax inside quoted values — `$(`, backticks, and
+`${...}` forms that the engine's own interpolation would not have accepted — and treat every hit in a
+string literal as a finding rather than as style. Confirm against the LIVE resource, not the source:
+read the deployed value back through the provider API, because a value that was correct once and is
+now stale is a different (and lesser) defect than one that was never evaluated. For each hit,
+determine whether anything consumes the field: an unconsumed field is a truthfulness defect scoped to
+whoever reads the console, while a consumed one is a correctness defect and should be severity-rated
+by what the consumer does with an unparseable value. Sweep sibling fields in the same resource and
+the same module — this arrives by copy-paste from a script, so it clusters.
+
+**False positives.** Values deliberately carrying shell text as data — user-data, entrypoint scripts,
+command arrays, container args, CI step definitions — where the string is meant to be evaluated later
+by a real shell; templating systems that DO perform substitution at render time before the IaC engine
+sees the file; fields whose literal `$(...)` is consumed by a downstream agent that evaluates it.

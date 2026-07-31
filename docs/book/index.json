@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 740,
+ "rule_count": 741,
  "sections": [
   {
    "id": "A",
@@ -2525,7 +2525,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "CC:1",
@@ -2594,6 +2594,10 @@
     {
      "id": "CC:17",
      "title": "Shell command-substitution syntax written into an IaC string literal, which the IaC engine has no shell to evaluate, so the expression itself ships as the live value"
+    },
+    {
+     "id": "CC:18",
+     "title": "Retiring one delivery lane deletes shared dependencies a surviving lane references by name, outside the IaC dependency graph"
     }
    ]
   },

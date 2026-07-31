@@ -232,3 +232,34 @@ the same module — this arrives by copy-paste from a script, so it clusters.
 command arrays, container args, CI step definitions — where the string is meant to be evaluated later
 by a real shell; templating systems that DO perform substitution at render time before the IaC engine
 sees the file; fields whose literal `$(...)` is consumed by a downstream agent that evaluates it.
+
+## CC:18 — Retiring one delivery lane deletes shared dependencies a surviving lane references by name, outside the IaC dependency graph
+
+**Statement.** Two delivery lanes for the same artifact (an automated pipeline and a
+manually-orchestrated tool, or two generations of the same automation) share supporting
+resources — an IAM instance profile, a security group, a bucket, a parameter. One lane is
+retired and its IaC is deleted. The dependency graph shows the shared resources as consumed
+only by the retired lane, because the surviving lane is driven by a DIFFERENT tool whose
+configuration references those resources **by name as opaque strings** — a builder template,
+a shell script, a CI step — which the IaC engine cannot see as edges. The deletion plans
+clean, applies clean, and the surviving lane keeps validating statically (its config is just
+strings). The break surfaces only at the surviving lane's next RUN, as a not-found error at
+launch time — often days or weeks later, on an urgent deploy, which is the worst possible
+moment to discover the only remaining deploy path is dead. The lesser variant of the same
+mechanism leaves the surviving lane's comments and docs pointing at the deleted files as
+"the canonical path," misleading the next operator during exactly that incident.
+
+**Detect.** For every IaC deletion of a named resource (identity, network, storage,
+parameter), grep the WHOLE repository for the resource's literal name — not just the IaC
+tree: builder templates, provisioning scripts, CI definitions, service configs, runbooks.
+A hit outside the IaC graph is a live consumer the plan cannot know about. Conversely, when
+auditing a repo that recently retired an automation (deleted pipeline files, "one path now"
+commits), enumerate the by-name references in the surviving tooling and confirm each named
+resource still exists live via the provider API. Exercise the surviving lane end to end
+after the retirement — a lane that only validates statically has not been proven.
+
+**False positives.** Names that match but are re-created by the surviving lane itself at
+run time (ephemeral keypairs, temporary security groups the tool manages); references in
+historical docs or changelogs that describe the past rather than configure the present;
+deletions where the surviving lane was migrated to new resource names in the same change —
+verify the new names exist live before dismissing.

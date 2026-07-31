@@ -353,3 +353,32 @@ pipelines with a bisect-on-failure setting that isolates the poison record by de
 the retry budget is deliberately set to zero or one so the record reaches the dead-letter path
 immediately and ordering is explicitly not guaranteed; unordered consumers, where a blocked record
 delays nothing behind it.
+
+## E:36 — Async handler treats a nonexistent-tenant authorization denial as transient, so an undeliverable event burns the retry budget and permanently latches the dead-letter alarm
+
+**Statement.** An event-driven handler resolves per-tenant credentials before doing work — assuming
+a tenant role, building a scoped client, reading a tenant-scoped key. When the tenant does not
+exist, that resolution fails with an authorization denial from the identity service, which is
+indistinguishable by type from the denial raised by a genuinely transient condition. If the handler
+lets it propagate undifferentiated, the async invoker's contract treats the throw as retryable and
+replays the event for its whole retry budget, recomputing an identical failure each time, then parks
+it in a dead-letter queue. Three costs follow. The retry budget is spent on an event no retry can
+ever deliver. The queue accumulates permanently-undeliverable messages that no redrive can clear, so
+its depth alarm latches and stays latched. And that alarm can no longer distinguish undeliverable
+residue from a real, recoverable failure on the same path — which, for a money, fulfilment, or
+provisioning handler, is precisely the signal that must remain trustworthy. The raised error names
+the identity resource rather than the missing tenant, so triage is pulled toward a permissions
+theory and away from the event's addressing.
+
+**Detect.** Find every per-tenant credential resolution on an async path and ask what a failure
+means when the tenant identifier is unknown or synthetic. Read the outermost catch: if authorization
+denials propagate without classification, the classification is absent — the handler has asserted
+that every denial is transient. Inspect dead-letter CONTENTS, not depth: a message whose recorded
+failure is an identity denial naming a resource absent from the live inventory is permanent by
+construction. Check whether the queue's alarm has any means of separating undeliverable residue from
+live incidents, and whether anything but a human can ever drain it.
+
+**False positives.** Paths where the tenant's identity is provisioned asynchronously and a denial
+genuinely is transient inside a provisioning window, provided the retry budget exceeds that window
+and the handler documents it; queues that are deliberately human-adjudication surfaces with a named
+owner, where parking the event is the designed outcome rather than a failure.

@@ -362,3 +362,33 @@ watched identity genuinely performs frequent legitimate work and the control is 
 high-risk action set rather than to the identity; controls whose notification target is an
 aggregation or ticketing pipeline that deduplicates by design; short-lived alarms during a documented
 break-glass window.
+
+## G:29 — Missing-data policy set to breaching latches a disappearance detector for the entire pre-traffic period
+
+**Statement.** A detector is written to catch a signal going away — traffic stopped arriving, a job
+stopped reporting, a heartbeat went quiet — so its missing-data policy treats absent datapoints as
+breaching. That is correct once the signal exists. Before the system carries real traffic the metric
+has no datapoints at all, so the alarm enters the breach state on creation and stays there for the
+whole build-out. Because notification fires on state TRANSITION, a latched alarm is silent: the
+control is dead during exactly the period when the surrounding system changes most, and it cannot be
+distinguished from a control that is quietly working. Two effects compound it. The notification
+channel is trained to read the alarm as permanent noise, so the first genuine firing after launch is
+dismissed as the same false positive everyone has been ignoring. And if the threshold is a
+band or baseline model rather than a constant, the model has no observations to train on, so what it
+will eventually enforce is undefined rather than merely untriggered. Inventory, dashboard, and
+compliance views all report the control as present, enabled, and wired to a live notification target
+— and it is. It simply has nothing it can say.
+
+**Detect.** List alarms sitting in the breach state whose state has not changed in days, then pull
+the underlying metric's datapoints over that same period; an empty series under a breaching
+missing-data policy is the pattern. Separate it from a chronically-breaching baseline, where data
+exists and genuinely exceeds the threshold — the remedy differs. For each hit make the pre-traffic
+posture explicit and recorded: suppress the alarm until launch, or treat missing data as
+not-breaching so the detector arms itself on the first real datapoint. Establish whether the alarm
+is the only detector for its failure mode; its own description frequently says so outright, which
+raises the severity from noise to a coverage hole.
+
+**False positives.** Alarms intentionally latched as a launch blocker with a named owner and a
+recorded expiry; detectors on paths that genuinely must never be idle, where the latch is the
+correct and intended signal; alarms whose channel is suppressed under a documented maintenance
+window.

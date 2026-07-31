@@ -141,3 +141,31 @@ the transport is currently idle.
 **Detect.** Record the gated surface's cold load and count serial request waves after HTML arrival; more than one wave of session-dependent-only requests is the smell. Trace each guard/hook: if its request needs nothing but the session (or another response already available server-side), it is a candidate for server-side parallel prefetch with cache dehydration — seeded through the SAME query keys and mapping functions the client hooks use (a hand-copied key or transform drifts and silently wastes the prefetch; keep one fetcher-injected implementation). Confirm seeded state actually suppresses the client fetch (stale-time honored, guard reads the seed).
 
 **False positives.** Requests that genuinely depend on client-only state (viewport, device, user gesture); prefetches deliberately skipped to keep TTFB low on slow upstreams — valid only when the client path is the measured faster option; surfaces where the guard's answer changes what to fetch next (a real dependency, not a chain habit).
+
+## I:24 — The dialog makes its whole card the scroll container, so dismiss and commit controls scroll out of reach on short viewports
+
+**Statement.** A dialog is built as one bounded box — a maximum height plus overflow scrolling on the
+card itself — with title, dismiss control, body, and action row as ordinary flow children. On a tall
+viewport nothing looks wrong. On a short one — a handset in landscape, a laptop with a software
+keyboard raised, any browser whose dynamic toolbars shrink the visual viewport — that single scroll
+container carries EVERY child, so the dismiss control scrolls off the top and the primary and cancel
+actions scroll off the bottom. The user is inside a modal with both the way out and the way forward
+out of view; and because the backdrop typically dismisses only on an outside click that the enlarged
+card now covers, the surface can become an actual trap rather than merely an awkward one. It stays
+invisible in development because a desktop viewport is never short enough, and invisible to snapshot
+suites, which capture at a fixed generous size. A companion defect almost always ships alongside:
+the document behind the dialog is not scroll-locked, so a gesture that reaches the end of the card's
+scroll continues on the page underneath and the dialog appears to drift over moving content.
+
+**Detect.** For each dialog, identify which element owns the scroll and enumerate which children sit
+inside it. The correct decomposition is three regions — a non-shrinking header, one scrolling body,
+a non-shrinking action row — so that only the body ever moves. Test by reducing viewport HEIGHT,
+not width; height is the axis that exposes this, and roughly 400 logical pixels or less is where it
+appears. While there, confirm the background is scroll-locked for the dialog's lifetime and that
+interactive targets meet the platform's minimum touch dimension, since the same layout pass that
+produces a whole-card scroller usually also produces undersized controls.
+
+**False positives.** Non-modal sheets and popovers intentionally scrolled with the page; dialogs
+whose content provably cannot exceed the smallest supported viewport, where the extra structure buys
+nothing; full-screen mobile presentations that deliberately scroll as a page and carry a persistent
+platform-level dismiss affordance.

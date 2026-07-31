@@ -491,3 +491,32 @@ and dates the first occurrence.
 writer (invert the assertion, do not add it); one-time intentional reformats that are isolated in
 their own commit and stated as such; files whose churn is genuine because the generator's output
 legitimately depends on inputs that changed.
+
+## NN:25 — Gate assertion anchored by content match rather than definition site, so it binds to a coincidental duplicate and goes blind when that duplicate is deleted
+
+**Statement.** A verifier asserts that some construct has a property by searching a file's text for a
+literal the construct would produce. The assertion passes and is read, by its own name and failure
+message, as proof about the named subject. But a content match binds to whatever text happens to
+match — not to the subject. If the same literal also appears in a sibling module, a deprecated
+builder, a fixture, or a generated copy, the gate may have been reading that all along; and if the
+intended subject never carried the literal at all, the gate has been green while never once checking
+it. The defect is undetectable while both copies exist. It surfaces when the coincidental match is
+deleted — typically by a retirement change with no relationship to the gate's subject — at which
+point the gate goes red in unrelated work, and the obvious repair (re-point the search at another
+file that still contains the literal) reproduces the same defect one file over. Throughout, the
+gate's name keeps asserting the subject, so review sees a named check beside a stated contract and
+infers the contract is enforced.
+
+**Detect.** For each contains/grep assertion, ask which file the asserted property actually LIVES in
+and compare it against the file the assertion reads; a mismatch is the finding whether the gate is
+currently red or green. Search the whole repository for every occurrence of the matched literal —
+more than one occurrence means the binding is ambiguous by construction. Prove the binding by
+mutation: rename or delete the intended subject and confirm the gate goes red; if it stays green it
+was never bound to it. Prefer assertions anchored to the definition itself — the declaration line,
+the exported symbol, the full function signature — over ones anchored to a value the definition
+merely emits.
+
+**False positives.** Assertions deliberately checking a literal is ABSENT everywhere, where matching
+anywhere is the point; gates whose genuine subject is the rendered text of a generated artifact;
+searches over a file that is by construction the single definition site, where duplication is itself
+prevented by another gate.

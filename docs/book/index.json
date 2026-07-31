@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 741,
+ "rule_count": 746,
  "sections": [
   {
    "id": "A",
@@ -525,7 +525,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "E:1",
@@ -666,6 +666,10 @@
     {
      "id": "E:35",
      "title": "Stream handler wraps deterministic record validation and transient I/O in one try/catch that reports every throw as a retryable batch-item failure, so one malformed record becomes an ordered-shard poison pill"
+    },
+    {
+     "id": "E:36",
+     "title": "Async handler treats a nonexistent-tenant authorization denial as transient, so an undeliverable event burns the retry budget and permanently latches the dead-letter alarm"
     }
    ]
   },
@@ -807,7 +811,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "G:1",
@@ -920,6 +924,10 @@
     {
      "id": "G:28",
      "title": "Detective alarm on a privileged identity whose filter also matches the platform's own service-attributed calls under that identity, so the control oscillates on background noise and the real event is indistinguishable"
+    },
+    {
+     "id": "G:29",
+     "title": "Missing-data policy set to breaching latches a disappearance detector for the entire pre-traffic period"
     }
    ]
   },
@@ -1001,7 +1009,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "I:1",
@@ -1094,6 +1102,10 @@
     {
      "id": "I:23",
      "title": "Post-hydration guard chains serialize independent bootstrap fetches the server could have resolved in parallel"
+    },
+    {
+     "id": "I:24",
+     "title": "The dialog makes its whole card the scroll container, so dismiss and commit controls scroll out of reach on short viewports"
     }
    ]
   },
@@ -3037,7 +3049,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "KK:1",
@@ -3090,6 +3102,10 @@
     {
      "id": "KK:13",
      "title": "Streams and file descriptors without error handlers or pipeline management"
+    },
+    {
+     "id": "KK:14",
+     "title": "Module-system mismatch hidden inside a lazily-invoked accessor: the file loads clean and throws on first call"
     }
    ]
   },
@@ -3220,7 +3236,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "NN:1",
@@ -3317,6 +3333,10 @@
     {
      "id": "NN:24",
      "title": "A machine-written artifact has a canonical serializer but no gate asserting it, so every hand-edit reformats the whole file and buries the real change"
+    },
+    {
+     "id": "NN:25",
+     "title": "Gate assertion anchored by content match rather than definition site, so it binds to a coincidental duplicate and goes blind when that duplicate is deleted"
     }
    ]
   },

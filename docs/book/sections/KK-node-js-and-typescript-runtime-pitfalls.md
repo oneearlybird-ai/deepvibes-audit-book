@@ -178,3 +178,32 @@ propagates errors and tears down all stages). Check every manually created strea
 listener and a close/destroy path on early client disconnect.
 
 **False positives.** One-shot CLI scripts where a crash is the acceptable error path.
+
+## KK:14 — Module-system mismatch hidden inside a lazily-invoked accessor: the file loads clean and throws on first call
+
+**Statement.** A file's module system is fixed by its extension and the nearest package manifest's
+type field. A mechanical edit — a migration that rewrites identifier lookups, a codemod, a patch
+copied from a sibling file of the opposite type — can introduce the other system's loader call: a
+synchronous `require` inside an ES module, or `import`/top-level await inside a CommonJS one. Placed
+at the top level this fails loudly: the module will not load, and every cold start and every test
+reports it at once. The dangerous placement is inside a function body — a lazily-invoked accessor, a
+thunk deliberately deferring resolution to call time. The module then parses and loads cleanly.
+Static analysis sees a defined symbol. Tests that stub or never reach the accessor pass. A smoke
+check that merely imports the module passes. The failure is a bare loader-is-not-defined error
+raised on the FIRST invocation of that accessor in the running system, which for an accessor behind
+a rarely-taken branch can arrive long after the deploy that shipped it. When the file lives inside a
+shared library artifact that is versioned and attached to many consumers at once, one publish arms
+the fault in every consumer that reaches the branch.
+
+**Detect.** For each source file, establish its module type from the extension and the nearest
+package manifest, then search the whole body — not just the header — for the opposing system's
+loader call, discounting matches inside comments and string literals. Rank hits inside function
+bodies ABOVE top-level ones: top-level breaks at load, in-body breaks in production. Then trace
+publication: if the file ships inside a shared layer or library artifact, establish what validation
+runs between commit and attach, and whether any of it actually INVOKES the accessor rather than only
+importing the module. A test suite that imports every module proves nothing about this class.
+
+**False positives.** Files that construct an explicit interop handle where the construction is
+visible in the same file; package entry shims whose purpose is to re-export the other format's
+build, routed deliberately by the manifest's export map; bundler output emitting a loader call for a
+runtime that supports it.

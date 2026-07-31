@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 738,
+ "rule_count": 740,
  "sections": [
   {
    "id": "A",
@@ -1540,7 +1540,7 @@
    "title": "Third Party: Stripe Payments Integration",
    "group": "third-party",
    "file": "sections/P-third-party-stripe-payments-integration.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "P:1",
@@ -1609,6 +1609,10 @@
     {
      "id": "P:17",
      "title": "Portal: Customer Portal configuration allowing plan switches/cancellation flows the appl…"
+    },
+    {
+     "id": "P:18",
+     "title": "Mandates: standing card-on-file charge authorization persisted as bare config — no consent artifact, no amount bound, no change notification"
     }
    ]
   },
@@ -1820,7 +1824,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "T:1",
@@ -1929,6 +1933,10 @@
     {
      "id": "T:27",
      "title": "System-context credential path carries an end-user identity attribute the privilege boundary forbids — the lane fails on every invocation"
+    },
+    {
+     "id": "T:28",
+     "title": "Verdict discard: transport success conflated with semantic approval — 200-with-negative-verdict treated as verified"
     }
    ]
   },

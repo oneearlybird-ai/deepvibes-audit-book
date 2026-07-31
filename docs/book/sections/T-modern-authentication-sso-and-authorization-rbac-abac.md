@@ -278,3 +278,23 @@ seam is conclusive.
 **False positives.** User-context paths where the identity attribute is required and permitted;
 boundaries that ignore rather than reject extra attributes (dead config, not an outage);
 placeholder identities the boundary explicitly whitelists as service principals.
+
+## T:28 — Verdict discard: transport success conflated with semantic approval — 200-with-negative-verdict treated as verified
+
+**Statement.** A verification API returns transport success (HTTP 200) with the actual outcome
+in-band ({verified:false}, {allowed:false}, {valid:false}), and a client helper branches only on
+transport status, discarding the verdict field — so the negative-verdict path is indistinguishable
+from approval at every call site above the helper. The failure is silent and bidirectionally
+deceptive: server logs show a correct denial while the client behaves as approved. Frequently
+latent in shared helpers that are dead at audit time but written to be wired into future
+step-up/verification UI — the trap arms when the first caller arrives. Mirror of T:22 (transport
+failure rendered as definitive denial).
+
+**Detect.** For every client of a verification/authorization endpoint, diff the response fields the
+server can emit (including negative verdicts under 2xx) against the fields the client actually
+reads. Flag any call site that branches on status alone when the server can 200-with-deny. Include
+exported-but-uncalled helpers: their contract is the finding even when unreachable today.
+
+**False positives.** APIs that guarantee a non-2xx status on every negative verdict — status
+branching is then the correct contract (prove it from the server, not the client); clients that
+pass the raw body upward to a caller that does read the verdict.

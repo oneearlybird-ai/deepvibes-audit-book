@@ -73,3 +73,31 @@ Proration: Mid-cycle upgrades/downgrades unmodeled — entitlement state diverge
 ## P:17 — Portal: Customer Portal configuration allowing plan switches/cancellation flows the appl…
 
 Portal: Customer Portal configuration allowing plan switches/cancellation flows the application logic doesn't actually support.
+
+## P:18 — Mandates: standing card-on-file charge authorization persisted as bare config — no consent artifact, no amount bound, no change notification
+
+**Statement.** An auto-recharge / auto-top-up / usage-triggered purchase feature persists its
+standing authorization as a plain configuration write ({enabled, threshold, amount} on an entity
+row) while capturing no evidence of the agreement it purports to represent: no acting identity, no
+timestamp-bound terms text or version, no client IP/user-agent, and no linkage to a network-level
+mandate (a credential stored with declared off-session usage / stored-credential consent). The
+config carries no per-charge or per-period AMOUNT ceiling — a count cap alone leaves exposure =
+count × an unbounded customer-set amount — and enable/change transitions notify nobody. Card-network
+stored-credential frameworks require a cardholder agreement, captured when the credential is stored,
+covering how amounts are determined, the triggering event, and cancellation; a merchant whose only
+artifact is a config row defends "I never agreed to this" with an application log. Distinct from
+Y:7 (consent records exist but are unversioned): here no consent record exists at all, on the money
+path.
+
+**Detect.** Find every writer of standing-charge configuration (auto-recharge, auto-top-up,
+threshold-triggered purchasing). For each: (1) trace the write path for a consent artifact (actor,
+terms version/hash, timestamp, IP/UA) written atomically with the config; (2) check the saved
+credential's storage intent — was it saved with off-session usage declared, is a mandate/setup
+artifact linked; (3) look for per-charge and per-period amount ceilings enforced both at the config
+boundary and at charge-mint time; (4) check whether enable/change transitions emit any customer
+notification.
+
+**False positives.** Flows where every charge is customer-present through a hosted payment surface
+(no standing authorization exists to record); processors that capture and store the mandate
+themselves (e.g. bank-debit mandates held by the PSP) when the config row links that mandate id;
+internal/admin-only lanes unreachable by customers.

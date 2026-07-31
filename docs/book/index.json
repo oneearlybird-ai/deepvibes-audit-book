@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 746,
+ "rule_count": 747,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "A:1",
@@ -158,6 +158,10 @@
     {
      "id": "A:37",
      "title": "Function imports a bare specifier that only a layer resolves, and the layer is not attached — every invocation dies at module load"
+    },
+    {
+     "id": "A:38",
+     "title": "A correctness guard is held in process memory and justified by the fleet running one instance, but the instance runs a multi-worker process model, so the guard covers a fraction of the traffic it claims"
     }
    ]
   },

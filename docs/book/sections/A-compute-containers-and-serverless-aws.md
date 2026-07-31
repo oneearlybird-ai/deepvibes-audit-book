@@ -212,3 +212,48 @@ init lines and no first-line-of-handler entry is failing before its own code run
 deployment artifact as well as the layer, where resolution succeeds from the artifact; imports
 inside a branch that is provably unreachable in the deployed configuration; functions whose
 "missing" layer is attached at an alias or version qualifier the audit query did not resolve.
+
+## A:38 — A correctness guard is held in process memory and justified by the fleet running one instance, but the instance runs a multi-worker process model, so the guard covers a fraction of the traffic it claims
+
+**Statement.** A single-use, deduplication, or rate-limiting guard — a consumed-token ledger, an
+idempotency-key set, a "seen this request id" cache — is implemented as an in-process data structure
+and defended in review by a topology argument: the service is pinned to one instance, so every
+request lands on the same box and the in-memory view is complete. The premise is true and the
+conclusion does not follow. The instance runs a pre-forking or clustered server (one worker per
+vCPU is the common default), so the box holds N independent processes, each with its own copy of the
+structure, and the kernel distributes accepted connections across them. The guard therefore catches
+only the collisions that happen to land on the same worker — roughly 1/N of them — while an actor
+who simply retries walks the pool until admitted. The defect is invisible in every ordinary test: a
+single-process test harness exercises exactly one copy, so unit tests, integration tests and local
+runs all pass, and the guard demonstrably works when tried by hand. It is doubly durable because the
+same codebase usually contains a NEIGHBOURING in-process structure that is genuinely correct —
+per-connection or per-session state, where request affinity guarantees the owning worker also
+handles every later event for that connection — and its correctness is cited as precedent for the
+new one. The distinction is that per-connection state is only ever read by the worker that created
+it, while a uniqueness guard is inherently cross-request: its whole purpose is for one request to
+observe what a different request did, and there is no affinity between them.
+
+**Detect.** Never accept an instance count as evidence about a process count; they answer different
+questions. Read the process manager's configuration (cluster/worker/prefork directives, worker or
+thread counts, "auto"/"max" settings that resolve to a CPU count) and confirm the deployed worker
+count from the running system rather than the config — a per-boot startup line emitted once per
+worker, counted for a single boot, is the cheapest proof, and an unexplained multiple of expected
+startup or periodic-refresh log volume is often the first symptom noticed. Then, for every in-memory
+structure that participates in a correctness decision, classify it: is it read only by the request
+or connection that wrote it (affinity-safe), or is it read by a DIFFERENT request than the one that
+wrote it (cross-request, and therefore wrong under multiple workers)? Uniqueness, idempotency,
+replay, quota and lockout guards are always the second kind. Confirm the gap with a test that spawns
+a genuinely separate process against the same store and asserts the second actor observes the first
+— a test an in-process structure fails while passing every same-process test in the suite. Read the
+guard's own comments last and trust them least: the topology justification is usually written by
+the author of the defect, and a comment asserting completeness is the artifact under audit, not
+evidence about it.
+
+**False positives.** Servers genuinely running one process (worker count pinned to 1, or a runtime
+whose concurrency is threads inside one address space sharing the structure); guards whose scope is
+explicitly per-connection or per-session, where affinity holds by construction; structures that are
+a performance cache in front of an authoritative shared store, where a miss is corrected rather than
+admitted; deployments where the process manager routes by a stable key so the same identity always
+reaches the same worker; and guards documented as best-effort defence in depth behind a primary
+control that is itself complete — the failure is claiming completeness, not choosing a partial
+mechanism knowingly.

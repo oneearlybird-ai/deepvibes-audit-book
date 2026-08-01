@@ -207,3 +207,28 @@ importing the module. A test suite that imports every module proves nothing abou
 visible in the same file; package entry shims whose purpose is to re-export the other format's
 build, routed deliberately by the manifest's export map; bundler output emitting a loader call for a
 runtime that supports it.
+
+## KK:15 — Result-envelope async clients consumed with rejection-only error handling: the catch that can never fire
+
+**Statement.** An async client normalizes transport and server failures into a RESOLVED result
+envelope — `{ data, errors }` in the GraphQL convention, `{ ok: false }` in fetch-wrapper style —
+and rejects only on genuinely unexpected throws (often never, because its own try/catch converts
+those too). A caller attaches `.catch()` or wraps in try/catch but never inspects the resolved
+envelope's error field, so every real failure — HTTP 4xx/5xx, validation rejection, expired auth,
+schema mismatch — takes the success path. The present-but-dead rejection handler is the trap: the
+code LOOKS error-handled and passes review, while the action's failure is invisible to user, log,
+and operator alike. Compounded when the UI applied the change optimistically: the user sees
+success, the server never learned, and the discrepancy surfaces later as state that "mysteriously
+reverted".
+
+**Detect.** For each async client, read its failure CONTRACT first: does it reject, resolve with an
+error field, or both? Then audit call sites for handling that matches that contract. A
+`.catch`-only (or bare-try/catch-only) caller of a resolve-with-errors client is a confirmed dead
+handler — flag it without needing a runtime repro. Grep call sites of known envelope clients
+(GraphQL executors, fetch wrappers returning `{ok}`/`{errors}`) for `.catch(` and for `await` with
+no subsequent error-field read on the result.
+
+**False positives.** Fire-and-forget calls whose failure is deliberately without consequence —
+confirm the failure is metered somewhere. Clients that BOTH populate the envelope AND re-throw
+(verify in the client source before flagging callers). Callers that pass the resolved envelope to a
+shared handler which does inspect the error field.

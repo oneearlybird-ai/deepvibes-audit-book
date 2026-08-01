@@ -152,3 +152,27 @@ deliberately staged behind an inventory of subdomains that must be migrated to T
 **Detect.** Enumerate every origin that can open the popup (host-based shells, admin consoles, per-tenant domains) and trace the completion redirect's target origin for each — any mismatch between opener origin and completion origin is a dropped signal. Check whether the return URL is a server-side constant while the opener host is request-dependent. Test the full flow from a non-canonical origin and assert the opener receives the completion event, not just that the server persisted the connection.
 
 **False positives.** Flows that intentionally complete via a full-page redirect (no opener messaging); completion pages that derive the postMessage target from a server-carried, allowlist-validated opener origin; single-origin products where every opener genuinely shares the completion page's origin.
+
+## L:22 — The credentialed API's CORS allowlist admits only production origins while the sanctioned dev/preview config points browsers at that same API
+
+**Statement.** The API edge enforces an explicit CORS origin allowlist (correctly — no wildcard
+with credentials), but the list names only the production web origins. The frontend's committed
+development configuration (`.env.example`, preview defaults) points the BROWSER at that same
+production API base, so every credentialed fetch from a dev or preview origin — localhost, CI
+preview deployments — dies at preflight. Server-side rendering masks the breakage: SSR fetches are
+server-to-server and bypass CORS entirely, so pages hydrate with server-fetched data and the
+failure surfaces only in client-side actions — writes, mutations, interactive refetches — which
+fail silently or degrade, and are then misdiagnosed as application bugs ("the toggle is broken")
+rather than as the environment's origin being unsanctioned.
+
+**Detect.** Diff the API's CORS allowlist against every origin the committed frontend
+configurations can serve from (local dev hosts and ports, preview URL patterns). For each origin
+not in the list, decide and DOCUMENT: either the origin is sanctioned (add it, or point that
+environment at a non-production API base) or browser-side dev against the production API is
+unsupported (state it where the env template lives). A live preflight probe per origin class beats
+reading config: send OPTIONS with each Origin and assert the allow/deny matches the documented
+posture.
+
+**False positives.** Deliberate deny postures that are documented next to the dev setup
+instructions AND paired with a working alternative (dev API stage, same-origin proxy); preview
+environments that inject their own API base pointing at a preview API.

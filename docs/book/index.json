@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 747,
+ "rule_count": 751,
  "sections": [
   {
    "id": "A",
@@ -1118,7 +1118,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "J:1",
@@ -1175,6 +1175,10 @@
     {
      "id": "J:14",
      "title": "One feature's sibling routes guard inconsistently — the unguarded sibling serves the feature with its backing absent"
+    },
+    {
+     "id": "J:15",
+     "title": "Curated navigation registries carry route strings with no existence cross-check, so retired routes rot into guided dead ends"
     }
    ]
   },
@@ -1288,7 +1292,7 @@
    "title": "Frontend: Browser Security Surfaces",
    "group": "frontend",
    "file": "sections/L-frontend-browser-security-surfaces.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "L:1",
@@ -1373,6 +1377,10 @@
     {
      "id": "L:21",
      "title": "The OAuth popup's return URL is pinned to one origin while its opener lives on several, so the completion signal never delivers"
+    },
+    {
+     "id": "L:22",
+     "title": "The credentialed API's CORS allowlist admits only production origins while the sanctioned dev/preview config points browsers at that same API"
     }
    ]
   },
@@ -2541,7 +2549,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "CC:1",
@@ -2614,6 +2622,10 @@
     {
      "id": "CC:18",
      "title": "Retiring one delivery lane deletes shared dependencies a surviving lane references by name, outside the IaC dependency graph"
+    },
+    {
+     "id": "CC:19",
+     "title": "A shadowed delivery layer keeps a divergent copy of a policy the edge now owns"
     }
    ]
   },
@@ -3053,7 +3065,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "KK:1",
@@ -3110,6 +3122,10 @@
     {
      "id": "KK:14",
      "title": "Module-system mismatch hidden inside a lazily-invoked accessor: the file loads clean and throws on first call"
+    },
+    {
+     "id": "KK:15",
+     "title": "Result-envelope async clients consumed with rejection-only error handling: the catch that can never fire"
     }
    ]
   },

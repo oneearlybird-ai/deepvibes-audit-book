@@ -95,3 +95,24 @@ delegation of unmatched paths to an upstream proxy or CDN error page, verified e
 **Detect.** For each optional/config-gated feature, enumerate EVERY route that belongs to it and diff their guard conditions — the set must be identical or each divergence justified in place. Exercise the routes with the feature's config absent and assert they all fail closed. Where a comment cites a compensating control, verify the control exists in live wiring (see OO:1) rather than accepting the citation.
 
 **False positives.** Siblings with genuinely different gating needs (a public status endpoint beside private admin routes) where the divergence is documented; hosts that render a harmless static explainer with zero feature internals when unconfigured.
+
+## J:15 — Curated navigation registries carry route strings with no existence cross-check, so retired routes rot into guided dead ends
+
+**Statement.** Guided tours, onboarding checklists, command palettes, help menus, and similar
+curated registries store navigation targets as string data — hrefs, often with query or tab
+parameters encoding sub-surface state. Routes and their parameter vocabularies evolve under
+refactors: a tab is retired, a surface moves to another path or host, a param is renamed. The
+registry's strings keep pointing at the old shape, and nothing errors — the navigation "succeeds"
+onto a default tab, a redirect, or a soft 404 — so the product's own guidance walks users into dead
+ends. A registry verifier that validates a DIFFERENT axis (anchor presence, schema shape) deepens
+the illusion: the check is green while the hrefs rot.
+
+**Detect.** Enumerate every href/route/param string in each curated registry and resolve it against
+the live route tree AND the live parameter vocabulary (does `?tab=x` still select an existing tab?).
+If the registry has a mechanical verifier, confirm it validates every reference type the registry
+actually carries — hrefs and params, not just anchors or shape. Route-retirement sweeps must treat
+navigation registries as consumers of the route contract (the blast-radius rule).
+
+**False positives.** Registries whose targets resolve through a typed routes module the compiler
+checks; deliberately retained legacy deep links whose targets perform a sanctioned redirect to the
+successor surface.

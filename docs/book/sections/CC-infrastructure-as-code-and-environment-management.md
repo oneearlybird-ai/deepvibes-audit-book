@@ -263,3 +263,25 @@ run time (ephemeral keypairs, temporary security groups the tool manages); refer
 historical docs or changelogs that describe the past rather than configure the present;
 deletions where the surviving lane was migrated to new resource names in the same change —
 verify the new names exist live before dismissing.
+
+## CC:19 — A shadowed delivery layer keeps a divergent copy of a policy the edge now owns
+
+**Statement.** A policy — CORS/preflight answers, security headers, redirects, an auth check —
+migrates to an outer delivery layer (CDN function, edge middleware, reverse proxy), but the inner
+layer's original implementation stays in place with its now-frozen configuration. In normal
+topology the outer layer answers first and the inner copy is inert, so the divergence is invisible
+and accumulates silently as the outer policy evolves. The inner copy becomes the live answer the
+moment topology changes — direct-to-origin access, an edge bypass for debugging, a new environment
+wired without the edge, the edge function detached during an incident — and it then serves the
+stale policy (origins missing, headers wrong, checks absent), misattributed to whatever change
+exposed it rather than to the years-old shadow.
+
+**Detect.** For each policy the edge answers, search the inner layers for a second implementation
+of the same policy and DIFF the two configurations; any divergence is drift. Remediate toward one
+owner: delete the inner copy (edge ownership documented), or generate both from a single source.
+Where the origin is reachable directly, verify with a direct request — the answer must be the
+documented policy or a refusal, never a stale third thing.
+
+**False positives.** An inner copy deliberately maintained as the origin-direct fallback AND kept
+in mechanical sync with the edge (single generated source, or a verifier asserting equality);
+defense-in-depth duplicates whose equality is enforced by CI.

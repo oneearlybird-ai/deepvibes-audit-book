@@ -116,3 +116,26 @@ navigation registries as consumers of the route contract (the blast-radius rule)
 **False positives.** Registries whose targets resolve through a typed routes module the compiler
 checks; deliberately retained legacy deep links whose targets perform a sanctioned redirect to the
 successor surface.
+
+## J:16 — Shared route helpers return app-local paths unconditionally in a multi-app codebase, so an app split turns every consumer on the losing origin into a dead end
+
+**Statement.** Codebases serving several origins from shared components centralize navigation
+targets in helper functions (a getDashboardPath). The helper returns a relative, app-local
+path — correct while one app owns every route. When the topology splits and routes move to
+their own origin/app, the helper keeps compiling into every app, and on origins that lost the
+route the returned path is now a 404. Because the helper LOOKS like the safe abstraction
+(single source of truth), the split's blast-radius sweep skips it as already-centralized —
+but centralization concentrates the miss: every consumer (hero CTAs, header menus, account
+dropdowns, post-auth redirects) breaks at once on the losing origin, typically the highest-
+traffic signed-in entry flow. Mandatory intermediate steps the old flow reached through that
+path (a profile/tenant chooser) silently vanish with it.
+
+**Detect.** For every shared helper or constant returning a route string, resolve the path
+against EACH app's route tree that compiles the helper — not only the app it originated in.
+Any app lacking the route needs a per-app branch keyed on build-time app identity, an
+absolute cross-origin target, or a split of the helper. Treat route-string carriers
+(helpers, registries, configs) as first-class consumers in every topology-split sweep.
+
+**False positives.** Helpers provably compiled into exactly one app; paths whose losing
+origin serves a sanctioned redirect to the successor surface — verify the redirect live,
+not from a comment.

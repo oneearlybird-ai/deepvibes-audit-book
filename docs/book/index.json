@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 751,
+ "rule_count": 753,
  "sections": [
   {
    "id": "A",
@@ -1118,7 +1118,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "J:1",
@@ -1179,6 +1179,10 @@
     {
      "id": "J:15",
      "title": "Curated navigation registries carry route strings with no existence cross-check, so retired routes rot into guided dead ends"
+    },
+    {
+     "id": "J:16",
+     "title": "Shared route helpers return app-local paths unconditionally in a multi-app codebase, so an app split turns every consumer on the losing origin into a dead end"
     }
    ]
   },
@@ -2496,7 +2500,7 @@
    "title": "Modern Frontend Monorepo & Build Tooling (Turborepo, Nx, Vite, esbuild)",
    "group": "saas-core",
    "file": "sections/BB-modern-frontend-monorepo-and-build-tooling-turborepo-nx-vite-esbuild.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "BB:1",
@@ -2541,6 +2545,10 @@
     {
      "id": "BB:11",
      "title": "Vacuous Type Gate: the CI typecheck step's file selection silently resolves to zero source files"
+    },
+    {
+     "id": "BB:12",
+     "title": "A second CSS-framework compilation entry for the same surface ships duplicate utility sheets whose order and divergent source scans silently invert responsive semantics"
     }
    ]
   },

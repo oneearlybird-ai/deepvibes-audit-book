@@ -67,3 +67,31 @@ groups in tsconfig include/exclude are the classic silent-zero.
 files verifiably covered by a different lane — but verify by listing that lane's program, not
 by reading its config. A refutation attempt on the discovering audit died exactly this way:
 the root include LOOKED comprehensive and only `--listFilesOnly` exposed the zero-match.
+
+## BB:12 — A second CSS-framework compilation entry for the same surface ships duplicate utility sheets whose order and divergent source scans silently invert responsive semantics
+
+**Statement.** Utility-first CSS frameworks compile a stylesheet from an entry file plus a
+source scan that determines WHICH utility classes exist in the output. When one rendered
+surface loads two compiled entries (a global build plus a route-segment or legacy-template
+build), the same class names are defined twice at equal specificity and the later sheet wins
+ties. The sheets are not identical: each entry's scan can see different roots — a shared-
+package extraction, a differing content glob, an explicit source directive on only one entry —
+so utility PAIRS split: the base half (flex) exists in both sheets while the responsive
+override half (md:hidden) exists only in the first. The later, partial sheet re-asserts the
+base and the override never applies: mobile-only chrome renders at desktop widths beside its
+desktop twin (duplicated controls), and show/hide inversions spread across every responsive
+pair on the surface. The defect lies dormant while both scans cover the same sources and
+detonates after unrelated restructures (components moved into a package, chunk order changes),
+presenting as a mystery regression far from its cause.
+
+**Detect.** Enumerate every stylesheet reachable from each app's layout graph and count
+framework entry points (the framework's root import / directives): assert exactly one per
+app. In built output, assert exactly one sheet defines bare structural utilities (flex,
+hidden) — any second sheet defining them is the duplicate. Then confirm the single build's
+source scan covers every root that contributes class names (shared packages need explicit
+source/content entries).
+
+**False positives.** Genuinely disjoint surfaces under separate root layouts that never
+co-load, each with its own single entry. Non-emitting supplements (reference-mode imports
+that exist only to resolve composition directives) — verify by inspecting their built chunk
+for utility definitions, not by reading the source.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 753,
+ "rule_count": 754,
  "sections": [
   {
    "id": "A",
@@ -682,7 +682,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "F:1",
@@ -807,6 +807,10 @@
     {
      "id": "F:31",
      "title": "Grant names a hierarchical resource by a path-truncated ARN, so the authorization decision is made against a resource that does not exist and every call is denied"
+    },
+    {
+     "id": "F:32",
+     "title": "A stamped trust policy adds a required session-tag class and existing admitted callers never update their tagging code, so every call dies as an opaque TagSession denial"
     }
    ]
   },

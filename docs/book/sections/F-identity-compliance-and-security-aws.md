@@ -365,3 +365,31 @@ trailing-slash prefix, which does authorize the full path; paths that legitimate
 because the grant ships ahead of the resource in a documented ordering; resources addressed by alias
 or by a service-resolved name where the ARN is not the authorization key; deliberately dead grants
 retained for a documented future consumer, which are a hygiene finding rather than a denial one.
+
+## F:32 — A stamped trust policy adds a required session-tag class and existing admitted callers never update their tagging code, so every call dies as an opaque TagSession denial
+
+**Statement.** Session-tag-conditioned trust policies (ABAC) evolve: a hardening pass
+splits callers into classes and adds a REQUIRED tag for one class (e.g. a user-identity
+tag on user-context callers, enforced via a presence condition on the request tag). The
+trust template, its principal list, and each caller's AssumeRole tagging code form a
+THREE-part contract; the tag-requirement change lands in the template — often minted per
+tenant by a provisioner, restamped fleet-wide by drift repair — while admitted callers
+that predate the class keep sending the old tag set. Every such call is denied, and the
+error is maximally misleading: "not authorized to perform sts:TagSession" reads as a
+missing identity-policy grant, though both the grant and the admission are fine — a
+CONDITION on a tag the caller never sends is what failed. Related but distinct from the
+two-halves grant/admission drift (F:30): here the caller IS admitted; the condition
+vocabulary moved underneath it.
+
+**Detect.** Diff the trust template's per-class required tags against each admitted
+caller's actual AssumeRole tag set (code or CloudTrail requestParameters.tags) — for
+every caller, every required tag of its class must be present, and transitive-tag-key
+lists must include it. Lock the pairing with a static gate that derives the caller
+classes FROM the template source and fails on any unmapped or under-tagged caller.
+Treat any "sts:TagSession" AccessDenied where the principal appears in the trust as
+this pattern until proven otherwise.
+
+**False positives.** Callers that assume through a shared library that injects the
+required tags (verify the library path, not the absence of inline tags); callers in a
+class the template genuinely exempts (sentinel values, system-context statements) —
+confirm against the statement that actually admits them, not the file as a whole.

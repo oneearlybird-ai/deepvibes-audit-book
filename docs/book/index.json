@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 754,
+ "rule_count": 755,
  "sections": [
   {
    "id": "A",
@@ -1977,7 +1977,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "U:1",
@@ -2082,6 +2082,10 @@
     {
      "id": "U:26",
      "title": "The promotion step between \"artifact built\" and \"fleet points at it\" is documented as automated, was provisioned, and was never wired"
+    },
+    {
+     "id": "U:27",
+     "title": "A weighted traffic-shift stalls at zero: the router's primary advances, the weights pin all traffic to the old version, and everything downstream of \"unweighted\" breaks quietly"
     }
    ]
   },

@@ -224,3 +224,31 @@ if neither performs the promotion and no automation does, the step exists only i
 where the manual step is documented and the IaC does not claim automation; pointers written by the
 build job itself rather than by an event-driven function; brand-new automation that has genuinely
 not had a triggering event yet — check whether a qualifying event has occurred since it was wired.
+
+## U:27 - A weighted traffic-shift stalls at zero: the router's primary advances, the weights pin all traffic to the old version, and everything downstream of "unweighted" breaks quietly
+
+**Statement.** Guarded rollouts shift traffic between an old and a new artifact version through a
+weighted router (a serverless alias with version weights, a load-balancer target-group split, a
+service-mesh route). When the shift stalls at its starting position — or a rollback re-installs the
+weights — the router enters a deceptive steady state: its primary pointer names the NEW version
+(so dashboards, IaC state, and humans read the deploy as done) while the weight table still routes
+100% of traffic to the OLD one. Nothing alarms: the old version serves correctly, health checks
+pass, and every subsequent "successful" deploy advances the primary again without ever moving
+traffic. Meanwhile subsystems that require an unweighted router are blocked with errors that name
+the symptom, not the stall (capacity pre-provisioning refuses weighted aliases; declarative IaC
+that declares no weights plans their removal forever and never converges — or converges and is
+silently re-weighted by the stalled controller between applies). The fleet can run arbitrarily
+stale code for weeks with green deploys the whole time.
+
+**Detect.** For every weighted router in the fleet, read the LIVE routing table, not the deploy
+log: a weight of ~1.0 on a non-primary version, or any weight older than the rollout system's
+maximum shift duration, is a stalled shift. Cross-check three clocks: the primary pointer's
+version, the weighted version, and the newest published version — any spread means traffic lags
+delivery. Then find the controller that owns the weights (deployment service, rollback monitor,
+cron) and check whether it is alive, failed, or was deleted with its weights left behind. Recurring
+IaC plans that remove the same routing weights on every run are the same finding seen from the
+other side.
+
+**False positives.** A shift genuinely in progress (weight timestamps within the configured bake
+window). A deliberate long-lived split (A/B or blue-green hold) that is documented and monitored —
+the tell for the stall is that nobody can name the owner or the end condition.

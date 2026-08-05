@@ -393,3 +393,45 @@ this pattern until proven otherwise.
 required tags (verify the library path, not the absence of inline tags); callers in a
 class the template genuinely exempts (sentinel values, system-context statements) —
 confirm against the statement that actually admits them, not the file as a whole.
+
+## F:33 — Row-scoping condition applied to a resource whose own key schema cannot express the scope, making the grant structurally unusable
+
+**Statement.** A tenant-isolation policy grants an action on a family of resources with a wildcard
+(`.../table/*/index/*`, a prefix pattern, a path glob) and constrains it with a key-scoping condition
+— a leading-key match, a path prefix, a partition predicate — written in the *base* resource's key
+grammar. At least one resource inside that wildcard has a DIFFERENT key schema: a secondary index
+whose partition key is a natural business identifier (an external call id, an email, an order
+number) rather than the tenant-prefixed key. The condition is evaluated against the key schema of
+the resource ACTUALLY queried, so on that index the required key can never match any allowed
+pattern, and the grant is an unconditional deny for every principal and every tenant — not a
+narrowing, an annihilation. Nothing in the policy reads as broken: the resource is listed, the
+action is listed, and reviewers checking "is the index covered?" find that it is. The failure is
+uniform rather than selective, which is what makes it survive: it never looks like a tenant-scoping
+bug because no tenant ever succeeds, so it presents as a feature that was never finished rather than
+a permission that was never usable. Paired with a caller that catches the authorization error and
+degrades (see the swallowed-precheck and failure-with-no-rendering patterns), the capability ships,
+renders empty forever, and bills a permanent error-rate signal that operators learn to ignore.
+
+**Detect.** For every policy statement that pairs a wildcard resource with a key-scoping condition,
+enumerate the CONCRETE resources the wildcard covers and read each one's real key schema from the
+live data store, not from the IaC that was supposed to create it. Any covered index whose partition
+key is not the attribute the condition constrains is structurally denied — write out the actual key
+value a real query would present and check it against each allowed pattern by hand; a natural
+identifier cannot match a tenant-prefixed glob. Then trace from the other end: enumerate every query
+in the codebase that names a secondary index, resolve which principal executes it, and confirm that
+principal's condition can be satisfied by that index's partition key. The runtime signature is
+diagnostic — an authorization denial naming a specific index while the policy visibly lists that
+index means condition failure, not a missing grant, and a denial message reading "no identity-based
+policy allows" on a resource the policy clearly names is this pattern until proven otherwise. Grep
+the callers of every such query for catch blocks that log-and-continue: those are where the evidence
+has been going. Finally, check the sibling indexes — a correctly tenant-prefixed variant of the same
+index (composite tenant-key + natural-key) very often already exists and is used by other callers,
+which both proves the intended design and supplies the fix.
+
+**False positives.** Indexes deliberately reserved for platform/system principals that hold a
+separate, condition-free grant, where the tenant role's denial is the intended boundary; conditions
+whose allowed-pattern set genuinely includes the natural identifier's shape; policies where a second
+statement grants the same action on that specific index without the condition; key-scoping engines
+that evaluate against the base table's key even for index reads (verify the provider's documented
+semantics before flagging); and grants that are dead because the query path is dead, where the
+finding is the unreachable code rather than the policy.

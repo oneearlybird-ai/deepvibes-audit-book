@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 755,
+ "rule_count": 760,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "A:1",
@@ -162,6 +162,10 @@
     {
      "id": "A:38",
      "title": "A correctness guard is held in process memory and justified by the fleet running one instance, but the instance runs a multi-worker process model, so the guard covers a fraction of the traffic it claims"
+    },
+    {
+     "id": "A:39",
+     "title": "Serverless: a subpath import that the runtime's resolver cannot extension-search, against a shared package that declares no `exports` map"
     }
    ]
   },
@@ -682,7 +686,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 32,
+   "rule_count": 33,
    "rules": [
     {
      "id": "F:1",
@@ -811,6 +815,10 @@
     {
      "id": "F:32",
      "title": "A stamped trust policy adds a required session-tag class and existing admitted callers never update their tagging code, so every call dies as an opaque TagSession denial"
+    },
+    {
+     "id": "F:33",
+     "title": "Row-scoping condition applied to a resource whose own key schema cannot express the scope, making the grant structurally unusable"
     }
    ]
   },
@@ -944,7 +952,7 @@
    "title": "AI & Data Analytics (AWS)",
    "group": "aws-backend",
    "file": "sections/H-ai-and-data-analytics-aws.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "H:1",
@@ -1009,6 +1017,10 @@
     {
      "id": "H:16",
      "title": "Agents: Tool-call loops without execution-count ceilings — an agent can call the same to…"
+    },
+    {
+     "id": "H:17",
+     "title": "Speaker-attribution error in a transcription pipeline promoted into durable customer identity by a downstream extraction step"
     }
    ]
   },
@@ -1397,7 +1409,7 @@
    "title": "Frontend: Component Lifecycle & Performance",
    "group": "frontend",
    "file": "sections/M-frontend-component-lifecycle-and-performance.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "M:1",
@@ -1446,6 +1458,10 @@
     {
      "id": "M:12",
      "title": "Animations: Animating layout properties (top/left/width) instead of transform/opacity —…"
+    },
+    {
+     "id": "M:13",
+     "title": "A hook called after an early return, so the hook count changes with the component's own visibility state and the render crashes on toggle"
     }
    ]
   },
@@ -1572,7 +1588,7 @@
    "title": "Third Party: Stripe Payments Integration",
    "group": "third-party",
    "file": "sections/P-third-party-stripe-payments-integration.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "P:1",
@@ -1645,6 +1661,10 @@
     {
      "id": "P:18",
      "title": "Mandates: standing card-on-file charge authorization persisted as bare config — no consent artifact, no amount bound, no change notification"
+    },
+    {
+     "id": "P:19",
+     "title": "A user-typed redemption string resolved against the wrong one of two provider namespaces that share it, so a retired object shadows the live one"
     }
    ]
   },

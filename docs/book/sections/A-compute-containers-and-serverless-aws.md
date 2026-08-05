@@ -257,3 +257,39 @@ admitted; deployments where the process manager routes by a stable key so the sa
 reaches the same worker; and guards documented as best-effort defence in depth behind a primary
 control that is itself complete — the failure is claiming completeness, not choosing a partial
 mechanism knowingly.
+
+## A:39 — Serverless: a subpath import that the runtime's resolver cannot extension-search, against a shared package that declares no `exports` map
+
+**Statement.** A function imports a submodule of a shared dependency (a layer, a vendored package, a
+workspace-local module) by a *subpath* specifier written without a file extension —
+`import('shared-lib/registry')` where the file on disk is `registry.js`. If that package's manifest
+declares no `exports` map, the ESM resolver performs NO extension search on subpaths: the specifier
+resolves to a path that does not exist and the import throws `ERR_MODULE_NOT_FOUND`, frequently
+reported against the *package* ("Cannot find package 'shared-lib'") rather than the missing file,
+which sends the reader hunting for a packaging or attachment problem that does not exist. The same
+specifier works unchanged under a bundler, under CommonJS `require`, and under any resolver that
+does extension search, so it survives local runs, unit tests and build gates and fails only on the
+deployed runtime. When the import sits inside a lazily-invoked accessor, the module still loads
+clean and the throw lands at first invocation — so the function deploys green and dies on its first
+real request. A scheduled or event-driven consumer with no synchronous caller then fails invisibly:
+nothing waits on its response, and the only trace is a fault metric nobody has bound an alarm to.
+
+**Detect.** Enumerate every subpath specifier of a first-party or layer-shipped package across the
+codebase (`from '<pkg>/<sub>'` and `import('<pkg>/<sub>')`) and split them by whether they carry a
+file extension. Any package where BOTH forms appear is the strongest signal: the extensionless one
+is the outlier and the fleet's own majority convention is the correct form. Then read that package's
+manifest — if there is no `exports` field, every extensionless subpath is broken on a strict ESM
+resolver, full stop; if there IS an `exports` field, check that the specific subpath is mapped,
+because an unmapped subpath is *also* a hard failure regardless of extension. Confirm on the
+deployed artifact, never the repo: pull the runtime's own error log and look for
+`ERR_MODULE_NOT_FOUND` / resolver hints of the form "Did you mean to import X.js?" — that hint is a
+positive identification, because it proves the resolver found the directory and the file and
+rejected only the specifier form. Treat a newly-introduced extensionless subpath in a change that
+otherwise looks like a correctness improvement as high-risk: this defect is characteristically
+introduced BY a fix, and the fix's own verification runs in an environment that resolves it.
+
+**False positives.** Packages that declare an `exports` map covering the subpath, where the
+extensionless form is the intended public API; bundled or transpiled deployment artifacts where the
+specifier never reaches a Node resolver; TypeScript path aliases resolved at build time; runtimes
+and loaders explicitly configured with extension-search or custom resolution hooks; and
+CommonJS-only consumers, where `require` retains extension search and the form is legitimate.

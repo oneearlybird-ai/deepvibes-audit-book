@@ -101,3 +101,38 @@ notification.
 (no standing authorization exists to record); processors that capture and store the mandate
 themselves (e.g. bank-debit mandates held by the PSP) when the config row links that mandate id;
 internal/admin-only lanes unreachable by customers.
+
+## P:19 — A user-typed redemption string resolved against the wrong one of two provider namespaces that share it, so a retired object shadows the live one
+
+**Statement.** Payment providers expose promotional value through two distinct object namespaces: a
+durable internal object (the discount/coupon, usually operator-created and long-lived) and a
+customer-facing redemption object (the promotion/redemption code, which references the internal one).
+Both are addressable by short human strings, both accept the same string, and the same word is
+routinely used for a retired internal object AND a live customer-facing one. A redeem path that
+resolves the typed string against the INTERNAL namespace first will find the retired object and stop
+— never reaching the live redemption code that points at a valid replacement — and reject the
+redemption with the retired object's own state ("expired", "inactive"), which reads as a correct
+answer about the string the customer typed. The error message is true about the object the code
+found and false about the code the customer holds, so the report arrives as "your discount is broken"
+and the logs agree with the code rather than the customer. The defect is invisible until the two
+namespaces first collide on one string, which is exactly when a marketing code is reissued after its
+predecessor is retired — the highest-traffic moment for that string.
+
+**Detect.** Find every path that resolves a user-supplied redemption string and read the ORDER of
+lookups. The correct order is dictated by what the user was given, not by what is convenient to
+retrieve: if the string was printed on a campaign, it is a redemption code and must resolve in that
+namespace first, with the internal-object lookup reserved for operator-issued identifiers that have
+no redemption code. Then hunt the collision directly rather than reasoning about it — list the live
+redemption codes and the retired internal objects and intersect their identifier strings
+case-insensitively; any intersection is a live incident, not a hypothetical. Check the validity
+predicate too: a redemption code and the object it references have SEPARATE validity, expiry and
+usage-cap state, and a path that validates only one of them will both accept expired redemptions and
+reject live ones. Finally, confirm against the provider's real API rather than the test double,
+because doubles for this class are routinely written to return whichever object the test author had
+in mind, which makes the ordering bug unreachable in the suite.
+
+**False positives.** Integrations that expose only one namespace to customers and use the other
+purely for operator-issued identifiers, where the ordering is deliberate and documented; providers
+whose lookup endpoint genuinely searches both namespaces and disambiguates server-side; and paths
+where the string is not user-typed but selected from a server-rendered list carrying the resolved
+object id, where no namespace ambiguity exists.

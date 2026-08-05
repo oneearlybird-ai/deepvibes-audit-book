@@ -324,3 +324,61 @@ class).
 classes carrying their own markers or delivered by a different reconciler — verify that second path
 exists and runs, then audit its coverage instead; members intentionally pinned or frozen by an
 operator hold, which must be recorded visibly on the member, not inferred from staleness.
+
+## DD:19 — A client-side capability catalog advertises a provider as available through a hand-maintained flag, with nothing tying the flag to the server capability it claims
+
+**Statement.** Product surfaces that integrate many third parties keep a catalog — a per-provider
+record carrying display copy and an availability flag the UI reads to decide whether to render a live
+action or a coming-soon state. The flag is hand-maintained and lives on the client, while the
+capability it asserts lives on the server: a provider entry in the backend registry, a credential
+with a non-empty client id, a route that returns something other than not-implemented. Nothing binds
+them. The flag is flipped in anticipation of backend work, or is left flipped after the backend half
+is reverted or never finished, and the UI then offers a live action that terminates in an error the
+user cannot act on. This is more damaging than an absent feature: the user commits attention and
+often external steps — a vendor login, a consent screen — before the dead end, and the failure
+appears to be their fault or the vendor's. The catalog usually documents its own rule, that
+availability requires working credentials, in a comment; which is precisely the kind of rule nothing
+enforces.
+
+**Detect.** Treat every availability flag as a claim to be tested against the server, not read.
+Enumerate the catalog's enabled entries and, for each, exercise the actual initiation endpoint and
+require a real response — a not-implemented or misconfigured-credential answer for an entry the
+catalog calls available is the defect. Check the server side directly too: an entry missing from the
+backend provider registry, or present with an empty credential id, cannot support the action
+regardless of what the route returns on a happy path. Then close the loop permanently with a gate
+that derives availability from the server, or asserts correspondence between the two lists in CI, so
+the flag cannot drift again — and check the inverse direction as well, since a capability shipped
+while its flag stays off is the same class of untruth pointing the other way.
+
+**False positives.** Flags gated behind an entitlement or rollout the auditor's session does not have;
+providers whose initiation legitimately fails only for the auditing account's configuration; entries
+deliberately enabled for an internal pilot; and catalogs where the flag means listed and a second,
+server-fed field carries actual availability.
+
+## DD:20 — Two concurrent lines of work allocate the same monotonic contract version, and the merge reconciles the content while leaving one number naming two different documents
+
+**Statement.** A versioned contract document — a schema, an identifier registry, a machine-readable
+resource map — carries a single incrementing version that consumers use to reason about
+compatibility. When two independent work streams each bump it from N-1 to N, the version becomes an
+allocation with no allocator: both are correct in isolation, and a trunk-based merge resolves the
+content cleanly, because the two changes touch different keys, while leaving the number silently
+overloaded. From that moment the version identifier is no longer a fact about the document: the same
+N names one document in one deployed artifact and a different document in another, so every
+compatibility check, cache key, freshness assertion and did-the-consumer-get-the-new-contract
+diagnosis built on the number is unsound — and unsound quietly, because the check still passes. The
+damage outlives the merge: logs, pinned references and prior verification runs all cite N, and
+nothing afterwards can tell which N they meant.
+
+**Detect.** Read the version's history rather than its current value: two commits from different lines
+of work that both set the same number, or a merge whose result keeps a version the parent already
+used, is the defect on its face. In review, treat a contract version bump as a conflict-worthy line
+even when the merge tool resolves it silently — the number is a shared resource and the merge is
+exactly where its ownership is lost. Where a generator produces the document, check that the version
+is derived (a content hash, a counter allocated at merge) rather than hand-typed; where it is
+hand-typed, add a gate asserting the value exceeds every value already present on the trunk. When the
+collision has already landed, the repair is a fresh number that supersedes both, not a retroactive
+renumber of either.
+
+**False positives.** Version fields that are intentionally content-derived and therefore identical for
+identical content; documents where the number tracks a schema shape that genuinely did not change;
+and vendored copies that legitimately carry an upstream version they did not allocate.

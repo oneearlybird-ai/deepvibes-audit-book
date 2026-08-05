@@ -520,3 +520,37 @@ merely emits.
 anywhere is the point; gates whose genuine subject is the rendered text of a generated artifact;
 searches over a file that is by construction the single definition site, where duplication is itself
 prevented by another gate.
+
+## NN:26 — The fail-closed gate has no resolution path for the legitimate first-occurrence case, so it is a permanent block rather than a conditional one — and its documented override cannot clear it
+
+**Statement.** A safety gate that refuses on uncertainty is the correct posture, and its correctness
+depends entirely on that uncertainty being resolvable. The failure mode is a gate whose unknown
+branch is reachable by a case that can never become known: a guard that diffs a live resource
+against a planned one cannot resolve either side when the resource is born in the same change,
+because the locator it needs (a URL, an id, an ARN) is itself computed by that change. The gate then
+blocks every first instance of a legitimate pattern — the first queue with a policy, the first
+bucket with a policy — permanently, since re-running produces the same unknowns. The escape hatch
+does not help: an acknowledgement token exists to confirm a reviewed diff, and there is no diff to
+review, so the documented override is structurally incapable of clearing the block. The team's
+options collapse to disabling the gate or applying around it, both of which delete the protection
+for every future change and not just this one. The gate's own specification usually already states
+the correct answer — a resource that does not exist has an empty live set — which is what makes this
+a defect rather than a design trade-off.
+
+**Detect.** For every fail-closed gate, enumerate its unknown branches and ask of each: what action
+makes this known? If the answer requires information that only exists after the very apply the gate
+is blocking, the branch is a permanent block. Test the gate against a plan that creates a resource
+and its dependent policy together, not only against plans that modify existing ones — the
+first-occurrence case is the one real plans hit and self-tests usually omit. Confirm the override can
+actually clear each blocking branch by exercising it; an override that requires a reviewed diff is
+inert wherever the block is caused by the absence of one. When resolving the unknown, resolve it
+narrowly: derive the identity from the plan's own references, require a pure create, require a
+statically known name, and keep every unresolvable shape fail-closed — a blanket pass reopens the
+adoption-clobber hazard the gate was built for, since create calls against many services silently
+adopt an existing same-name resource.
+
+**False positives.** Gates deliberately blocking a case that genuinely requires human sign-off, where
+the override is a person and not a token; unknowns that a documented two-phase apply resolves;
+bootstrap-only blocks that a one-time seeded state clears; and gates whose specification really does
+treat the first occurrence as dangerous, which should be read before assuming the block is
+unintended.

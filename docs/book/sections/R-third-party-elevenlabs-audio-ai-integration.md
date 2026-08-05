@@ -115,3 +115,32 @@ count is the signature.
 **False positives.** Fields populated by a different producer (server-side injection into the same
 payload); readers that are deliberate forward-compatibility for a collection rollout that is
 tracked and imminent; optional enrichment where the null path is the designed primary.
+
+## R:15 — The voice provider emits synthetic placeholder turns for non-speech, and the transcript normalizer admits them as real speaker content
+
+**Statement.** Conversational voice platforms return a turn-structured transcript in which not every
+turn corresponds to something a human said. Silence, an unrecognized utterance, or a barge-in that
+produced no words are commonly rendered as a placeholder turn carrying an ellipsis or a similar
+non-lexical marker, attributed to the speaker who was expected to talk. A normalizer that filters
+only on empty or whitespace-only content accepts these as genuine speaker turns, and every consumer
+downstream inherits the fiction: the transcript UI renders empty bubbles, turn counts and
+talk-ratio metrics are inflated, "did the caller speak" checks answer yes for a caller who was
+silent throughout, and any extraction or summarization step is handed placeholder text as if it
+were speech. The defect is invisible in aggregate — the transcript looks well-formed and the volume
+looks plausible — and it corrupts precisely the cases that matter most, the calls where one party
+said nothing.
+
+**Detect.** Take a real call in which one party was silent and read the provider's raw payload for it
+end to end, rather than reasoning from the normalizer's output; the placeholder marker is only
+visible there. In the normalizer, examine the emptiness predicate: a check for empty string or
+trimmed-empty passes anything with a punctuation glyph in it, so the correct predicate is the
+absence of any letter or digit content. Sweep stored transcripts for turns whose content contains no
+alphanumeric character and count them per call — a nonzero population confirms admission, and the
+distribution shows which consumers are already contaminated. Verify each downstream consumer
+separately, since the placeholder can be harmless in one and load-bearing in another.
+
+**False positives.** Legitimate transcripts of non-lexical but meaningful content (a spoken symbol,
+a number rendered as digits, a language whose script the check must not exclude); providers whose
+ellipsis marks a truncation of real speech rather than its absence; and turns whose content is empty
+by design while their metadata carries the payload that matters, which must be preserved rather than
+dropped.

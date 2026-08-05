@@ -293,3 +293,39 @@ extensionless form is the intended public API; bundled or transpiled deployment 
 specifier never reaches a Node resolver; TypeScript path aliases resolved at build time; runtimes
 and loaders explicitly configured with extension-search or custom resolution hooks; and
 CommonJS-only consumers, where `require` retains extension search and the form is legitimate.
+
+## A:40 — A capability is wired into a function across several independent planes and landed plane by plane, so the function boots dead on whichever plane is still missing
+
+**Statement.** Attaching one capability to a serverless function routinely requires changes in three
+or more unrelated planes: an environment variable or runtime setting, an attached layer or sidecar
+that supplies the file the setting names, and an identity grant that lets the running function reach
+the service behind it. Nothing in the platform binds these together — they live in different IaC
+files, often different stacks, and are frequently landed in different changes over hours or days.
+Each partial state is accepted without error by the deploy: the function updates successfully, its
+configuration is valid, and every gate that checks one plane in isolation stays green. The failure
+appears only at execution, and it appears as an *initialization* failure rather than a logic one:
+the sandbox exec dies before the handler loads when the wrapper path a setting names is not on the
+filesystem (an exit-127 class error, with no application log line at all), or the boot-time config
+fetch returns 403 and the process exits on a status the code never expected. Because the failure is
+at init, per-invocation error handling cannot reach it and the function is 100% dead rather than
+degraded — but only from the first invocation onward, so a low-traffic or event-driven function can
+carry the defect for days before anything exercises it.
+
+**Detect.** Do not audit the planes separately. For every function, assemble the full wiring set from
+the live configuration and assert closure over it: for each runtime setting that names a filesystem
+path (exec wrappers, extension entrypoints, preload hooks), prove that some attached layer actually
+ships that path; for each sidecar or extension the function's boot path talks to, prove the
+execution role carries the grant that sidecar's backing service demands; for each layer the function
+declares, prove the code actually resolves against it. Then invert the check across the fleet — take
+the population of functions carrying a given setting and diff their layer and policy sets; a
+minority that differs is almost always an incomplete landing, not an intentional variant. Read the
+recent history of the wiring: a capability introduced in one change and completed in a later one is
+the characteristic shape, and the window between them is the exposure. Confirm at the runtime, not in
+the repo: `Errors == Invocations` with no application log lines is the signature of an init-phase
+death, and a function with zero recent invocations proves nothing about whether the wiring works.
+
+**False positives.** Functions that legitimately declare a setting they do not exercise on every
+path, where the dependency is genuinely optional and its absence is handled; canary or shadow
+functions deliberately deployed with partial wiring; grants supplied through a boundary or
+resource-based policy rather than the execution role, which a role-only sweep will not see; and
+capabilities where the platform itself injects the missing plane at deploy time.

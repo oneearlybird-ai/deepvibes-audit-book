@@ -136,3 +136,37 @@ purely for operator-issued identifiers, where the ordering is deliberate and doc
 whose lookup endpoint genuinely searches both namespaces and disambiguates server-side; and paths
 where the string is not user-typed but selected from a server-rendered list carrying the resolved
 object id, where no namespace ambiguity exists.
+
+## P:20 — A locally persisted provider-object reference the provider cannot resolve is mapped to a 5xx by the generic provider-error mapper, so a data condition presents as an outage
+
+**Statement.** Billing code stores the provider's object id (a customer, a subscription, a payment
+method) on the local record and dereferences it on every read. The reference can become unresolvable
+without any code change: the object was created against a different key mode and the environment now
+runs the other one, the object was deleted in the provider's dashboard, the local row was seeded from
+a fixture, or the account was migrated. The provider answers with a typed resource-missing error,
+which a shared error mapper — written to hide provider internals from the client — collapses into a
+generic internal 500 alongside genuinely internal faults. The result is that a *data* condition
+affecting one record produces a server fault: the endpoint returns 5xx for that tenant forever, the
+gateway records it as a fault trace, and the caught-error alarm fires against a function that is
+behaving exactly as written. The tell that this is a defect and not a policy is that the same
+codebase almost always contains sibling handlers on the same plane that already translate the
+identical error into a defined response — a 404, or a 200 carrying the empty shape — so the plane
+has a convention and this handler is outside it.
+
+**Detect.** Enumerate every dereference of a stored provider id and, for each, follow the error path
+to the status code actually returned: a route into a generic mapper with no resource-missing branch
+is the defect. Compare siblings on the same plane — where four handlers translate the error and two
+do not, the two are wrong, and the siblings also settle what the correct response shape is. Confirm
+live rather than by reading: search the function's logs for the provider's resource-missing error
+code and correlate with fault traces at the gateway, since the 5xx is what distinguishes this from a
+handled case. Check the mode dimension explicitly — a provider error whose message names the other
+key mode proves the stored reference was minted under different credentials, which is a second,
+separately fixable defect in how references are seeded. The durable repair is both halves: translate
+the resource-missing error at the call site to the plane's existing convention, and assert at boot
+that stored references and the active credential belong to the same mode.
+
+**False positives.** Handlers where an unresolvable reference genuinely is an internal invariant
+violation that should page; write paths where silently degrading would lose the caller's intent;
+endpoints whose contract already documents 5xx for this case; and providers that return
+resource-missing for authorization failures too, where the distinction must be made on more than the
+error code.

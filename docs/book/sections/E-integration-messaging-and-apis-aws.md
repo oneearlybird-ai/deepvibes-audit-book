@@ -382,3 +382,64 @@ live incidents, and whether anything but a human can ever drain it.
 genuinely is transient inside a provisioning window, provided the retry budget exceeds that window
 and the handler documents it; queues that are deliberately human-adjudication surfaces with a named
 owner, where parking the event is the designed outcome rather than a failure.
+
+## E:37 — The gateway serves a deployment snapshot, so a route created by a different stack's apply stays unreachable until something changes the snapshot's redeploy trigger
+
+**Statement.** Snapshot-deployment API gateways separate the *definition* of a route from the
+*deployment* that serves it: creating the resource, method and integration changes nothing a client
+can reach until a new deployment is cut and the stage is pointed at it. IaC models the deployment as
+a resource whose recreation is driven by a trigger — typically a hash over the route set the
+deployment's own stack knows about. When routes are declared in a different stack from the
+deployment (a capability stack adding a provider webhook, a domain stack adding an endpoint), that
+trigger does not observe them, so the route-creating apply succeeds, the console and the IaC both
+show the route existing, and the live stage keeps serving the older snapshot. The symptom is a
+gateway-level rejection rather than an application error — a missing-authentication-token or
+missing-route response on the new path while sibling paths on the same base resource answer
+correctly — which reads as an auth or integration bug and sends the investigation to the wrong
+plane entirely. The defect recurs once per cross-stack route forever, because nothing about the
+successful apply signals that the route is not being served.
+
+**Detect.** Never accept the IaC or the control-plane resource listing as proof a route is live:
+probe the deployed stage itself and compare the new path against a known-good sibling on the same
+parent resource — a gateway-level rejection on one and a normal application response on the other is
+positive identification. Then read the deployment resource's trigger expression and enumerate which
+stacks contribute routes to the same gateway; any route defined outside the trigger's field of view
+is exposed. Check the stage's last-updated timestamp against the route's creation time: a stage
+older than the route is the defect, stated in two facts. In a multi-stack layout, the durable form of
+the check is a cumulative trigger that every route-contributing stack writes into, plus a
+post-apply smoke probe of newly added paths — treat "the apply succeeded" as evidence about the
+control plane only.
+
+**False positives.** Gateways in auto-deploy mode, where every configuration change is served
+immediately; routes intentionally staged ahead of their cutover; paths that are rejected for a
+genuine authorization reason rather than absence, which the response code and the access log
+distinguish; and canary deployments where the old snapshot is deliberately still serving a share of
+traffic.
+
+## E:38 — The downstream API demands an explicit "there is none" declaration where the upstream provider simply omits the field, and the client omits instead of declaring
+
+**Statement.** An integration client relays a third-party response into a persistence or brokerage
+API. The upstream population is heterogeneous: most providers return the optional field (an expiry,
+a scope, a cursor) and a minority return nothing at all. The downstream API does not accept silence
+as an answer — it requires either the value or an explicit sentinel asserting the value's absence,
+and it rejects a payload carrying neither. A client written against the majority simply forwards the
+field when present and omits it when absent, so it works for every provider that returns a value and
+hard-fails for exactly the subset that does not. The failure lands at the *last* step of an otherwise
+fully successful flow — consent granted, code exchanged, credentials received — so the user
+experiences a complete success followed by an unexplained failure, and the logs attribute it to the
+storage step rather than to the payload shape. Per-provider blast radius means it can persist
+indefinitely while the integration is judged healthy on the providers that happen to be exercised.
+
+**Detect.** Read the downstream API's contract for every optional field the client relays and note
+which ones have a required-sentinel rule; then read the client and check what it does when the
+upstream value is absent — an `if (value) body.field = value` with no else branch is the defect
+shape. Enumerate the provider population and classify each by whether it returns the field: the
+providers that do not are the exposed set, and the fix must be verified against one of them
+specifically. Search runtime logs for the downstream API's own validation error code scoped by
+provider — a rejection that appears for a stable subset of providers and never for the others is
+positive identification. Tests must pin BOTH body shapes against the real wrapper; a fixture built
+only from a value-returning provider cannot fail.
+
+**False positives.** Downstream APIs that genuinely treat omission as the sentinel; fields the client
+is documented to derive rather than relay; providers whose absent field is legitimately fatal and
+should be rejected upstream; and SDKs that inject the sentinel themselves below the client code.

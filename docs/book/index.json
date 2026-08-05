@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 760,
+ "rule_count": 768,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "A:1",
@@ -166,6 +166,10 @@
     {
      "id": "A:39",
      "title": "Serverless: a subpath import that the runtime's resolver cannot extension-search, against a shared package that declares no `exports` map"
+    },
+    {
+     "id": "A:40",
+     "title": "A capability is wired into a function across several independent planes and landed plane by plane, so the function boots dead on whichever plane is still missing"
     }
    ]
   },
@@ -533,7 +537,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 36,
+   "rule_count": 38,
    "rules": [
     {
      "id": "E:1",
@@ -678,6 +682,14 @@
     {
      "id": "E:36",
      "title": "Async handler treats a nonexistent-tenant authorization denial as transient, so an undeliverable event burns the retry budget and permanently latches the dead-letter alarm"
+    },
+    {
+     "id": "E:37",
+     "title": "The gateway serves a deployment snapshot, so a route created by a different stack's apply stays unreachable until something changes the snapshot's redeploy trigger"
+    },
+    {
+     "id": "E:38",
+     "title": "The downstream API demands an explicit \"there is none\" declaration where the upstream provider simply omits the field, and the client omits instead of declaring"
     }
    ]
   },
@@ -1588,7 +1600,7 @@
    "title": "Third Party: Stripe Payments Integration",
    "group": "third-party",
    "file": "sections/P-third-party-stripe-payments-integration.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "P:1",
@@ -1665,6 +1677,10 @@
     {
      "id": "P:19",
      "title": "A user-typed redemption string resolved against the wrong one of two provider namespaces that share it, so a retired object shadows the live one"
+    },
+    {
+     "id": "P:20",
+     "title": "A locally persisted provider-object reference the provider cannot resolve is mapped to a 5xx by the generic provider-error mapper, so a data condition presents as an outage"
     }
    ]
   },
@@ -1742,7 +1758,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "R:1",
@@ -1799,6 +1815,10 @@
     {
      "id": "R:14",
      "title": "Post-call analysis consumer reads collection fields the agent is not configured to collect - the branch is structurally dead"
+    },
+    {
+     "id": "R:15",
+     "title": "The voice provider emits synthetic placeholder turns for non-speech, and the transcript normalizer admits them as real speaker content"
     }
    ]
   },
@@ -2670,7 +2690,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 18,
+   "rule_count": 20,
    "rules": [
     {
      "id": "DD:1",
@@ -2743,6 +2763,14 @@
     {
      "id": "DD:18",
      "title": "The drift repairer advances the fleet's version marker while re-applying only one class of the versioned artifacts, so the other classes drift forever behind a converged-looking version"
+    },
+    {
+     "id": "DD:19",
+     "title": "A client-side capability catalog advertises a provider as available through a hand-maintained flag, with nothing tying the flag to the server capability it claims"
+    },
+    {
+     "id": "DD:20",
+     "title": "Two concurrent lines of work allocate the same monotonic contract version, and the merge reconciles the content while leaving one number naming two different documents"
     }
    ]
   },
@@ -3292,7 +3320,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "NN:1",
@@ -3393,6 +3421,10 @@
     {
      "id": "NN:25",
      "title": "Gate assertion anchored by content match rather than definition site, so it binds to a coincidental duplicate and goes blind when that duplicate is deleted"
+    },
+    {
+     "id": "NN:26",
+     "title": "The fail-closed gate has no resolution path for the legitimate first-occurrence case, so it is a permanent block rather than a conditional one — and its documented override cannot clear it"
     }
    ]
   },

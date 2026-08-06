@@ -144,3 +144,33 @@ a number rendered as digits, a language whose script the check must not exclude)
 ellipsis marks a truncation of real speech rather than its absence; and turns whose content is empty
 by design while their metadata carries the payload that matters, which must be preserved rather than
 dropped.
+
+## R:16 — Registering a hosted tool server with the conversational agent is mistaken for exposing its tools, so the agent runs with an empty tool surface and narrates the actions it cannot take
+
+**Statement.** Agent platforms separate two configuration surfaces that read like one: the list of
+tool SERVERS attached to an agent, and the list of TOOLS the agent may call. Attaching a server
+registers the connection; it does not populate the tool list. When the deploy path sets only the
+server binding and leaves the tool array empty — or, worse, deletes the tool array on every update
+because an earlier revision treated it as server-derived — the agent boots with no callable tools at
+all. Nothing errors. The conversation still runs, the orchestration graph's tool nodes have nothing
+to fire, filler speech covers the wait, and a generative agent asked to complete a transaction does
+what it always does with an unavailable capability: it describes the outcome as if it had happened.
+The user is told the booking, order, or transfer is done, and no record exists anywhere. Two further
+traps sit next to this one: the platform's DEFAULT approval policy may require a human click per
+call, which stalls a live conversation exactly as an empty list does; and declaring the derived
+identifier list (tool ids) alongside the materialized entries makes the server mint duplicate
+records and report drift forever.
+
+**Detect.** Read the agent's live configuration through the platform API, not the deploy code or the
+console summary: count the entries in the tool array itself and compare against the tools the
+attached server actually serves when scanned. A non-empty server binding with an empty tool array is
+the defect. Check each materialized entry's approval policy against what an unattended live call can
+survive. Then close the loop behaviorally — run one conversation that must call a tool and assert a
+tool invocation was recorded, since the transcript alone cannot distinguish a successful action from
+a fluent description of one. Cross-check the reverse direction too: a tool present on the agent that
+the live server no longer serves is the same class of drift.
+
+**False positives.** Agents deliberately configured for speech only; platforms that genuinely derive
+the tool surface from the server binding at call time — verify against the live agent object rather
+than the vendor's marketing description; and staged rollouts where the empty surface is the
+intentional pre-cutover state and no live traffic reaches the agent.

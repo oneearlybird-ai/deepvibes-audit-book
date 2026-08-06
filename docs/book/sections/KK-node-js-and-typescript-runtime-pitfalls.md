@@ -232,3 +232,30 @@ no subsequent error-field read on the result.
 confirm the failure is metered somewhere. Clients that BOTH populate the envelope AND re-throw
 (verify in the client source before flagging callers). Callers that pass the resolved envelope to a
 shared handler which does inspect the error field.
+
+## KK:16 — A serializer configured to strip undefined values silently removes a placeholder the query string still references, converting an absent optional field into a hard request-validation error
+
+**Statement.** Document/marshalling clients are commonly configured to drop `undefined` properties so
+that optional fields need no guarding at each call site. That convenience becomes a fault when the
+same request carries an EXPRESSION — an update expression, a filter, a parameterized statement —
+that names placeholders by key: the stripping pass removes the placeholder's entry while the
+expression string still refers to it, and the service rejects the whole request for an undefined
+placeholder. The failure is total (the entire write is refused, not just the one attribute), and it
+is data-dependent: it appears only for the records where the optional field resolves to `undefined`,
+so it passes every test whose fixture happens to populate it. The usual source of the `undefined` is
+a conditional expression whose branches are not exhaustive — a ternary over a field that may be
+absent on older or partially-populated rows returns `undefined` from a branch nobody considered.
+
+**Detect.** For every request that pairs an expression string with a values map, enumerate the
+placeholders named in the string and prove each one is assigned a defined value on EVERY path that
+reaches the call, including the branch that reads an optional attribute off a stored row. Read the
+client's marshalling options first: strip-undefined turns this from a marshalling error into a
+service-side validation error, which is why it surfaces in production rather than in unit tests.
+Search runtime logs for the service's own wording for an undefined placeholder — it names the exact
+key, which points straight at the unassigned branch. Fixtures must include a stored record with the
+optional attribute missing, not merely empty.
+
+**False positives.** Expressions assembled conditionally, where the placeholder is appended to the
+string in the same branch that assigns its value (verify the string and the map are built together);
+values legitimately typed as null rather than undefined, which marshal fine; and clients that do not
+strip undefined, where the failure is an earlier and louder marshalling error.

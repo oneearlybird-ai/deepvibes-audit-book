@@ -435,3 +435,62 @@ statement grants the same action on that specific index without the condition; k
 that evaluate against the base table's key even for index reads (verify the provider's documented
 semantics before flagging); and grants that are dead because the query path is dead, where the
 finding is the unreachable code rather than the policy.
+
+## F:34 — Session-scoped policy enumerates the action set of an older access shape, so a read path that changed from a point lookup to a range query is denied by the intersection the role review never sees
+
+**Statement.** Per-request credentials are commonly fenced by an inline session policy that
+INTERSECTS the assumed role's own grant: the caller may do only what both allow. That fence is
+written once, from the access shape the code had at the time — typically a point read and a write.
+When the data model later moves the read to a range/prefix query (the "latest row in this partition"
+pattern that replaces a deterministic key), the query action is added to the ROLE, where policy
+review looks, and forgotten in the SESSION policy, where nothing does. Every call in that path is
+denied. The denial message is self-describing — it says no session policy allows the action — but it
+surfaces only at runtime, on the specific profile, and any audit that reads the role's policy
+concludes the permission is present. The blast radius is the whole capability behind that read, and
+when the read gates a compliance decision (consent, entitlement, eligibility) the failure is worse
+than an outage: the record that proves the decision cannot be consulted at all.
+
+**Detect.** Do not audit the role policy alone. For every credential-vending profile, list the
+actions its session policy grants per resource and diff them against the actions the code actually
+issues against that resource, tracing the call path rather than grepping for action names — a shared
+helper's method is the truth, not the call site. Where a role grant and a session grant differ, the
+narrower one is the live permission; treat any action present in the role but absent from the
+session policy as a live denial waiting for its first caller. Search runtime logs for the credential
+service's exact wording distinguishing session-policy denials from role denials; a single occurrence
+proves the intersection, not a transient. The same trap applies to key-management actions on
+customer-managed-key-encrypted stores, which is why they are usually the first casualty and the
+comment left behind after that fix is a reliable marker that the profile has this shape.
+
+**False positives.** Actions the code issues only on an unreachable branch; profiles whose narrower
+session policy is the deliberate fence and whose caller is expected to fail closed (confirm the
+failure is handled as a decision, not an exception); and denials that are actually the role's, whose
+fix belongs at the role.
+
+## F:35 — A role-scoped credential wrapper hardcodes its own role family, silently overriding the per-profile role binding the policy registry declares
+
+**Statement.** Platforms that vend per-request credentials usually keep a central registry mapping a
+named profile to BOTH the role family it should assume and the session policy it should carry. Layer
+or module wrappers are then written per role family for convenience, and each pins the role type it
+was named for. When a caller reaches for a profile that belongs to a DIFFERENT family through one of
+these wrappers, the wrapper's hardcoded family wins: the session is minted on the wrong role and
+carries the right profile's policy. Nothing declares a conflict — the registry's role binding is
+simply not consulted — and the resulting credential is the intersection of one role's grant with
+another role's intended fence. It usually half-works, which is the danger: the wrong role happens to
+allow the reads, so the path appears functional until the first write, which the wrong role never
+had a reason to grant. The registry entry, meanwhile, still documents the correct binding, so every
+reader of the configuration concludes the correct role is in use.
+
+**Detect.** For each profile in the registry, record its declared role family; then find every code
+path that requests that profile and determine which family the vending wrapper actually assumes —
+read the wrapper's implementation, since the parameter is often absent from the call site entirely.
+Live confirmation is exact and cheap: the assumed-role ARN and session name appear in the credential
+service's own denial messages and in trace segments, so one real invocation shows which role was
+minted. Then diff the two roles' grants against the operations the profile's code performs, and
+flag every operation the actually-assumed role does not allow, not merely the one that failed first.
+A gate belongs at the registry: a profile whose declared family differs from the family of every
+wrapper that requests it is a build-time contradiction.
+
+**False positives.** Registries whose role field is documentation rather than a binding (verify what
+the vending code reads); deliberate escape hatches where a profile is intentionally usable from more
+than one family and both roles carry the full grant; and single-family systems where the wrapper's
+pin is the only binding there is.

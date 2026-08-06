@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 768,
+ "rule_count": 773,
  "sections": [
   {
    "id": "A",
@@ -698,7 +698,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 33,
+   "rule_count": 35,
    "rules": [
     {
      "id": "F:1",
@@ -831,6 +831,14 @@
     {
      "id": "F:33",
      "title": "Row-scoping condition applied to a resource whose own key schema cannot express the scope, making the grant structurally unusable"
+    },
+    {
+     "id": "F:34",
+     "title": "Session-scoped policy enumerates the action set of an older access shape, so a read path that changed from a point lookup to a range query is denied by the intersection the role review never sees"
+    },
+    {
+     "id": "F:35",
+     "title": "A role-scoped credential wrapper hardcodes its own role family, silently overriding the per-profile role binding the policy registry declares"
     }
    ]
   },
@@ -1758,7 +1766,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "R:1",
@@ -1819,6 +1827,10 @@
     {
      "id": "R:15",
      "title": "The voice provider emits synthetic placeholder turns for non-speech, and the transcript normalizer admits them as real speaker content"
+    },
+    {
+     "id": "R:16",
+     "title": "Registering a hosted tool server with the conversational agent is mistaken for exposing its tools, so the agent runs with an empty tool surface and narrates the actions it cannot take"
     }
    ]
   },
@@ -3129,7 +3141,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "KK:1",
@@ -3190,6 +3202,10 @@
     {
      "id": "KK:15",
      "title": "Result-envelope async clients consumed with rejection-only error handling: the catch that can never fire"
+    },
+    {
+     "id": "KK:16",
+     "title": "A serializer configured to strip undefined values silently removes a placeholder the query string still references, converting an absent optional field into a hard request-validation error"
     }
    ]
   },
@@ -3198,7 +3214,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "LL:1",
@@ -3255,6 +3271,10 @@
     {
      "id": "LL:14",
      "title": "`async let` siblings that can complete before the parent suspends"
+    },
+    {
+     "id": "LL:15",
+     "title": "Collection views keyed by positional index over a mutable collection: deleting a row re-evaluates a surviving row's binding against a stale position and traps"
     }
    ]
   },

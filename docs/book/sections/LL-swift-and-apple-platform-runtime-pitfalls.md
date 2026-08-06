@@ -198,3 +198,30 @@ mechanism, not a fixture defect.
 **False positives.** A single `async let` awaited immediately; children that always perform real I/O
 with no stub or cache path; a toolchain where the fault is verified fixed — confirm against the runtime
 actually shipping, not the newest available.
+
+## LL:15 — Collection views keyed by positional index over a mutable collection: deleting a row re-evaluates a surviving row's binding against a stale position and traps
+
+**Statement.** Declarative UI frameworks let a list be built over positions — an index range, or an
+enumeration paired with the element's offset — when the element type carries no stable identity.
+That works until the collection mutates. On deletion the framework diffs by the key it was given, so
+positions after the removed element are treated as CHANGED rather than moved; any row whose body
+reads through a positional subscript, and especially any row holding a two-way binding into the
+collection at that position, re-evaluates against an index that now refers to a different element or
+to none. The result is an out-of-range trap, a fatal unwrap, or — worse than a crash — an edit
+silently applied to the neighbouring record. Because the failure needs both a mutation and a
+surviving row after the mutation point, it never appears while browsing and appears every time on
+delete-the-first-of-several. The correct key is the element's own stable identity; adding it is
+usually a one-line conformance plus a keypath, which is why the positional form persists in code
+that predates the identity being available.
+
+**Detect.** Enumerate every list, grid, or repeating container in the codebase and classify its key:
+positional (an index range, or an enumerated offset) or identity-based. For each positional one, ask
+whether its collection can shrink or reorder at runtime — any delete, filter, or server-driven
+refresh qualifies — and whether the row body subscripts the collection or binds into it. Then drive
+the deletion in a running build rather than reading the diff: remove a middle element from a
+multi-element list and observe. Platform twins are a systematic miss here; when the same list exists
+on a second target, the fix must land on both.
+
+**False positives.** Static collections that never mutate for the view's lifetime; positional keys
+over value snapshots where the row body captures the element by value and holds no binding; and
+lists whose deletion path rebuilds the entire container identity, which sidesteps the diff.

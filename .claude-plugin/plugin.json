@@ -1,14 +1,14 @@
 {
-  "name": "audit-book",
-  "displayName": "The Audit Book",
-  "description": "Agent-executable audit system: a 41-section, 773-rule library of production failure patterns plus the code-audit-team engine skill — inventory → route → trace → adversarially refute → record, then find → report → fix → verify. Bootstraps a private findings ledger on first run.",
+  "name": "deepvibes-audit-book",
+  "displayName": "DeepVibes Audit Book",
+  "description": "Agent-executable audit system for vibe-coders: a 41-section, 773-rule library of production failure patterns plus the code-audit-team engine skill — inventory → route → trace → adversarially refute → record, then find → report → fix → verify. Bootstraps a private findings ledger on first run.",
   "version": "1.0.0",
   "author": {
     "name": "oneearlybird-ai",
     "url": "https://github.com/oneearlybird-ai"
   },
-  "homepage": "https://github.com/oneearlybird-ai/earlybird-audit-book",
-  "repository": "https://github.com/oneearlybird-ai/earlybird-audit-book",
+  "homepage": "https://github.com/oneearlybird-ai/deepvibes-audit-book",
+  "repository": "https://github.com/oneearlybird-ai/deepvibes-audit-book",
   "license": "Apache-2.0",
-  "keywords": ["audit", "security", "code-review", "code-quality", "tracing", "skill"]
+  "keywords": ["audit", "security", "code-review", "code-quality", "tracing", "vibe-coding", "skill"]
 }

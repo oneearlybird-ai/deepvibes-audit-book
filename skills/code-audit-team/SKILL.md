@@ -16,7 +16,7 @@ The Book's tools require Node.js (any current LTS). Nothing else.
 ## The three artifacts
 
 1. **The Book** — the rule library (sections `A`–`OO`, rules `LETTER:NUMBER`), shipped in the
-   audit-book repo alongside this skill. `docs/book/index.json` is the machine index;
+   Book repo (`deepvibes-audit-book`) alongside this skill. `docs/book/index.json` is the machine index;
    `schema/routing-manifest.json` maps resource kinds → sections. Append-only: IDs are never
    renumbered, rules never deleted (deprecate in place).
 2. **The Instance** — the adopter's private operating directory (created on first run — see
@@ -30,13 +30,13 @@ The Book's tools require Node.js (any current LTS). Nothing else.
 
 ## Locating the Book
 
-Resolve `<book>` (the audit-book checkout) in this order, and use it for every tool command below:
+Resolve `<book>` (the Book repo checkout) in this order, and use it for every tool command below:
 
 1. **Plugin install:** if `${CLAUDE_PLUGIN_ROOT}` is set, `<book>` = `${CLAUDE_PLUGIN_ROOT}`.
 2. **Instance config:** the instance `config.json`'s `book` field, if present.
-3. **Convention:** a directory named `audit-book/` in the working directory, a parent, or a
-   sibling — confirmed by the presence of `docs/book/index.json` inside it.
-4. **Ask** the user where their audit-book checkout is, then record the answer in the instance
+3. **Convention:** a directory named `deepvibes-audit-book/` (or `audit-book/`) in the working
+   directory, a parent, or a sibling — confirmed by the presence of `docs/book/index.json` inside it.
+4. **Ask** the user where their Book checkout is, then record the answer in the instance
    `config.json` as `book` so it is never asked again.
 
 ## Locating the instance — and first-run bootstrap

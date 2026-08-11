@@ -1,8 +1,12 @@
-# The Audit Book
+# DeepVibes Audit Book
 
 An **agent-executable audit system**: a library of known failure patterns ("the Book"), an audit
 engine skill that LLM agents follow (inventory → route → trace → refute → record), and a findings
 schema + tooling for operating a living audit ledger.
+
+Built for vibe-coders: point your coding agent at the Book and it stops vibing past production
+reality — it deep-vibes. It traces real code instead of grepping for keywords, tries to refute its
+own findings before reporting them, fixes what survives, and keeps an honest ledger of every scar.
 
 Existing options are either machine rules (Semgrep/CodeQL/Checkov — precise, but limited to what an
 AST matcher can express) or human checklists (Well-Architected, OWASP ASVS — broad, but nobody
@@ -16,13 +20,15 @@ Two ways to run the engine with [Claude Code](https://code.claude.com):
 **As a plugin (recommended):**
 
 ```
-/plugin marketplace add oneearlybird-ai/earlybird-audit-book
-/plugin install audit-book@audit-book
+/plugin marketplace add oneearlybird-ai/deepvibes-audit-book
+/plugin install deepvibes-audit-book@deepvibes-audit-book
 ```
 
 **As a project skill:** clone this repo somewhere near your workspace and copy
-`skills/code-audit-team/` into your project's `.claude/skills/`. (Use one install mode per
-machine, not both — duplicate skills shadow each other.)
+`skills/code-audit-team/` into your project's `.claude/skills/`.
+
+Both routes run the **identical** skill file — same engine, same abilities; the plugin just skips
+the copy step. Use one install mode per machine, not both: duplicate skills shadow each other.
 
 Node.js is the only runtime dependency. Then ask the agent to *"audit \<service/path/repo\>"* —
 on the first run the skill bootstraps your private instance (see "The two-repo model" below), and

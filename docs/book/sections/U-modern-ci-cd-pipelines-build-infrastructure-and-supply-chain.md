@@ -252,3 +252,32 @@ other side.
 **False positives.** A shift genuinely in progress (weight timestamps within the configured bake
 window). A deliberate long-lived split (A/B or blue-green hold) that is documented and monitored —
 the tell for the stall is that nobody can name the owner or the end condition.
+
+## U:28 — Commits staged by directory sweep with no gate against untracked filesystem debris, so mistyped-redirect artifacts enter history
+
+**Statement.** The repository's normal commit path stages by sweeping the working tree — add-all,
+commit-all, or a helper that passes a directory rather than a file list — because that is what an
+automated or fast-iterating workflow needs. Nothing in the commit gate asks whether a newly added
+path is a file anyone meant to create. Shell accidents produce exactly such paths: a redirect
+operator that consumed the next token creates an empty file named after a flag or a fragment, a
+quoting slip writes a file named after part of a command. These artifacts are zero bytes, carry no
+extension, and sit wherever the command ran, so every content-shaped check — formatters, linters,
+schema validators, large-file limits, secret scanners — passes them without comment, and the sweep
+commits them alongside real work. The damage is not the file; it is that the repository's history
+now contains noise attributed to a substantive commit, the follow-up removal commit is the only
+record that anything went wrong, and the same accident recurs because nothing was added to prevent
+it.
+
+**Detect.** Search history for removal-only commits whose message describes cleaning up a stray or
+empty file, and for tracked paths that are zero bytes or whose names contain characters typical of
+shell operators or flags; two occurrences in a week is a systemic gate gap, not two accidents.
+Then read the commit-stage gate and confirm what it asserts about *added* paths specifically — a
+large-file ceiling bounds size from above and says nothing about zero, and end-of-file fixers leave
+empty files untouched. The gate to look for is one that rejects a newly added file that is empty,
+extensionless, or named unlike anything else in the tree, with an explicit escape for the rare
+legitimate case.
+
+**False positives.** Deliberately empty marker files (keep-files, sentinel paths, fixtures that
+must be zero bytes) — these are legitimate and should be allowlisted rather than argued about;
+generated empty outputs the build requires; repositories whose commit path stages explicit file
+lists, where the sweep this rule depends on does not exist.

@@ -392,3 +392,29 @@ raises the severity from noise to a coverage hole.
 recorded expiry; detectors on paths that genuinely must never be idle, where the latch is the
 correct and intended signal; alarms whose channel is suppressed under a documented maintenance
 window.
+
+## G:30 — A periodic refresh logs unconditionally at info on every tick, so a no-op dominates the operational log
+
+**Statement.** A component re-reads its configuration, re-fetches a contract, or re-checks a lease
+on a short timer so that changes apply without a redeploy, and it emits an info-level line each time
+it does so. The line is written on the refresh, not on a change, so its content is identical on
+every tick — the same version, the same value — and it is emitted whether or not anything moved.
+At a sub-minute interval this is thousands of lines a day per running instance carrying zero
+information, and it is the highest-volume message the component produces precisely because it is
+the one thing that happens when nothing is happening. The real events the log exists to preserve —
+a job completing, a sync failing, a version actually changing — are interleaved a few per hour
+between them, so reading the log means paging past the no-op, tail-following is useless, and every
+retention window holds proportionally less of what matters. Ingestion and storage are billed on the
+noise.
+
+**Detect.** Sort the log's messages by count over a day; a single message at a rate matching a timer
+interval, with an invariant payload, is the finding. Confirm from the call site that the emission is
+unconditional rather than change-gated — the healthy shape logs at info only when the fetched value
+differs from the cached one, and drops the steady-state tick to debug or to a counter metric.
+Check the log group's retention and any subscription filters at the same time, since both multiply
+the cost of the noise.
+
+**False positives.** Heartbeats that are themselves the monitored signal, where absence is the alarm
+and a metric is genuinely not substitutable; low-frequency refreshes where the per-tick line is a
+useful liveness record; components where the logged value is expected to vary each tick and the line
+is therefore informative.

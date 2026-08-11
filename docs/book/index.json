@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 773,
+ "rule_count": 778,
  "sections": [
   {
    "id": "A",
@@ -847,7 +847,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "G:1",
@@ -964,6 +964,10 @@
     {
      "id": "G:29",
      "title": "Missing-data policy set to breaching latches a disappearance detector for the entire pre-traffic period"
+    },
+    {
+     "id": "G:30",
+     "title": "A periodic refresh logs unconditionally at info on every tick, so a no-op dominates the operational log"
     }
    ]
   },
@@ -2029,7 +2033,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "U:1",
@@ -2138,6 +2142,10 @@
     {
      "id": "U:27",
      "title": "A weighted traffic-shift stalls at zero: the router's primary advances, the weights pin all traffic to the old version, and everything downstream of \"unweighted\" breaks quietly"
+    },
+    {
+     "id": "U:28",
+     "title": "Commits staged by directory sweep with no gate against untracked filesystem debris, so mistyped-redirect artifacts enter history"
     }
    ]
   },
@@ -2146,7 +2154,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 15,
+   "rule_count": 18,
    "rules": [
     {
      "id": "V:1",
@@ -2207,6 +2215,18 @@
     {
      "id": "V:15",
      "title": "A safety pre-check that loses its permission degrades to a logged warning, and the job proceeds unguarded on every run"
+    },
+    {
+     "id": "V:16",
+     "title": "Composite job identifier joined with the queue backend's reserved key delimiter, so the broker rejects every enqueue"
+    },
+    {
+     "id": "V:17",
+     "title": "A windowed source API pulled without explicit range parameters, so the job inherits the provider's default window and reads a bounded empty result as \"no data\""
+    },
+    {
+     "id": "V:18",
+     "title": "A completed backfill walk records no incremental high-water mark, so every scheduled cycle re-reads the entire horizon"
     }
    ]
   },

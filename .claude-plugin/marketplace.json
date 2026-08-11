@@ -1,0 +1,16 @@
+{
+  "name": "audit-book",
+  "description": "The Audit Book: an agent-executable audit system — 41 sections / 773 rules of production failure patterns, plus the code-audit-team engine skill that finds, reports, fixes, and verifies.",
+  "owner": {
+    "name": "oneearlybird-ai",
+    "url": "https://github.com/oneearlybird-ai"
+  },
+  "plugins": [
+    {
+      "name": "audit-book",
+      "source": "./",
+      "description": "The Audit Book rule library + the code-audit-team audit engine skill.",
+      "license": "Apache-2.0"
+    }
+  ]
+}

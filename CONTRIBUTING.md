@@ -2,6 +2,10 @@
 
 Every rule PR passes this gate. The Book's value is rule quality, not rule count.
 
+The Book is licensed under [Apache-2.0](LICENSE). By submitting a contribution you agree it is
+licensed under the same terms (License §5) — that is what lets every adopter use contributed rules
+without per-author negotiation.
+
 ## The generalization gate
 
 1. **Mechanism, not product.** No company, product, repo, customer, or engineer identifiers — in the

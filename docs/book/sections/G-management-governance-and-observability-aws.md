@@ -418,3 +418,29 @@ the cost of the noise.
 and a metric is genuinely not substitutable; low-frequency refreshes where the per-tick line is a
 useful liveness record; components where the logged value is expected to vary each tick and the line
 is therefore informative.
+
+## G:31 — Two alarms with identical metric, dimensions, threshold and period watch one resource under different names, so the alarm inventory counts two detectors where one exists
+
+**Statement.** The same condition on the same resource is declared twice, usually because two
+generations of naming convention (or two stacks, or an import of a console-created alarm alongside its
+codified twin) each produced an alarm and neither removed the other. The pair is not redundancy in the
+availability sense: they share a metric, so they share every failure mode — a metric that stops
+publishing, a dimension that no longer resolves, a latched state — and they fail together, always.
+What the duplication does change is the reader's model. An inventory of alarms, a coverage report, or
+a per-service alarm count all record two detectors on that resource, and a review that asks "is this
+queue watched?" gets a doubly reassuring yes. Every incident also notifies twice, which trains
+recipients to filter by name, and the filter usually keeps the older name — so a later change that
+correctly retires one of the pair can silently remove the one people still read.
+
+**Detect.** Group every alarm by the tuple (namespace, metric name, sorted dimensions, statistic,
+period, comparison operator, threshold) and report any group with more than one member. Do this
+against the live control plane rather than the IaC, because the common cause is exactly that one
+member is not in the IaC. For each duplicate group, check which member the notification actions
+route to and whether they differ — an alarm whose actions point somewhere else is a different
+finding (a divergent detector), not a duplicate. Resolve by deleting one and confirming the survivor
+is the one referenced by the runbook, the dashboard and the subscription.
+
+**False positives.** Alarms that share a metric but differ meaningfully in threshold or evaluation
+window (a warning tier and a page tier); composite alarms that reference a child by design; and
+deliberately duplicated alarms routed to genuinely independent notification paths as a
+notification-plane redundancy measure, where that intent is documented.

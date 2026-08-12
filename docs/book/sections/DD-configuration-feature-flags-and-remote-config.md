@@ -382,3 +382,63 @@ renumber of either.
 **False positives.** Version fields that are intentionally content-derived and therefore identical for
 identical content; documents where the number tracks a schema shape that genuinely did not change;
 and vendored copies that legitimately carry an upstream version they did not allocate.
+
+## DD:21 — A migration off environment-supplied identifiers deletes the wiring while an unmigrated consumer still reads it, so the identifier resolves to null and the first use fails at the SDK boundary
+
+**Statement.** A programme moves resource identifiers (bucket names, table names, key ARNs, parameter
+paths) out of per-process environment variables and into a central contract or config document. The
+migration is enforced negatively — a gate forbids the infrastructure layer from wiring the old
+environment names — and the wiring is deleted for the whole fleet in one sweep. But at least one
+consumer was never moved to the new source: its code still reads the deleted name. The read does not
+throw; it yields the language's absent value (`None`, `undefined`, `nil`), which is carried silently
+through module scope and only surfaces when it is handed to an SDK call as a required argument. The
+failure is therefore total (every invocation), late (at the client-library validation layer, not at
+boot), and reported as a type error about the argument rather than as missing configuration —
+so the stack trace names the SDK, not the deletion that caused it. Because the sweep's own commit
+message asserts that the fleet now resolves identifiers from the contract, the removal reads as
+completed migration in review.
+
+**Detect.** Take the commit or change set that removed the environment wiring and, for every key it
+deleted, grep the whole repository — in every language, not just the one the migration was written
+in — for a read of that exact name. Any surviving read is the finding. Then confirm both halves
+against the live system rather than the diff: read the deployed process's actual environment (an
+empty or null environment map is the strongest possible evidence) and pull the consumer's error
+metric for the deployment date — a step from zero to error-equals-invocation on the day of the sweep
+closes it. Finally check the destination: verify the identifier the code was supposed to migrate to
+actually exists in the contract document at the current version. A removal whose replacement was
+never authored is the same defect with no forward path.
+
+**False positives.** Consumers that read the name only as an optional override with a working default;
+keys deleted because the code path that read them was deleted in the same change; and environments
+where the process is genuinely dead (no invocations before or after), where the removal is inert
+rather than breaking.
+
+## DD:22 — A fail-closed configuration dependency does not distinguish a transport failure from a policy denial, so a transient config-plane timeout consumes the whole retry budget and is recorded as a permanent record failure
+
+**Statement.** A worker resolves policy from a configuration plane (a sidecar agent, an extension, a
+remote config service) on every invocation and fails closed when the resolution fails — correct,
+because running without the policy would breach the isolation or authorization guarantee the policy
+exists to enforce. The defect is that the failure is undifferentiated: a gateway timeout, a socket
+error and a genuine "this record is not permitted" all raise the same error out of the same call
+site. The runtime's retry machinery sees an ordinary invocation failure and burns the configured
+attempts against a condition retrying cannot fix within the retry window, then routes the batch to
+the failure destination. What is lost is not a poison record but a healthy one, and the loss is
+attributed to the record rather than to the config plane. The blast radius is usually a single
+execution environment — a neighbouring function that never entered the bad state shows nothing —
+which makes the incident read as a one-off rather than as a missing failure taxonomy.
+
+**Detect.** For every fail-closed policy dependency, list the error classes its resolver can raise and
+check whether the caller distinguishes transport failures (timeout, connection reset, 5xx from the
+sidecar) from semantic denials. If one `catch` produces one error, the finding is present. Then read
+the consumer's retry configuration and ask whether its budget is long enough to outlive a typical
+control-plane blip; a stream or queue consumer with a low attempt count and a short record-age limit
+converts a seconds-long config outage into permanent data loss. Verify from the live logs, not the
+design: search the worker's log group for the resolver's transport error strings and correlate their
+timestamps with the failure destination's arrival metric. Zero occurrences in the preceding weeks
+plus a burst that matches the DLQ arrivals is confirmation.
+
+**False positives.** Resolvers that already retry transport failures internally with their own budget
+before surfacing, where the outer retry is deliberately a second tier; policy planes whose denial and
+transport errors are genuinely indistinguishable at the protocol level and where the safe reading is
+denial; and consumers whose records are idempotently re-derivable from a durable source, where the
+dead-letter is a queue-position marker rather than a loss.

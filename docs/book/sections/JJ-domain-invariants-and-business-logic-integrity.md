@@ -303,3 +303,62 @@ flagging.
 **False positives.** Scope cuts that were explicitly re-decided and recorded; parts tracked under
 a different name after a legitimate redesign; decisions superseded wholesale by a later recorded
 decision.
+
+## JJ:22 — A read boundary returns a literal constant in place of a stored attribute it never projects, so every downstream client that correctly branches on that field is uniformly defeated
+
+**Statement.** A record carries an attribute that distinguishes two materially different kinds of the
+same entity — direction, channel, origin, actor side. The writers stamp it correctly. The read API,
+written when only one kind existed, hardcodes that kind as a literal in its response mapper and never
+adds the attribute to the projection it requests from the store, so the value is not merely wrong, it
+is not fetched. Downstream this is invisible in the worst way: every client that was built to branch
+on the field works perfectly and branches on a constant. The clients are therefore not suspect, the
+field is present in every payload, and the schema is satisfied — the only symptom is that the second
+kind of entity is rendered as the first, which reads as a display bug in each client independently
+rather than as one boundary telling one lie. The damage compounds when other fields are interpreted
+relative to the wrong kind: a counterparty lookup that resolves the correct end of the relationship
+for one direction resolves the system's own identifier for the other, so enrichment does not merely
+fail, it attributes the record to the wrong party.
+
+**Detect.** For each read boundary, diff the fields the store holds against the fields the boundary
+projects, then against the fields the response contains. Any response field that is a literal in the
+mapper and absent from the projection is the finding. Confirm both halves against live data: query the
+store directly and show the attribute exists with more than one distinct value, then call the API for
+one of the minority-value rows and show the response says otherwise. Sweep for the second-order damage
+by listing every other field whose computation reads the same record and asking whether its
+correctness depends on the kind — enrichment, attribution, sign, and display-name selection are the
+usual carriers. The repair is to return the stored fact verbatim and to default only where absence is
+itself a determinate fact about the writer that produced the row.
+
+**False positives.** Boundaries that deliberately serve one kind and filter the others out at the query
+(the constant is then true of every row returned); fields whose single value is enforced by a
+write-side invariant with no path to a second value; and response fields that are genuinely derived
+rather than stored, where the derivation is correct.
+
+## JJ:23 — An enumerated selector offers N options while the table that gives those options behavior covers a subset, and the fallback is silent, so the product blames the operator's configuration for its own catalog gap
+
+**Statement.** A picker, industry list, plan matrix or type selector presents a fixed enumeration, and a
+separate hand-authored map supplies the behavior for each entry — suggestions, defaults, seeded
+content, validation. The two are maintained independently and the map covers only the entries someone
+needed at the time. Selecting an uncovered entry falls through to a default that is structurally valid
+and semantically empty, and the surface renders its generic empty state. That empty state almost always
+says something like "set your category to see suggestions" — advice the operator has already followed —
+so the product diagnoses a user error to explain a gap in its own data. The gap is invisible to type
+checking (the enumeration and the map are unrelated types), invisible to tests (the covered entries are
+the ones anyone writes fixtures for), and self-concealing in support, because the reported symptom is
+"the feature is empty" rather than "my category is missing." A related and more insidious variant: an
+entry that IS present but keyed to the wrong enumeration member, which serves confidently wrong content
+and produces no empty state at all.
+
+**Detect.** Extract the enumeration and the behavior map as two key sets and diff them in both
+directions. Keys in the enumeration and not the map are coverage gaps; keys in the map and not the
+enumeration are dead or, worse, evidence of a rekeying drift — for every shared key, spot-check that
+the map's content actually describes that enumeration member, because a shifted block of entries passes
+a pure key diff. Add a gate asserting the coverage relation the product intends, and state the intended
+exclusions explicitly in it rather than leaving them indistinguishable from omissions. Then read the
+empty-state copy on the consuming surface: it must be able to say "this category has no catalog entry
+yet" separately from "you have not chosen a category," or the fallback will keep misattributing the gap.
+
+**False positives.** Deliberate exclusions where the uncovered entries route to a different surface
+entirely and the exclusion is recorded; maps whose default is a genuine, useful generic rather than an
+empty shell; and enumerations extended by a provider or tenant at runtime, where full coverage is not
+achievable and the correct fix is the honest empty state alone.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 778,
+ "rule_count": 786,
  "sections": [
   {
    "id": "A",
@@ -847,7 +847,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "G:1",
@@ -968,6 +968,10 @@
     {
      "id": "G:30",
      "title": "A periodic refresh logs unconditionally at info on every tick, so a no-op dominates the operational log"
+    },
+    {
+     "id": "G:31",
+     "title": "Two alarms with identical metric, dimensions, threshold and period watch one resource under different names, so the alarm inventory counts two detectors where one exists"
     }
    ]
   },
@@ -1912,7 +1916,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "T:1",
@@ -2025,6 +2029,10 @@
     {
      "id": "T:28",
      "title": "Verdict discard: transport success conflated with semantic approval — 200-with-negative-verdict treated as verified"
+    },
+    {
+     "id": "T:29",
+     "title": "A delegated-authorization scope requested at the actor's own visibility tier answers success-with-empty for resources outside that tier, so a mis-scoped integration presents as \"no data\" instead of \"no permission\""
     }
    ]
   },
@@ -2332,7 +2340,7 @@
    "title": "Resiliency, High Availability & Disaster Recovery",
    "group": "saas-core",
    "file": "sections/X-resiliency-high-availability-and-disaster-recovery.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "X:1",
@@ -2385,6 +2393,10 @@
     {
      "id": "X:13",
      "title": "A shared account-level vendor quota is the real ceiling for several unrelated capabilities, so exhausting it anywhere takes them all down at once"
+    },
+    {
+     "id": "X:14",
+     "title": "The failure destination for a log- or stream-based consumer records batch coordinates rather than payloads, so recovery depends on a source retention window the same outage has already consumed"
     }
    ]
   },
@@ -2722,7 +2734,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 20,
+   "rule_count": 22,
    "rules": [
     {
      "id": "DD:1",
@@ -2803,6 +2815,14 @@
     {
      "id": "DD:20",
      "title": "Two concurrent lines of work allocate the same monotonic contract version, and the merge reconciles the content while leaving one number naming two different documents"
+    },
+    {
+     "id": "DD:21",
+     "title": "A migration off environment-supplied identifiers deletes the wiring while an unmigrated consumer still reads it, so the identifier resolves to null and the first use fails at the SDK boundary"
+    },
+    {
+     "id": "DD:22",
+     "title": "A fail-closed configuration dependency does not distinguish a transport failure from a policy denial, so a transient config-plane timeout consumes the whole retry budget and is recorded as a permanent record failure"
     }
    ]
   },
@@ -3068,7 +3088,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 21,
+   "rule_count": 23,
    "rules": [
     {
      "id": "JJ:1",
@@ -3153,6 +3173,14 @@
     {
      "id": "JJ:21",
      "title": "A settled cross-surface decision ships one half; the unshipped half exists nowhere — no code, no tracking row, no revised decision"
+    },
+    {
+     "id": "JJ:22",
+     "title": "A read boundary returns a literal constant in place of a stored attribute it never projects, so every downstream client that correctly branches on that field is uniformly defeated"
+    },
+    {
+     "id": "JJ:23",
+     "title": "An enumerated selector offers N options while the table that gives those options behavior covers a subset, and the fallback is silent, so the product blames the operator's configuration for its own catalog gap"
     }
    ]
   },
@@ -3360,7 +3388,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "NN:1",
@@ -3465,6 +3493,10 @@
     {
      "id": "NN:26",
      "title": "The fail-closed gate has no resolution path for the legitimate first-occurrence case, so it is a permanent block rather than a conditional one — and its documented override cannot clear it"
+    },
+    {
+     "id": "NN:27",
+     "title": "The gate's file walker is scoped to one language's extensions in a polyglot repository, so a two-sided rule is enforced on the language-agnostic side globally and on the code side only where the walker happens to look"
     }
    ]
   },

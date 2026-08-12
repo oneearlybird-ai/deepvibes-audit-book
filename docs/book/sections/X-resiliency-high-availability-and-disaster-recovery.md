@@ -84,3 +84,31 @@ rejection caught and logged without an alarm means the outage is invisible until
 consumer that caused it; quotas with vendor-side per-purpose reservations or separate sub-accounts
 per capability; pools whose headroom over projected peak is large and explicitly monitored with an
 alarm at a fraction of the limit.
+
+## X:14 — The failure destination for a log- or stream-based consumer records batch coordinates rather than payloads, so recovery depends on a source retention window the same outage has already consumed
+
+**Statement.** A consumer reading from an ordered log or change stream is configured with an
+on-failure destination, and the destination fills up during an incident, so the queue depth alarm
+fires and the operator reasonably reads it as "the failed work is here, redrive it." It is not. For
+this class of source the failure destination receives metadata — shard identifier, start and end
+sequence numbers, batch size, attempt count — because the payloads live in the log itself. Recovery
+therefore means replaying the source at those coordinates, which is only possible while the records
+remain inside the source's retention AND inside any record-age filter configured on the consumer's
+subscription. A record-age limit measured in the same order of magnitude as the incident guarantees
+that by the time anyone reads the alarm, resetting the iterator returns nothing: the age filter drops
+exactly the records the operator is trying to recover. The dead-letter queue is a receipt for a loss,
+not a copy of it, and every runbook that says "redrive the DLQ" is wrong for this source type.
+
+**Detect.** For each stream or log event-source subscription, read the destination configuration and
+then read one message from the destination — if its body is coordinates rather than a record, this
+rule applies. Compare the subscription's record-age limit and the source's retention period against
+the realistic detection-to-action latency for the alarm that watches the destination; a limit shorter
+than that latency means recovery is unreachable by design. Check whether the runbook or the alarm
+description names redrive as the remedy. The correct recovery — a deliberate re-emit from the system
+of record for the affected time window — must exist somewhere and be identified as a
+customer-data-touching write; if no such procedure exists, the pipeline has no recovery path at all.
+
+**False positives.** Queue-sourced consumers, whose failure destinations do carry the payload and are
+genuinely redrivable; streams whose records are re-derivable from a durable table by a documented
+re-emit that is already part of the runbook; and pipelines where the downstream effect is idempotent
+and reconciled on a schedule, so a dropped batch self-heals.

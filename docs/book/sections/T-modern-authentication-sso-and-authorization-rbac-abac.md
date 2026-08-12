@@ -298,3 +298,35 @@ exported-but-uncalled helpers: their contract is the finding even when unreachab
 **False positives.** APIs that guarantee a non-2xx status on every negative verdict — status
 branching is then the correct contract (prove it from the server, not the client); clients that
 pass the raw body upward to a caller that does read the verdict.
+
+## T:29 — A delegated-authorization scope requested at the actor's own visibility tier answers success-with-empty for resources outside that tier, so a mis-scoped integration presents as "no data" instead of "no permission"
+
+**Statement.** Providers that serve both the end user and the account operator frequently publish two
+scope tiers over one resource: a self tier (the records this application created, the bookings made by
+this buyer) and an account tier (everything on the merchant's, seller's, or organization's books). The
+names differ by a modifier that reads as an intensifier rather than a change of subject — READ versus
+ALL_READ, read versus read_all, personal versus organization. An integration consented at the self tier
+calls the list endpoint and gets HTTP 200 with an empty collection: the call is authorized, the filter
+is applied silently at the provider, and no error, warning or scope field in the response distinguishes
+"there is nothing" from "you may not see it." Every diagnostic therefore points away from authorization
+— the token is valid, the connection is healthy, the API returns success — and the investigation goes
+to sync scheduling, window parameters, or the customer's own data. The condition is also sticky:
+consent is recorded per connection, so widening the requested scope in code fixes only connections
+established afterwards, and every existing connection keeps its narrow grant until its owner
+re-consents.
+
+**Detect.** For each provider, read the scope reference for every resource the integration lists and
+identify whether a tier distinction exists; treat any scope pair differing only by an ALL, ORG, ACCOUNT
+or _all modifier as a tier distinction until the provider's own documentation says otherwise. Then
+verify empirically rather than by reading the request: call the list endpoint with a live token for an
+account known to hold records, and treat a 200-with-empty as evidence of the wrong tier rather than of
+an empty account. Introspect the granted scopes on the stored token — the granted set, not the
+requested set — because providers downgrade silently. Where the scope list is widened, the finding is
+not closed by the code change: it closes when existing connections have been re-consented, so the
+remediation must include an enumeration of connections still holding the old grant and a path to
+re-consent them.
+
+**False positives.** Endpoints whose empty response is genuinely correct for the account under test;
+providers that do return an explicit insufficient-scope error, where an empty list means what it says;
+and integrations deliberately scoped to the self tier because the product's contract is to manage only
+what it created.

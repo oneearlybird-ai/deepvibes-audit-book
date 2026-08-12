@@ -554,3 +554,31 @@ the override is a person and not a token; unknowns that a documented two-phase a
 bootstrap-only blocks that a one-time seeded state clears; and gates whose specification really does
 treat the first occurrence as dangerous, which should be read before assuming the block is
 unintended.
+
+## NN:27 — The gate's file walker is scoped to one language's extensions in a polyglot repository, so a two-sided rule is enforced on the language-agnostic side globally and on the code side only where the walker happens to look
+
+**Statement.** A static gate enforces a rule with two halves — the infrastructure half ("no
+configuration may wire this class of name") and the code half ("no source may read this class of
+name"). The infrastructure half is matched against a declarative format the walker recognises
+everywhere, so it is enforced across the whole tree. The code half is matched by a walker whose
+extension filter names only the repository's majority language. Every source file in a minority
+language is therefore invisible: it can violate the code half indefinitely and the gate reports
+clean. The consequence is worse than an unenforced rule, because the gate does not merely miss the
+violation — it actively certifies the removal of the wiring that the unscanned consumer depended on,
+and the anti-vacuity floor the gate prints ("N reads and M keys checked") reads as coverage while
+counting only the scanned language. The blind spot is invisible in review precisely because the
+minority-language file count is small; a single unscanned file is easy to believe does not exist.
+
+**Detect.** Read the walker, not the gate's description: find the extension regex or suffix test and
+list the extensions it admits. Then enumerate the actual source extensions present under every root
+the gate claims to cover (`find <root> -type f | sed 's/.*\.//' | sort -u` is enough) and diff the
+two lists. Any extension present in the tree and absent from the walker is the finding, and its
+severity is set by whether the gate's rule has a second half that IS enforced everywhere — an
+asymmetric two-sided rule is the dangerous case. Confirm by pointing the excluded file at the rule by
+hand: if it violates, the gate has been green on a live violation.
+
+**False positives.** Walkers whose narrow filter is correct because the rule is genuinely
+language-specific (a rule about a JavaScript module system has no meaning in a shell script); trees
+where the excluded extensions are only fixtures, vendored dependencies, or generated output already
+excluded by policy; and gates that pair the narrow walker with a separate, declared gate covering the
+other languages.

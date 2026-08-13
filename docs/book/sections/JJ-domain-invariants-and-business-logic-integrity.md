@@ -362,3 +362,56 @@ yet" separately from "you have not chosen a category," or the fallback will keep
 entirely and the exclusion is recorded; maps whose default is a genuine, useful generic rather than an
 empty shell; and enumerations extended by a provider or tenant at runtime, where full coverage is not
 achievable and the correct fix is the honest empty state alone.
+
+## JJ:24 — Optional scheduling constraints treat unset as zero: no minimum-lead floor, so the generator offers slots no operation can honor
+
+**Statement.** The availability generator supports lead-time constraints (minimum notice, booking
+buffers, cutoffs) as OPTIONAL configuration, and when the tenant has not set them the engine
+applies nothing — the first offered slot is the next grid point after "now". A caller at 12:55 is
+offered 1:00 for a service that requires travel, preparation, or dispatch. The infeasibility is
+obvious to every human and invisible to the engine, and downstream consumers (a booking UI, a
+conversational agent) are left to apply judgment the system should have applied at generation.
+The correct posture mirrors how past slots are handled: infeasible-lead slots should never be
+generated at all — filtered at the source with a safe default floor when config is unset — rather
+than rendered and then argued about. Constraint semantics also blur here: per-service duration
+buffers (which extend a booking's footprint) get mistaken for lead-time floors (which suppress
+imminent slots); tenants set one believing they set the other, and the gap surfaces as "the
+system offered a slot it should not have."
+
+**Detect.** Read the slot generator's constraint application: what happens when the rules object
+is null or absent — is there a floor default, or does the gate short-circuit to a no-op? Confirm
+live tenant config for a tenant that exhibited the symptom (rules unset is not rules ignored —
+the distinction decides config-gap vs code-bug). Then inventory the constraint vocabulary across
+the config UI and the engine: fields the UI writes that the generator never reads (or vice
+versa) are the companion finding.
+
+**False positives.** Domains where now-plus-grid genuinely is bookable (walk-in retail, instant
+virtual sessions) and the zero-floor is a documented product choice; engines that DO apply a
+documented default floor; consumers that provably filter before display (then the finding moves
+to "enforced at the edge, not the source" only if a second consumer exists).
+
+## JJ:25 — Single-window availability cannot express service-class-specific windows — urgent/after-hours classes have no lane
+
+**Statement.** The scheduling domain models ONE bookable window per tenant (business hours /
+booking hours), and every service class shares it. Real operations distinguish classes: standard
+work books inside standard hours; emergency or urgent work is precisely the class that books
+OUTSIDE them — at premium rates, with different notification, dispatch, and buffer semantics.
+With a single window the system can only fail in one of two directions: the urgent class is
+unbookable after hours (callers with the most valuable, most time-critical jobs are turned away
+to voicemail), or after-hours booking is opened for everything (standard work leaks into windows
+the operation never staffs). The missing shape is a window-per-service-class model: class-scoped
+windows, class-scoped rate/service filtering at slot generation (only urgent-eligible services
+render in the after-hours window), class-scoped alerting (immediate owner notification for urgent
+bookings, over a channel that does not depend on — or count against — the tenant's own outbound
+messaging line), and conservative lead/buffer handling for dispatch-time uncertainty.
+
+**Detect.** Read the availability window model: count the window vocabularies per tenant. One
+window plus any service catalog containing urgency-differentiated offerings (emergency fees,
+24/7 language, urgent tiers) is the structural signature. Confirm the runtime: what happens to a
+booking attempt outside the window per service class — uniform rejection regardless of class
+proves the gap.
+
+**False positives.** Domains with genuinely uniform service classes (no urgent tier exists);
+systems that model after-hours via a second explicit mechanism (on-call calendars, separate
+urgent-intake flows) that actually reaches the same scheduling engine; tenants who deliberately
+refuse after-hours work (the gap exists but is not a defect for them — it is for the platform).

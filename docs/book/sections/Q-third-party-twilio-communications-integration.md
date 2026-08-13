@@ -127,3 +127,28 @@ monitoring lines) and toll/credential exposure is bounded by other means (cite t
 accounts with an account-level max-duration setting actually configured (verify in the live console
 or API, not from memory); explicit product decisions documenting the vendor default as acceptable.
 
+
+## Q:17 — Live-call transfer executed blind: no availability signal, no context handoff, no accept path for the transferee
+
+**Statement.** The voice system transfers a live caller to a human's direct line as a bare call
+redirect. The transferee has no idea who is calling or why (no summary, no caller identity ahead
+of the bridge), has no way to accept or decline, and has no way to signal unavailability to the
+system — so transfers land on people in meetings, off shift, or driving; callers get personal
+voicemail or dead air after being told "connecting you now"; and the receptionist layer's promise
+of a warm handoff is actually a cold dump. The complete shape is: a pre-transfer notification to
+the transferee (caller identity plus a one-line summary, sent over the PLATFORM's own
+notification channel so it never counts against — or waits behind — the tenant's outbound
+messaging line), an accept/decline affordance, a per-target availability state (busy/available)
+the agent can read so it offers message-taking instead of a doomed transfer, and a designed
+message-taking fallback that delivers the summary and caller callback details to the same target
+reliably (queued, retried, never silently dropped).
+
+**Detect.** Read the transfer tool and flow end to end: what does the transferee receive before
+their phone rings (anything?), what availability state can targets set (anything?), what happens
+on no-answer (a personal voicemail? re-prompt? message capture?). A bare Dial/redirect with no
+surrounding state machine is the finding.
+
+**False positives.** Deliberate cold-transfer products (call centers with hunt groups and
+always-on staffing); systems where the transferee runs a client that itself provides screen-pop
+and accept (the affordance exists, just elsewhere); internal-only transfers between
+always-staffed desks.

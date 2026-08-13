@@ -61,3 +61,34 @@ Breach Runbook: No rehearsed incident-notification path against the 72-hour GDPR
 ## Y:14 — Analytics PII: Session-replay/product-analytics tooling capturing form inputs and identi…
 
 Analytics PII: Session-replay/product-analytics tooling capturing form inputs and identifiers by default.
+
+## Y:15 — Consent evidence exists only inside transient or co-mingled artifacts — no durable per-subject consent record, so send-eligibility is unprovable
+
+**Statement.** The system captures consent (a spoken yes on a recorded call, a YES reply in a
+double-opt-in message flow) and even gates behavior on it, but the EVIDENCE lives only inside
+artifacts owned by other lifecycles: the full-call recording (retention governed by call-log
+policy, deletable with it, findable only by replaying calls) and the message log (co-mingled
+with all traffic). There is no durable, per-subject consent artifact — the specific recording
+clip or message excerpt that constitutes the grant — stored under the subject's identity in
+tenant-controlled storage, and no per-subject event HISTORY (grant, channel, purpose,
+revocation, re-grant, each with timestamp and an evidence pointer). When a regulator, carrier,
+or litigant asks to prove a subject opted in to marketing messages and had not revoked at send
+time, the answer requires archaeology across recordings and logs that may already be expired.
+Distinct purposes (transactional reminders vs marketing) and distinct capture channels (voice vs
+text) each need their own grant chain; a single opted-in boolean collapses legally distinct
+consents into one bit. The eligibility gate for every automated send must read this history —
+not a flag — and the subject's profile surface must render the full timeline.
+
+**Detect.** Find every consent capture point and trace where the EVIDENCE (not the flag) is
+persisted: is there a per-subject artifact copy in durable tenant storage with its own retention,
+or only a pointer into call/message logs? Check that the revocation path writes the same
+history. Then read the automated-send eligibility gate: does it evaluate the event history per
+(subject, purpose, channel) at send time, or a mutable boolean? Finally check the operator
+surface: can a tenant produce a subject's full consent timeline without engineering help?
+
+**False positives.** Systems whose call/message stores genuinely are immutable, per-subject
+indexed, retention-pinned to consent-record requirements, AND exportable per subject (the
+artifact requirement is satisfied in place — verify the retention config, not the intent);
+low-risk purely transactional flows in jurisdictions where implied consent suffices (name the
+basis); platforms where a dedicated consent-management vendor holds the record and the
+integration stores its receipt ids per subject.

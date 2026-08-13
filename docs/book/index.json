@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 797,
+ "rule_count": 803,
  "sections": [
   {
    "id": "A",
@@ -1721,7 +1721,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "Q:1",
@@ -1786,6 +1786,10 @@
     {
      "id": "Q:16",
      "title": "Voice: no explicit call-duration ceiling — the vendor default (hours) silently governs, while an internal drain budget is mistaken for the call cap"
+    },
+    {
+     "id": "Q:17",
+     "title": "Live-call transfer executed blind: no availability signal, no context handoff, no accept path for the transferee"
     }
    ]
   },
@@ -2441,7 +2445,7 @@
    "title": "Compliance, Auditing & Data Privacy (GDPR/CCPA/SOC2)",
    "group": "saas-core",
    "file": "sections/Y-compliance-auditing-and-data-privacy-gdpr-ccpa-soc2.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "Y:1",
@@ -2498,6 +2502,10 @@
     {
      "id": "Y:14",
      "title": "Analytics PII: Session-replay/product-analytics tooling capturing form inputs and identi…"
+    },
+    {
+     "id": "Y:15",
+     "title": "Consent evidence exists only inside transient or co-mingled artifacts — no durable per-subject consent record, so send-eligibility is unprovable"
     }
    ]
   },
@@ -2559,7 +2567,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 15,
+   "rule_count": 17,
    "rules": [
     {
      "id": "AA:1",
@@ -2620,6 +2628,14 @@
     {
      "id": "AA:15",
      "title": "Untrusted text fenced into a prompt by a literal delimiter the untrusted text is free to emit — a forgeable boundary read as isolation"
+    },
+    {
+     "id": "AA:16",
+     "title": "Compliance-relevant caller challenges (recording objection, consent refusal) have no grounded state and no designed path — the agent improvises legally-consequential assurances"
+    },
+    {
+     "id": "AA:17",
+     "title": "Interaction lanes hand the agent partial views of the domain — attributes and context present in the system never reach the lane where the conversation needs them"
     }
    ]
   },
@@ -3128,7 +3144,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 23,
+   "rule_count": 25,
    "rules": [
     {
      "id": "JJ:1",
@@ -3221,6 +3237,14 @@
     {
      "id": "JJ:23",
      "title": "An enumerated selector offers N options while the table that gives those options behavior covers a subset, and the fallback is silent, so the product blames the operator's configuration for its own catalog gap"
+    },
+    {
+     "id": "JJ:24",
+     "title": "Optional scheduling constraints treat unset as zero: no minimum-lead floor, so the generator offers slots no operation can honor"
+    },
+    {
+     "id": "JJ:25",
+     "title": "Single-window availability cannot express service-class-specific windows — urgent/after-hours classes have no lane"
     }
    ]
   },

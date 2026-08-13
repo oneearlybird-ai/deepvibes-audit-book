@@ -106,3 +106,60 @@ instructions NOT be retained (name the regulation).
 **Detect.** Find every place untrusted text enters a prompt string and identify the isolation mechanism. If it is a literal delimiter, grep the producer path for escaping of that exact token — usually there is none. Trace the content to its true origin (transcription of a phone call, an uploaded file, a webhook body) and confirm nothing between origin and prompt strips markup. Then scope the blast radius by what consumes the model's output: schema validation, enum allowlists and taxonomy checks CAP the damage but do not prevent the injection, so report the ingress and score it on the consumer. Check for second-order reach specifically — whether the model's output is stored and later re-consumed by another prompt or another agent's context — rather than assuming it.
 
 **False positives.** Fences built from a per-invocation random nonce declared in the system prompt (unguessable, so unforgeable); content passed in a separate structured message role the platform guarantees is not instruction-bearing; pipelines that escape or strip the delimiter token before interpolation; outputs constrained to a closed enum where no injected instruction changes any stored value.
+
+## AA:16 — Compliance-relevant caller challenges (recording objection, consent refusal) have no grounded state and no designed path — the agent improvises legally-consequential assurances
+
+**Statement.** A conversational agent operates inside a system that records, discloses, or
+processes the interaction under a compliance regime (call recording disclosure, consent capture,
+data-handling promises), but the agent's instructions carry no grounded statement of that state
+and no designed response for a party who challenges it. The disclosure is played by the platform
+before the agent speaks; the agent itself is never told "this call is recorded" as a fact it owns.
+When a caller says "I don't consent to being recorded," the model does what models do with
+unanswerable questions asked confidently: it produces a fluent, reassuring, WRONG answer ("this
+call isn't being recorded") that directly contradicts the disclosure the same caller just heard.
+The system has now made a false compliance representation in a recorded medium — the recording
+itself is evidence of the misrepresentation. The absence of a refusal path compounds it: with no
+defined alternative (transfer to an unrecorded channel, message-taking, callback by a human), the
+agent's only options are to fabricate or to stonewall, and it will fabricate.
+
+**Detect.** Find the platform mechanism that makes the compliance state true (the recording
+start, the disclosure play, the consent gate) and confirm it is unconditional. Then read the
+agent's assembled instructions end to end for any grounded statement of that state and any
+instruction for the challenge case; grep prompt builders and procedure/config sources for the
+compliance nouns (record, consent, privacy). Absence on both axes with an unconditional platform
+mechanism is the finding. Transcript evidence of an actual fabricated assurance elevates severity
+but is not required — the mechanism guarantees the fabrication eventually.
+
+**False positives.** Agents whose instructions state the compliance fact AND script the challenge
+response (even minimally: acknowledge, restate the disclosure, offer the designed alternative);
+platforms where the challenged state is genuinely conditional and the agent's tools can actually
+change it (e.g., a real stop-recording tool the agent is instructed to use); jurisdictions/flows
+where the disclosure itself is not required and nothing false is implied.
+
+## AA:17 — Interaction lanes hand the agent partial views of the domain — attributes and context present in the system never reach the lane where the conversation needs them
+
+**Statement.** The agent's tool surface returns different projections of the same domain in
+different lanes, and the lane where a conversation actually happens is missing attributes the
+system holds. Two recurring shapes: (1) the transactional lane omits catalog attributes — the
+availability/booking tools return times and service names but not the price, description, or
+policy fields the catalog row carries, so the agent conducts a sale without ever being handed the
+price it should quote; (2) workflow-initiated outbound interactions omit the initiating context —
+the system calls a customer to reschedule but the prompt carries only the mechanics (times), not
+the WHY (staff shortage, provider absence), so the agent opens with a demand it cannot explain.
+The failure reads like an agent-quality problem and attracts prompt patches, but no instruction
+can make a model speak a fact it was never given; the defect is in the lane's projection, and the
+fix is to widen what the lane returns or carries — the same principle as returning data wide
+instead of steering with instructions.
+
+**Detect.** For each conversational flow, list the facts a competent human in that role would
+state (prices during booking, reason during an outbound call, fees during cancellation) and trace
+each to the tool returns and prompt context actually available in that flow — not in some other
+tool the agent could theoretically call. An attribute reachable only via a side-lane tool the flow
+never invokes is absent for this purpose. Compare projections across lanes: a field returned by
+the browse/lookup lane but absent from the transact lane is the signature.
+
+**False positives.** Attributes deliberately withheld from the agent by policy (quotes requiring
+human estimation, regulated disclosures that must come from a licensed person) where the
+instructions say so; facts genuinely absent from the system (unpriced catalog rows — that is a
+data-completeness issue, not a lane-projection one); lanes that omit fields the conversation
+provably never needs.

@@ -442,3 +442,30 @@ before surfacing, where the outer retry is deliberately a second tier; policy pl
 transport errors are genuinely indistinguishable at the protocol level and where the safe reading is
 denial; and consumers whose records are idempotently re-derivable from a durable source, where the
 dead-letter is a queue-position marker rather than a loss.
+
+## DD:23 — A security tunable is declared as independent literals at multiple sites instead of one config-plane value, so adjusting the intended single knob silently misses copies
+
+**Statement.** A parameter that security posture depends on — a credential TTL, a session ceiling, a
+rate budget — is written as a bare numeric literal at two or more code sites (often with identical
+comments claiming it "matches" some other lifecycle), rather than resolved from the platform's
+configuration plane where sibling parameters of the same kind already live. Each copy compiles,
+tests and ships independently; nothing cross-checks them. The day the value needs to change — an
+incident response shortening a TTL, a product decision lengthening a session — the operator adjusts
+the site they know about and the system runs split-brained: some mints honor the new value, others
+the old, and the divergence surfaces only as intermittent, hard-to-attribute authentication or
+expiry behavior. The pattern is worse than a single hardcoded constant because the duplication
+invites partial updates; and worse than ordinary config debt because the value is security-load-
+bearing, so the missed copy is not a stale feature but a live hole.
+
+**Detect.** For each security-relevant duration/limit literal, search for the same value (and the
+same variable name) across the repo; two or more independent declaration sites of the same tunable
+is the finding. Check whether the platform already has a config plane (remote config, contract
+document, parameter store) carrying comparable values — if yes, severity rises: the correct home
+exists and was bypassed. Comments asserting the literal "matches" another system's lifecycle are a
+detection gift: verify the claim against the other system's current value; a stale claim proves the
+copies already drifted once.
+
+**False positives.** Deliberately compile-time constants with a single declaration imported by every
+consumer (one source, many importers, is correct); values that genuinely must differ per site
+(document why); test fixtures mirroring a production constant.
+

@@ -101,3 +101,29 @@ provider's request inspector retains the response body.
 integrations where the published limit has been raised or the provider documents the field as
 unbounded — cite the current published limit as read at audit time, never from memory; parameters
 carrying data the provider is contractually the system of record for.
+
+## Q:16 — Voice: no explicit call-duration ceiling — the vendor default (hours) silently governs, while an internal drain budget is mistaken for the call cap
+
+**Statement.** No `timeLimit` (or equivalent maximum-duration control) is set on the voice leg the
+platform creates, so the vendor's default ceiling — typically measured in hours — is what actually
+governs how long a call can run. Meanwhile the codebase contains a prominent internal duration
+constant that LOOKS like a call cap but is not one: a shutdown drain budget ("the longest call we
+will wait out on deploy"), a WebSocket idle timeout, or a billing meter interval. Operators and
+security reviewers reason from that constant — sizing per-call credentials, toll exposure, and
+abuse budgets to a call length the system never enforces. The gap compounds any credential-lifetime
+finding: a per-call token sized "generously above the max call length" is actually sized against an
+imaginary number, and a hostile or stuck call can run for the vendor default while continuously
+metering cost and holding per-call authority.
+
+**Detect.** Read the actual call-creation surface (TwiML render, REST dial call, SDK params) and
+list every duration control present; if none is set, the vendor default applies — cite the vendor's
+currently documented default, fetched at audit time. Then grep for duration constants near the media
+path and classify each one honestly: drain budget, idle timeout, or true cap. Ask the owner what
+they believe the max call length is and diff that against what is enforced. Check what downstream
+values (credential TTLs, cost alarms, abuse thresholds) were derived from the believed cap.
+
+**False positives.** Platforms where unbounded call length is the product (conference lines,
+monitoring lines) and toll/credential exposure is bounded by other means (cite them); vendor
+accounts with an account-level max-duration setting actually configured (verify in the live console
+or API, not from memory); explicit product decisions documenting the vendor default as acceptable.
+

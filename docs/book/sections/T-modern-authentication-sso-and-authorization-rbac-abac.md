@@ -330,3 +330,34 @@ re-consent them.
 providers that do return an explicit insufficient-scope error, where an empty list means what it says;
 and integrations deliberately scoped to the self tier because the product's contract is to manage only
 what it created.
+
+## T:30 — A session-scoped credential's revocation flag has writers only for the granting value, so the revocation gate is dead code and the credential's oversized TTL becomes the only bound
+
+**Statement.** A per-session capability credential (a call ticket, a job token, a device grant)
+carries a lifecycle flag in its backing record — `status: active` — and the verifier correctly
+rejects any credential whose flag is not the granting value. The gate is real, tested, and runs on
+every request. But auditing the WRITE side shows every writer in the codebase stamps only the
+granting value: the session-end path (completion handler, hangup callback, teardown job) updates
+timestamps, durations and retention fields on the same record without ever touching the flag. The
+revoking transition exists in the vocabulary and in the tests, but no code path emits it — so
+revocation-at-session-end silently never happens, and the credential remains valid for its full
+cryptographic TTL, which was sized generously (hours or days) precisely on the assumption that
+early revocation was the real bound. The failure is invisible in operation: nothing errors, the
+rejection reason appears in logs only under fault injection, and the record itself often has its
+retention extended at session end (for history/reporting), keeping the still-active flag live far
+beyond the session.
+
+**Detect.** For every lifecycle flag a verifier reads, enumerate ALL writers of that field across the
+codebase and list the distinct values written. If the set of written values does not include at
+least one value the verifier rejects, the gate is dead. Then find the code that runs at session end
+(completion pipeline, disconnect handler, status callback) and confirm whether it touches the flag.
+Finally compare the credential's own TTL against the real session length distribution: a TTL sized
+in hours against sessions measured in minutes, combined with a dead revocation gate, is the finding
+at full severity.
+
+**False positives.** Flags whose revoking value is written by an out-of-band operator tool or an
+admin API that is genuinely part of the design (cite it); credentials whose TTL is already tightly
+sized to the session so the flag is deliberately a manual kill-switch only, and this is documented;
+lifecycle flags used for analytics rather than authorization (verify the verifier actually branches
+on it).
+

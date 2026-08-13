@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 790,
+ "rule_count": 793,
  "sections": [
   {
    "id": "A",
@@ -1713,7 +1713,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "Q:1",
@@ -1774,6 +1774,10 @@
     {
      "id": "Q:15",
      "title": "Media Streams: an entire control document round-tripped by value through a custom `<Parameter>`, past the provider's documented length ceiling"
+    },
+    {
+     "id": "Q:16",
+     "title": "Voice: no explicit call-duration ceiling — the vendor default (hours) silently governs, while an internal drain budget is mistaken for the call cap"
     }
    ]
   },
@@ -1924,7 +1928,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "T:1",
@@ -2041,6 +2045,10 @@
     {
      "id": "T:29",
      "title": "A delegated-authorization scope requested at the actor's own visibility tier answers success-with-empty for resources outside that tier, so a mis-scoped integration presents as \"no data\" instead of \"no permission\""
+    },
+    {
+     "id": "T:30",
+     "title": "A session-scoped credential's revocation flag has writers only for the granting value, so the revocation gate is dead code and the credential's oversized TTL becomes the only bound"
     }
    ]
   },
@@ -2750,7 +2758,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "DD:1",
@@ -2839,6 +2847,10 @@
     {
      "id": "DD:22",
      "title": "A fail-closed configuration dependency does not distinguish a transport failure from a policy denial, so a transient config-plane timeout consumes the whole retry budget and is recorded as a permanent record failure"
+    },
+    {
+     "id": "DD:23",
+     "title": "A security tunable is declared as independent literals at multiple sites instead of one config-plane value, so adjusting the intended single knob silently misses copies"
     }
    ]
   },

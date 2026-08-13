@@ -281,3 +281,68 @@ legitimate case.
 must be zero bytes) — these are legitimate and should be allowlisted rather than argued about;
 generated empty outputs the build requires; repositories whose commit path stages explicit file
 lists, where the sweep this rule depends on does not exist.
+
+## U:29 — The deploy pointer is written last-writer-wins, so a concurrently-finishing build rolls the fleet backwards between promotion and rollout
+
+**Statement.** The fleet reads its artifact from a single mutable pointer — a parameter holding an
+image id, a tag, a digest, a "current" symlink — and the promotion step writes that pointer with an
+unconditional overwrite, validating only that the incoming artifact exists and is well formed.
+Nothing compares the incoming artifact against the one already promoted, and nothing detects that
+another actor wrote the pointer since this actor read it. Promotion and rollout are two steps —
+write the pointer, then refresh the fleet — so any concurrent build that finishes inside that gap
+silently redirects the rollout: the refresh reads the pointer at launch time, gets the other actor's
+artifact, and rolls the fleet onto code the operator never chose. The damage is worst during
+recovery, when the operator is refreshing precisely to restore service and the fleet comes back on
+the older artifact — the rollout "succeeds", every pipeline check passes, and the outage continues
+with no failed step to point at. Backwards moves deserve a guard rather than a prohibition, because
+deliberate rollback is a legitimate and urgent operation; the guard is that going backwards must be
+stated, not inferred.
+
+**Detect.** Find every writer of each deploy pointer and confirm the claim that there is exactly one
+— a second writer anywhere makes ordering unprovable. Read the promotion step: does it fetch the
+pointer's current value before writing, compare artifact recency by creation timestamp, build
+number, or digest provenance rather than lexical tag order, and require an explicit force flag to
+move backwards? Is the write conditional on the value the actor read — compare-and-swap,
+expected-version, conditional put — or an unconditional overwrite? Then check the gap: if promotion
+and rollout are separate commands, does the rollout re-read the pointer and assert it still holds
+the artifact the operator promoted? Incident histories are the fastest confirmation — a recovery
+rollout that brought back the wrong build, with no failed command in the transcript, is this rule.
+
+**False positives.** Pipelines where promotion and rollout are one atomic operation that passes the
+artifact identifier through by value rather than re-reading the pointer; pointers written only by a
+single serialized deployment controller with enforced mutual exclusion, where the lock is verified
+to exist rather than taken on faith; environments where concurrent builds are structurally
+impossible because the build lane itself holds an exclusive lease for its whole duration.
+
+## U:30 — The task runner's validation guard exits a subshell, and the separator that follows discards its status, so the guarded operation runs anyway and the command reports success
+
+**Statement.** A task-runner recipe — make, just, npm script, shell wrapper — validates a
+precondition with the idiom `check || ( echo "refusing"; exit 1 )`. The parenthesised failure branch
+is a subshell: its `exit` terminates the subshell, not the recipe. Whether that still stops anything
+depends entirely on what follows on the same logical line. If the guard is the last statement, the
+subshell's non-zero status becomes the line's status and the runner fails the recipe, so the idiom
+appears to work — and it does, in most of the places it is used, which is exactly why it survives
+review. If the guard is followed by more work joined with an unconditional separator, that separator
+discards the status, and the operation the guard was protecting executes on the state the guard
+just rejected. The result is the worst possible shape for an operator: the refusal message is
+printed in full, immediately above a success message, and the command exits zero. Every downstream
+check — pipeline status, audit log, the operator's own eyes on the last line — reads success. The
+same file usually contains both the safe and the unsafe instance of the identical idiom, so a
+reviewer who spot-checks one occurrence concludes the pattern is fine.
+
+**Detect.** Grep every recipe file for a failure branch wrapped in parentheses containing `exit`, and
+for each occurrence determine what follows it on the same logical line after continuations are
+joined. An occurrence terminated by the end of the line, by `&&`, or by a case-branch or `then`
+terminator that is itself the line's last statement, is safe — the status propagates. An occurrence
+followed by `;` with further commands is the defect. Do not stop at the pattern count: the ratio of
+safe to unsafe occurrences is usually high and the unsafe ones are the interesting minority. Prove
+each hit rather than reasoning about it — run the recipe against a deliberately invalid input with
+the effectful command stubbed out, and read the exit status and the last line printed. The repair is
+a brace group, `|| { echo "…" >&2; exit 1; }`, which runs in the current shell so the exit is real.
+
+**False positives.** Guards that are the final statement of their recipe line, including those
+closing an `if`/`case` whose compound status the runner already observes; guards inside a chain
+joined only by `&&`, where a failing subshell short-circuits the rest; runners configured to abort
+on any non-zero statement (an explicit `set -e` in the recipe's shell, or a runner whose default
+shell sets it) — confirm the setting rather than assuming it, since several popular runners default
+to a shell with `-u` but not `-e`.

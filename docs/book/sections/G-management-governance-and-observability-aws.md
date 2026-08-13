@@ -444,3 +444,38 @@ is the one referenced by the runbook, the dashboard and the subscription.
 window (a warning tier and a page tier); composite alarms that reference a child by design; and
 deliberately duplicated alarms routed to genuinely independent notification paths as a
 notification-plane redundancy measure, where that intent is documented.
+
+## G:32 — The outage alarm counts failures, so the total-failure case publishes no datapoint and the alarm reports healthy
+
+**Statement.** A resource's availability alarm is built on the *failure-count* side of a membership
+metric — unhealthy hosts greater than zero, failed instances greater than zero, errored members
+greater than zero — with missing data treated as not-breaching, or as "missing", which holds the
+last state. The metric is only published per member, so when the pool empties completely there is
+nothing left to count as unhealthy: the failure-count metric stops publishing, and the alarm reads
+the absence as good news. The pool being empty is precisely the worst state the alarm was bought to
+catch, and it is the one state the alarm is structurally incapable of entering. The correct polarity
+is a FLOOR on the healthy-count metric — healthy members less than one — with missing data treated
+as breaching, which catches both "some members are sick" and "there are no members". The two shapes
+look interchangeable on a dashboard and diverge only during an outage. Duplicated resource families
+make this worse: the floor alarm is often written correctly on the one balancer or cluster where an
+incident taught the lesson, while its twin keeps the failure-count shape, so the fleet's monitoring
+quality varies by which resource happened to break first.
+
+**Detect.** Enumerate every availability alarm and classify its metric by polarity. Any alarm whose
+metric counts BAD members — unhealthy host counts, failed or errored gauges — is a candidate;
+confirm by asking whether the metric has any datapoint to publish when member count is zero. If it
+does not, and missing data is treated as not-breaching or as missing, the alarm cannot fire on total
+loss. Then check coverage in the other direction: for every load balancer target group, cluster, or
+pool, assert that at least one alarm watches the HEALTHY count with a floor and treats missing data
+as breaching. Where a family of near-identical resources exists — two balancers, several clusters —
+diff their alarm sets against each other; an explanatory comment on one member naming this exact
+reasoning, with no matching alarm on its twin, is the signature. Alarm history is the proof: during
+any real outage the correct alarm transitions to ALARM while the failure-count alarm transitions to
+INSUFFICIENT_DATA, or stays OK, at the same minute.
+
+**False positives.** Failure-count alarms that are deliberately the second tier behind a
+healthy-floor alarm on the same resource — check for the floor alarm before flagging; pools whose
+platform publishes a member-count metric that is genuinely continuous at zero, verified against the
+provider's metric documentation rather than assumed; alarms on resources that are expected to be
+empty and whose front door is verifiably disabled while empty; composite alarms that already combine
+a floor condition with the failure count.

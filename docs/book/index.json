@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 786,
+ "rule_count": 790,
  "sections": [
   {
    "id": "A",
@@ -537,7 +537,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "E:1",
@@ -690,6 +690,10 @@
     {
      "id": "E:38",
      "title": "The downstream API demands an explicit \"there is none\" declaration where the upstream provider simply omits the field, and the client omits instead of declaring"
+    },
+    {
+     "id": "E:39",
+     "title": "The reuse key is composed from unbounded user text, so the provider's field cap fails the existence LOOKUP and the create is never attempted"
     }
    ]
   },
@@ -847,7 +851,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "G:1",
@@ -972,6 +976,10 @@
     {
      "id": "G:31",
      "title": "Two alarms with identical metric, dimensions, threshold and period watch one resource under different names, so the alarm inventory counts two detectors where one exists"
+    },
+    {
+     "id": "G:32",
+     "title": "The outage alarm counts failures, so the total-failure case publishes no datapoint and the alarm reports healthy"
     }
    ]
   },
@@ -2041,7 +2049,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 28,
+   "rule_count": 30,
    "rules": [
     {
      "id": "U:1",
@@ -2154,6 +2162,14 @@
     {
      "id": "U:28",
      "title": "Commits staged by directory sweep with no gate against untracked filesystem debris, so mistyped-redirect artifacts enter history"
+    },
+    {
+     "id": "U:29",
+     "title": "The deploy pointer is written last-writer-wins, so a concurrently-finishing build rolls the fleet backwards between promotion and rollout"
+    },
+    {
+     "id": "U:30",
+     "title": "The task runner's validation guard exits a subshell, and the separator that follows discards its status, so the guarded operation runs anyway and the command reports success"
     }
    ]
   },

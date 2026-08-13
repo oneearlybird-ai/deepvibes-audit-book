@@ -443,3 +443,35 @@ only from a value-returning provider cannot fail.
 **False positives.** Downstream APIs that genuinely treat omission as the sentinel; fields the client
 is documented to derive rather than relay; providers whose absent field is legitimately fatal and
 should be rejected upstream; and SDKs that inject the sentinel themselves below the client code.
+
+## E:39 — The reuse key is composed from unbounded user text, so the provider's field cap fails the existence LOOKUP and the create is never attempted
+
+**Statement.** A caller mints resources at an external provider idempotently by composing a
+deterministic key from a stable internal identifier plus human-readable display text — display name
+followed by the internal id in brackets — and then reuses that key on both sides of the flow: it
+queries the provider filtered by the key to find an existing resource, and it creates with the key
+when none is found. The display component is user-supplied and unbounded while the provider caps
+that field's length, so a sufficiently long input pushes the composed key past the cap. The subtle
+part is which call fails first: the provider validates the field on the filter parameter of the
+list or search call as well as on create, so the existence lookup errors out before the create is
+reached. Code that correctly treats a lookup failure as fatal — refusing to create a possible
+duplicate on an inconclusive read, which is the right instinct — then marks the whole provisioning
+permanently failed for an input whose only sin was being verbose. The repair is to cap the composed
+key inside the key builder, yielding the display prefix and never the identity suffix, so that
+inputs short enough to fit compose byte-identically to the pre-cap shape and every resource minted
+before the cap still resolves.
+
+**Detect.** Find every function that composes an external-system key or name from more than one
+part, and classify each part as bounded — internal id, enum, hash — or unbounded — business name,
+user display name, free text. For each, read the provider's documented cap on that field, then check
+both call sites, because a cap enforced on a search or list filter is the failure that hides: search
+for the key builder's callers and confirm the read path passes the same composed value. Trace what
+the caller does when the lookup throws — a fatal-on-inconclusive-read path, correct on its own,
+turns this into a hard provisioning failure rather than a duplicate. Fault traces and provider error
+codes for length violations, clustered on a single unusually long input, are the live confirmation.
+
+**False positives.** Keys whose unbounded component is already validated against a shorter cap at
+the point of entry, where the validator's bound is verified to be at or below the provider's and
+enforced on every writer; providers that silently truncate rather than reject — still worth noting
+where truncation could collide two distinct inputs onto one key, but not this failure; composed
+values used only for display and never as a lookup filter.

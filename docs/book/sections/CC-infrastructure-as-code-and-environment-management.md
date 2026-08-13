@@ -285,3 +285,33 @@ documented policy or a refusal, never a stale third thing.
 **False positives.** An inner copy deliberately maintained as the origin-direct fallback AND kept
 in mechanical sync with the edge (single generated source, or a verifier asserting equality);
 defense-in-depth duplicates whose equality is enforced by CI.
+
+## CC:20 — A reconciler's drift check diffs its published artifact against a recomputation by the same selection logic, so consistent-wrong states are structurally invisible
+
+**Statement.** A reconciler derives an artifact — an id map, an endpoint list, a generated policy —
+from live inputs through a selection function, publishes it, and later "checks drift" by re-running
+the same selection and diffing the result against the published copy. That check can only ever
+detect that the WORLD moved since the last publish; it is structurally blind to the selection
+picking the wrong element, because both sides of the diff flow through the shared defect. The
+blindness compounds when the selection runs over a duplicate-capable collection into a keyed map
+with last-wins semantics: which duplicate wins is an accident of the source API's ordering, the
+recomputation reproduces the accident deterministically, and check after check passes green while
+every CONSUMER of the artifact references a different element than the artifact names. The
+comparison that matters is against the consumers' live references — the attached ids, deployed
+pointers, live versions the artifact exists to describe — not against the generator's own output
+re-derived.
+
+**Detect.** In reconciler and drift-check code, classify the right-hand side of every comparison:
+recomputed-by-the-same-function versus read-from-the-live-consumer. Any check whose two sides share
+the selection function is self-referential — locate what the artifact's consumers actually hold at
+runtime and add that as a comparison basis, asserting the artifact's emissions are a subset of each
+consumer's live references. Separately, grep the selection for fromEntries / dict-comprehension /
+reduce-into-map over vendor list endpoints, and either prove the listed collection is unique-keyed
+or make duplicates a loud failure instead of a silent pick.
+
+**False positives.** Input collections whose uniqueness the source schema guarantees (assert it
+anyway — the assertion is one line); a self-diff check that exists deliberately to catch
+out-of-band edits to the published artifact AND is paired with a consumer-side subset check
+elsewhere — verify the pair exists in code, not in a comment; artifacts whose consumers are
+unreachable third parties where a consumer-side read is impossible — record the residual blindness
+as an accepted posture instead of pretending the check covers it.

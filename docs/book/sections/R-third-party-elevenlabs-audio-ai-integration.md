@@ -174,3 +174,37 @@ the live server no longer serves is the same class of drift.
 the tool surface from the server binding at call time — verify against the live agent object rather
 than the vendor's marketing description; and staged rollouts where the empty surface is the
 intentional pre-cutover state and no live traffic reaches the agent.
+
+## R:17 — Per-call tool-id overrides resolved from an account-wide name→id map while the platform mints tool records per agent — the override cites records the agent does not own, silently dropped until a vendor-side validation rollout kills every call at initiation
+
+**Statement.** The platform materializes an agent's callable tools as vendor-minted RECORDS: ids are
+minted per agent per materialization, so N agents times M re-materializations leave duplicate
+same-named records account-wide, and each agent references only its own mint. A per-conversation
+narrowing override (a tool_ids-style list sent in the conversation-initiation payload) must cite
+records ATTACHED to the routed agent. When the resolution source is a single account-wide name→id
+map — built by listing every tool record and keying by name — the map can match at most one agent's
+mint, and keyed-map construction with last-wins semantics (Object.fromEntries or a dict
+comprehension over a duplicate-capable list) makes even that selection an accident of the vendor
+API's list ordering. The defect is masked for as long as the vendor SILENTLY IGNORES unattached ids
+in the override — the agent simply runs its full baseline tool surface and calls succeed — so the
+wrong map can sit live for days. When the vendor later begins validating the override (a
+server-side rollout: invisible, unannounced, no client change), every conversation carrying the
+override is rejected at initiation with a policy-violation close before the first audio frame, and
+the whole fleet is down while nothing in the repository changed.
+
+**Detect.** For each managed agent, GET the live agent object and read its attached tool-record
+ids; take the map or config the per-call override is computed from and assert every id it can emit
+is a subset of the routed agent's attachments. List account tool records grouped by name — more
+than one record per name is the precondition; trace which mint each agent references. In the
+override-building code, find keyed-map construction over an account-wide listing and prove the
+listed collection cannot hold duplicate keys, or fail loudly when it does. Close the loop
+behaviorally: run one conversation per agent with the override and read the conversation's
+termination reason through the vendor API — "not attached to this agent" is the proof. Treat any
+in-repo comment recording that the vendor "silently ignores" invalid override content as a latent
+hard failure with a vendor-controlled fuse, not as a stable contract.
+
+**False positives.** Platforms that resolve overrides by NAME server-side (no minted ids in the
+override); a genuinely single-agent account where a reconcile-time check asserts the map equals
+that agent's attachments; overrides intentionally absent or empty so the baseline surface applies;
+a vendor-documented guarantee that unknown ids are ignored — still record that as an accepted-risk
+posture with the guarantee cited, because it is the vendor's to revoke.

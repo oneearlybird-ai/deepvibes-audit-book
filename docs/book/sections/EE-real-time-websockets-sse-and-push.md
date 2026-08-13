@@ -122,3 +122,30 @@ transport handshake (so no unauthenticated frame is ever buffered) and buffer on
 prebuffers bounded by accumulated byte length rather than entry count; and deployments where the
 socket is reachable only from an allowlisted, authenticated network path, so "unauthenticated peer"
 is not reachable in the first place — verify that at the edge configuration, not from a comment.
+
+## EE:13 — The far end names the failure in the WebSocket close frame and the bridge records only the numeric code, so every distinct rejection collapses into the same four digits
+
+**Statement.** Close frames carry a code AND a short UTF-8 reason, and vendor platforms put the
+actual cause in the reason — the specific validation error, the quota, the policy violated. A
+relay or bridge that records only `code` on close turns auth rejection, schema validation,
+concurrency limits, and permission failures into one indistinguishable number; operators then
+reconstruct the cause from adjacent systems — vendor dashboards, conversation archives, API
+archaeology — when the peer had already stated it in the frame that was in hand. The cost lands
+hardest exactly where such bridges live: realtime voice and media paths, where the session is dead
+in milliseconds and the vendor-side record may be the only other witness. A legitimate
+privacy posture can forbid logging vendor-authored strings verbatim (external bodies may echo
+user-derived content); the correct form under that posture is a bounded client-side
+CLASSIFICATION — match the reason against known vendor failure patterns and log the matched enum —
+not discarding the cause entirely.
+
+**Detect.** In every WS close and error handler, check whether the handler signature exposes the
+reason (typical client libraries pass (code, reason), the reason often a byte buffer needing
+decode) and whether the emitted log or metric captures it in any form — verbatim, hashed, or
+classified. A close log with a code field and no reason-derived field is the defect. Where a
+log-privacy contract exists, verify the classification path: the enum values must come from the
+matcher, never from interpolating the raw string.
+
+**False positives.** Peers that provably send empty reasons (capture it anyway — it costs
+nothing); privacy postures that ban vendor strings AND already log a classification or hash
+derived from them; client libraries that genuinely surface only the code — record the library
+limitation and the upgrade path instead of a finding against the handler.

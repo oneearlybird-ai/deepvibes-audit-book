@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 809,
+ "rule_count": 812,
  "sections": [
   {
    "id": "A",
@@ -1810,7 +1810,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "R:1",
@@ -1875,6 +1875,10 @@
     {
      "id": "R:16",
      "title": "Registering a hosted tool server with the conversational agent is mistaken for exposing its tools, so the agent runs with an empty tool surface and narrates the actions it cannot take"
+    },
+    {
+     "id": "R:17",
+     "title": "Per-call tool-id overrides resolved from an account-wide name→id map while the platform mints tool records per agent — the override cites records the agent does not own, silently dropped until a vendor-side validation rollout kills every call at initiation"
     }
    ]
   },
@@ -2717,7 +2721,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "CC:1",
@@ -2794,6 +2798,10 @@
     {
      "id": "CC:19",
      "title": "A shadowed delivery layer keeps a divergent copy of a policy the edge now owns"
+    },
+    {
+     "id": "CC:20",
+     "title": "A reconciler's drift check diffs its published artifact against a recomputation by the same selection logic, so consistent-wrong states are structurally invisible"
     }
    ]
   },
@@ -2903,7 +2911,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "EE:1",
@@ -2952,6 +2960,10 @@
     {
      "id": "EE:12",
      "title": "Pre-authentication frame buffer bounded by entry count while each entry is attacker-sized, so the real ceiling is count × max-payload"
+    },
+    {
+     "id": "EE:13",
+     "title": "The far end names the failure in the WebSocket close frame and the bridge records only the numeric code, so every distinct rejection collapses into the same four digits"
     }
    ]
   },

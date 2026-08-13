@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 793,
+ "rule_count": 797,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "A:1",
@@ -170,6 +170,10 @@
     {
      "id": "A:40",
      "title": "A capability is wired into a function across several independent planes and landed plane by plane, so the function boots dead on whichever plane is still missing"
+    },
+    {
+     "id": "A:41",
+     "title": "Deployment auto-rollback rewrites the service's desired definition, so the natural retry — \"redeploy latest\" — faithfully redeploys the rollback"
     }
    ]
   },
@@ -702,7 +706,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "F:1",
@@ -843,6 +847,10 @@
     {
      "id": "F:35",
      "title": "A role-scoped credential wrapper hardcodes its own role family, silently overriding the per-profile role binding the policy registry declares"
+    },
+    {
+     "id": "F:36",
+     "title": "A permission narrowing justified as \"now unused\" is validated against restart-free steady state, so a still-declared secret dependency detonates on the next cold start"
     }
    ]
   },
@@ -2057,7 +2065,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "U:1",
@@ -2178,6 +2186,10 @@
     {
      "id": "U:30",
      "title": "The task runner's validation guard exits a subshell, and the separator that follows discards its status, so the guarded operation runs anyway and the command reports success"
+    },
+    {
+     "id": "U:31",
+     "title": "An interactive confirmation inside a deploy lane reads stdin without a tty check, so automation contexts hang forever on an open pipe or sail through on EOF"
     }
    ]
   },
@@ -3416,7 +3428,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "NN:1",
@@ -3525,6 +3537,10 @@
     {
      "id": "NN:27",
      "title": "The gate's file walker is scoped to one language's extensions in a polyglot repository, so a two-sided rule is enforced on the language-agnostic side globally and on the code side only where the walker happens to look"
+    },
+    {
+     "id": "NN:28",
+     "title": "A gate's exception list has no staleness tripwire, so the excepted defect outlives every reason for excepting it"
     }
    ]
   },

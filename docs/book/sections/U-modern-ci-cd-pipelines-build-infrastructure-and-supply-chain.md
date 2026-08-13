@@ -346,3 +346,26 @@ joined only by `&&`, where a failing subshell short-circuits the rest; runners c
 on any non-zero statement (an explicit `set -e` in the recipe's shell, or a runner whose default
 shell sets it) — confirm the setting rather than assuming it, since several popular runners default
 to a shell with `-u` but not `-e`.
+
+## U:31 — An interactive confirmation inside a deploy lane reads stdin without a tty check, so automation contexts hang forever on an open pipe or sail through on EOF
+
+**Statement.** A guarded lane — a destroy confirmation, a production gate — prompts with a bare
+`read` mid-recipe. On an operator's terminal it works, which is where it is tested, so it survives.
+Run from automation — a background shell, CI, an agent harness — stdin is one of two things the
+author never chose: an open-but-silent pipe, where `read` blocks indefinitely and the lane freezes
+with zero output and zero state written (the most expensive symptom, because it presents as a slow
+apply and the diagnosis burns exactly the window the gate existed to protect), or a closed/null
+stream, where `read` returns EOF immediately and the comparison's else-branch silently decides the
+outcome. The gate's behavior in the context that most needs it is unspecified — decided by which
+stdin the runner happened to wire, not by anyone's intent.
+
+**Detect.** Grep lane recipes for `read`/prompt constructs; for each, require an explicit
+interactivity test (`[ -t 0 ]` or the runner's equivalent) with a fail-closed non-interactive branch
+that names the deliberate override an automated caller must pass (an env var or flag). Prove each
+hit by running the recipe twice with the effectful step stubbed: once with stdin from an open pipe,
+once from the null device — a hang in the first or a silent branch decision in the second is the
+defect.
+
+**False positives.** Prompts in operator-only utilities that no automated lane invokes; prompts
+already behind an interactivity check with a fail-closed branch; runners that allocate a pseudo-tty
+for every recipe — verify the allocation, never assume it.

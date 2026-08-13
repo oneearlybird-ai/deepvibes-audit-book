@@ -494,3 +494,29 @@ wrapper that requests it is a build-time contradiction.
 the vending code reads); deliberate escape hatches where a profile is intentionally usable from more
 than one family and both roles carry the full grant; and single-family systems where the wrapper's
 pin is the only binding there is.
+
+## F:36 — A permission narrowing justified as "now unused" is validated against restart-free steady state, so a still-declared secret dependency detonates on the next cold start
+
+**Statement.** An IaC change shrinks a principal's decrypt/read grant — dropping a KMS key or a
+secret ARN from a policy — on the claim that the removed resource is no longer used. The claim is
+checked against what is currently running: live traffic, healthy tasks, quiet dashboards. But
+injected secrets are fetched only at task/container START, and the principal's own task definition
+or launch template still names a secret encrypted under the dropped key. Long-lived workloads keep
+serving on credentials fetched before the change, so the apply is green, the fleet is green, and no
+runtime signal references the removed grant. The defect surfaces at the next restart — a scale-out,
+a deploy, an instance replacement, often days later and usually inside an UNRELATED change's rollout
+— as a start-time fetch failure on every new instance while the old ones keep serving. It reads as
+"the new deploy is broken," not "an old grant was revoked," and the diagnosis happens under rollout
+pressure instead of at the leisurely moment the narrowing landed.
+
+**Detect.** For every ARN or key removed in an IAM diff, compute the union of secrets and parameters
+referenced by that principal's OWN task definitions, launch templates, and env-injection blocks in
+the same codebase, then resolve each referenced secret's encryption key. A removed key still
+reachable from that union is the finding — no traffic analysis required or trusted. As the apply's
+verification, restart one instance of each affected workload in a controlled window; steady-state
+health after a grant narrowing verifies nothing.
+
+**False positives.** Grants referenced by nothing in the principal's declared definitions — prove it
+by describing the task definitions and launch templates, never by observing traffic; and narrowings
+landed in the same change that repoints every consumer to the surviving key (the atomic form, which
+is the correct shape).

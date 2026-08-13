@@ -582,3 +582,26 @@ language-specific (a rule about a JavaScript module system has no meaning in a s
 where the excluded extensions are only fixtures, vendored dependencies, or generated output already
 excluded by policy; and gates that pair the narrow walker with a separate, declared gate covering the
 other languages.
+
+## NN:28 — A gate's exception list has no staleness tripwire, so the excepted defect outlives every reason for excepting it
+
+**Statement.** A gate bans a pattern but allowlists the existing occurrences — "legitimate for now,"
+a pending rename, a migration window. Nothing watches the exception itself: when the excepted
+occurrences are renamed, deleted, or their sanctioning decision expires, the list neither shrinks
+nor complains. From that day the allowlist is load-bearing documentation that the banned thing is
+acceptable — new occurrences are written to match the excepted spelling, reviewers read the list as
+precedent, and the original rationale is unrecoverable from the list alone. The strong form is a
+SELF-EXPIRING exception: the gate also asserts that each exception still matches something, and
+FAILS the lane the moment it does not — "this deferral is stale; the rename happened; delete this
+block" — so the scaffolding is mechanically forced out the moment the debt it tracked is paid. An
+exception nobody is ever forced to remove is a deleted rule wearing a comment.
+
+**Detect.** For every allowlist, skip-list, or deferral inside a gate, ask two questions: does any
+check FAIL when an entry stops matching anything, and does each entry carry its reason and intended
+end-state? A list failing both is the finding, independent of whether its entries are currently
+valid. The repair is the tripwire plus a dated reason per entry.
+
+**False positives.** Permanent, semantically-justified exceptions — a vendor API's own name, an
+enforcement pattern that must literally name what it bans — which should be commented as permanent
+rather than left indistinguishable from forgotten debt; and exception lists in report-only tools
+that gate nothing.

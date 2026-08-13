@@ -329,3 +329,26 @@ path, where the dependency is genuinely optional and its absence is handled; can
 functions deliberately deployed with partial wiring; grants supplied through a boundary or
 resource-based policy rather than the execution role, which a role-only sweep will not see; and
 capabilities where the platform itself injects the missing plane at deploy time.
+
+## A:41 — Deployment auto-rollback rewrites the service's desired definition, so the natural retry — "redeploy latest" — faithfully redeploys the rollback
+
+**Statement.** An orchestrator's deployment circuit breaker responds to a failing rollout by
+resetting the SERVICE's desired task definition to the last good revision. That reset is not an
+annotation on the failed deployment — it rewrites the deploy target itself. The operator fixes the
+underlying cause (the missing migration, the unreadable secret, the bad image) and issues the
+muscle-memory retry: force a new deployment of "the service." The orchestrator obediently redeploys
+what the service now points at — the ROLLED-BACK revision — and reports a healthy, completed
+rollout. Every signal is green while the fix has not shipped, and the loop can repeat indefinitely
+because each retry re-validates the old revision. The correct retry names the intended revision
+explicitly, and a ship lane that owns rolls should encode that — resolve the intended revision and
+pass it — rather than leaving orchestrator rollback semantics to operator memory at the worst
+possible moment.
+
+**Detect.** In deploy scripts and runbooks for services with rollback or circuit-breaker behavior
+enabled, flag any post-failure retry that forces a new deployment without an explicit revision
+argument. The live signature is unambiguous in the orchestrator's deployment history: a rollback
+event followed by a forced deployment of the same superseded revision.
+
+**False positives.** Pipelines that always register a fresh revision immediately before deploying —
+the register step is the explicit naming; and platforms whose services genuinely track a mutable
+"latest of family" pointer — verify the platform's actual semantics before assuming either way.

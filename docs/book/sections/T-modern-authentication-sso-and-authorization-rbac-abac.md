@@ -361,3 +361,35 @@ sized to the session so the flag is deliberately a manual kill-switch only, and 
 lifecycle flags used for analytics rather than authorization (verify the verifier actually branches
 on it).
 
+
+## T:31 — The consented scope set is frozen at grant time while the set of endpoints the integration calls keeps growing, so a new feature breaks every existing connection and only per-connection re-consent repairs it
+
+**Statement.** In delegated-authorization integrations the scope list is requested once, at the
+moment the resource owner consents, and the resulting credential carries exactly that set for its
+lifetime. The code that requests scopes and the code that calls provider endpoints then evolve
+independently: a feature ships that calls one more endpoint, the scope constant is not touched, and
+every already-connected account is denied on that endpoint. A fresh connection is fine only if the
+constant was updated, and the denial is per-endpoint rather than per-connection, so nothing fails at
+connect time. The failure surfaces far downstream as an authorization error inside one job, and
+because integration jobs commonly translate provider errors into a neutral state — needs attention,
+parked, no data — the operator sees an integration that is connected and idle rather than one that
+is under-permitted. The critical property is that a deploy cannot fix it: shipping the corrected
+scope list changes only what FUTURE consents request. Every existing connection stays broken until
+its owner re-authorizes, which makes the remediation a rollout with human steps, not a release. That
+asymmetry is why the scope list must be derived from, and tested against, the complete set of
+endpoints the integration calls — not maintained by hand alongside them.
+
+**Detect.** Enumerate every provider endpoint the integration calls across all its jobs, webhooks,
+and interactive flows, map each to the scope the provider's own documentation requires, and diff
+that set against the scope constant actually requested. Any endpoint whose scope is missing is a
+confirmed instance; a repeat instance within a short window is the signature of a hand-maintained
+list and should be reported as the class, not the individual scope. Confirm live: the provider's
+authorization errors for existing connections, and the connection's own status field sitting in a
+neutral state rather than an error state, prove the downstream masking. Assert the pinning in a test
+that fails on scope regression, and check whether one exists — its absence is part of the finding.
+
+**False positives.** Scopes the provider grants implicitly with a broader scope already in the list,
+verified against the provider's documentation rather than assumed; endpoints called only under a
+feature flag that is off for every existing connection; integrations whose credential is a
+provider-issued application key rather than a delegated grant, where a deploy does fix it; scope
+lists that are generated from the endpoint map at build time, which is the remediated shape.

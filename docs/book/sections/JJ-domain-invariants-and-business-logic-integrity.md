@@ -415,3 +415,66 @@ proves the gap.
 systems that model after-hours via a second explicit mechanism (on-call calendars, separate
 urgent-intake flows) that actually reaches the same scheduling engine; tenants who deliberately
 refuse after-hours work (the gap exists but is not a defect for them — it is for the platform).
+
+## JJ:26 — The cutover moves a collection to a new canonical home but leaves the old one in place and empty, so every unmigrated reader enumerates zero entries and takes the nothing-to-do branch
+
+**Statement.** A shared record carries a collection — a map or list of child entities hanging off a
+parent row — and a cutover moves those children to their own canonical rows. The safe-looking move
+is to stop writing the old collection while leaving the attribute itself in place, so nothing
+dereferences null. That choice converts a loud failure into a silent one. Readers that were never
+migrated do not crash and do not log: they read the attribute, get an empty collection, iterate zero
+times, and return success having done nothing. Every downstream effect those readers existed to
+produce — aggregation, scoring, sweeps, compliance evaluation, enrichment — simply stops, and each
+one reports itself healthy because "no children to process" and "the children moved" are the same
+observation from inside the reader. Worse, readers that VALIDATE against the empty collection invert:
+a compliance check that looks for an attribute on each child now finds none where it expects some,
+and emits a false violation for every parent. The blast radius is invisible in code review because
+the cutover's own diff touches only the writer and whichever reader prompted it; the remaining
+readers are unchanged files. A single earlier fix on one reader is the strongest signal the class
+exists and was never swept.
+
+**Detect.** For any retired or superseded collection, grep every repository and every runtime for
+reads of the attribute name — not just the one that was fixed — and classify each: enumerating
+readers fail silent, validating readers fail loud-but-wrong. Then prove emptiness against live data:
+read the parent rows and confirm the collection is empty on records created after the cutover date,
+which distinguishes "retired" from "still partially populated". Compare the count of live children
+in the new canonical home against the count each reader actually processes in its own logs or
+metrics over the same window — a reader whose processed count is zero while the canonical count is
+non-zero is a confirmed instance. Check the ledger or changelog for an earlier single-reader fix of
+the same attribute; if one exists and other readers remain, the sweep was never done. The correct
+remediation is to delete the attribute, not to leave it empty: an absent attribute makes every
+unmigrated reader fail loudly on the first call.
+
+**False positives.** Collections that are legitimately empty for the specific records sampled —
+verify against records that definitely have children in the new home; readers that consult the old
+collection only as a documented compatibility shim with a dated removal plan; write-through periods
+where both locations are maintained deliberately during a staged move, which the writer's code will
+show; validators whose empty-collection branch is explicitly an accept rather than a violation.
+
+## JJ:27 — A period-stamped counter row is read without comparing its own period key to the current period, so a quiet period serves the previous active period's numbers as current
+
+**Statement.** Rolling counters — calls today, bookings today, minutes this hour — are commonly kept
+as a single row that a stream or aggregator overwrites, carrying both the counts and the period key
+they belong to. The aggregator only touches the row when there is activity, which is correct and
+cheap: on a period with no events, nothing is written and the row keeps the previous period's key and
+the previous period's numbers. The reader is where the invariant is lost. If it projects the counts
+and ignores the period key, then on any quiet period it presents stale numbers as current, and the
+staleness is undetectable from the outside because the shape and magnitude are entirely plausible.
+The error is systematically biased: it can only ever overstate, and it overstates precisely on the
+periods a viewer is most likely to be checking because activity looks unexpectedly low. Dashboards,
+alerting thresholds computed off "today", quota displays, and usage-driven billing previews all
+inherit it. The same reader is usually correct about longer windows, which are computed from raw
+records, so the bug hides as a single tile disagreeing with a chart beside it.
+
+**Detect.** Find every read of a rolling counter row and check whether the period key stored on the
+row is compared against the period computed at read time; a projection expression that fetches the
+counts and not the key is conclusive. Reproduce it directly: pick a parent whose activity stopped
+before the current period boundary and call the reader — non-zero "current period" counts against
+zero raw records for that period is the confirmed defect. Check the aggregator side too, to
+establish that it writes only on activity rather than stamping an empty row at each boundary, since
+that write pattern is what makes the stale read possible.
+
+**False positives.** Aggregators that do stamp a fresh zeroed row at every period boundary, which
+makes the key comparison redundant — verify by finding a parent with a quiet period and reading the
+row directly; counters deliberately labelled "last active period" in the interface rather than
+"today"; readers that already floor the value against a period-scoped query of raw records.

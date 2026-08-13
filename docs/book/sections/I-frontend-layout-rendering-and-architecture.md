@@ -169,3 +169,33 @@ produces a whole-card scroller usually also produces undersized controls.
 whose content provably cannot exceed the smallest supported viewport, where the extra structure buys
 nothing; full-screen mobile presentations that deliberately scroll as a page and carry a persistent
 platform-level dismiss affordance.
+
+## I:25 — The client synthesizes the series the API never returned, so interpolation between two real endpoints is rendered as measurement
+
+**Statement.** A chart needs a series and the endpoint behind it returns only coarse aggregates — a
+month total, a current value, a pair of period sums. Rather than widen the endpoint, the client
+manufactures the missing granularity: it divides a total evenly across days, interpolates between
+two known points, applies a growth curve, or seeds a plausible shape from a single number. The
+resulting chart is indistinguishable from a real one — axes, tooltips, hover readouts, sometimes a
+trend annotation — and every point a viewer reads off it is a number no system ever recorded. This
+is not a rendering shortcut; it is a truth defect at the presentation layer, and it is more damaging
+than an empty chart because an empty chart prompts someone to fix the pipeline while a fabricated
+one closes the question. It also survives review easily: the synthesis lives in a formatting or
+adapter helper, reads as arithmetic, and the component that renders it is honest about nothing more
+than the props it was given. The correct repair is upstream every time — return the series wide from
+the source of truth, and the client's synthesis has nothing left to do and can be deleted.
+
+**Detect.** Trace every chart's data from the rendering component back to the network response and
+require that each plotted point correspond to a value present in the payload. Any arithmetic between
+the fetch and the plot that INCREASES the number of points — dividing a total by a day count,
+filling a range, generating labels with derived values, curve-fitting — is the defect. The clearest
+signature is a component that receives one or two numbers and renders many points. Compare the
+rendered series against the source records for the same range; divergence beyond rounding confirms
+it. Check the endpoint's own shape as part of the finding: a narrow payload is the cause, and a fix
+that only removes the client synthesis leaves an empty chart rather than a true one.
+
+**False positives.** Deliberate visual smoothing between real datapoints where the underlying points
+are still the plotted values and the interpolation is only the stroke geometry; explicitly labelled
+projections or forecasts rendered in a distinct style with the projection stated in the interface;
+placeholder or skeleton series shown while loading, provided they are visually marked as such and
+never carry readable values; sparklines documented as illustrative and carrying no axis or readout.

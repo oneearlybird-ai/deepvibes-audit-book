@@ -479,3 +479,67 @@ platform publishes a member-count metric that is genuinely continuous at zero, v
 provider's metric documentation rather than assumed; alarms on resources that are expected to be
 empty and whose front door is verifiably disabled while empty; composite alarms that already combine
 a floor condition with the failure count.
+
+## G:33 — Tracing is enabled on the workload but its execution identity was never granted the telemetry-publish action, so the exporter throws on every invocation while the work itself succeeds
+
+**Statement.** Distributed tracing is switched on in two independent places: a platform-level flag on
+the compute resource (tracing mode active, an auto-instrumentation layer or sidecar attached) and a
+permission on the execution identity that lets the exporter publish segments upstream. The flag and
+the grant are usually authored in different files by different changes — the flag rides the function
+or task definition, the grant rides the role — so a workload can carry the whole instrumentation
+stack and none of the authorization. When that happens the application's own logic runs and returns
+normally, and the exporter fails with an authorization denial on every single invocation. The result
+is worse than having no tracing: there are no traces AND there is a permanent stream of
+authorization errors attributed to the workload, which drives any error-rate or error-level alarm
+built over the function into constant firing. Teams then tune the alarm, or mute it, and the real
+application errors it was bought to catch are lost with the noise. The fleet-wide shape is the
+tell — the grant is present on the large majority of identities because it is part of the standard
+role template, and absent on the handful of roles authored by hand or copied before the template
+existed.
+
+**Detect.** Enumerate every compute resource with tracing enabled, resolve each to its execution
+identity, and simulate the telemetry-publish action against that identity — do not read the role's
+policy documents and reason about them, ask the authorization engine. Any implicit deny is a
+confirmed instance; the count that matters is the ratio, because a small minority failing against a
+large allowed majority proves the template exists and these roles missed it. Confirm at the
+workload's own logs: the denial names the identity and the action, and its rate equals the
+invocation rate. Cross-check the alarm plane — an error-level or caught-error alarm on the same
+workload that fires and clears on a cycle unrelated to traffic incidents is the downstream symptom.
+
+**False positives.** Workloads where tracing is enabled but the exporter is deliberately configured
+to a local collector that forwards under a different identity — verify which identity actually
+publishes before flagging; identities whose grant arrives through a permission boundary or session
+policy the simulation does not model, which the simulation's own result will show as allowed once
+the correct source ARN is used; resources where the tracing flag is set but no instrumentation layer
+is attached, which is a different defect (tracing configured and never emitted) and belongs to the
+missing-instrumentation rule.
+
+## G:34 — A percentile alarm on a sparse metric evaluates a single datapoint, so ordinary variance transitions it dozens of times a day and the channel is desensitized
+
+**Statement.** Latency alarms are commonly authored as "percentile over period, threshold, one
+evaluation period" and left there. On a high-volume service that is defensible: the percentile over
+a full period is a stable statistic. On a sparse or bursty service it is not — a period containing a
+handful of requests lets one cold start, one slow dependency call, or one large payload move the
+p95 past the threshold, and with a single evaluation period and no datapoints-to-alarm requirement,
+that one period is the whole decision. The alarm transitions to ALARM and back to OK within a few
+minutes, repeatedly, all day. Nothing is broken and nothing is actionable, but the notification
+channel now carries dozens of state changes per alarm per day. Two things then fail: any human
+reading the channel stops reading it, and any automation keyed to alarm state — configuration
+rollout monitors, deployment gates, composite alarms — inherits a signal that is randomly ALARM at
+any given moment. The defect is not the threshold, which is usually reasonable; it is that the
+evaluation window is one sample wide on a statistic that needs several to be meaningful.
+
+**Detect.** Pull the alarm history for the window and count state transitions per alarm; any alarm
+transitioning more than a few times a day with no corresponding incident is a candidate. For each
+candidate read its live configuration and look for datapoints-to-alarm unset or one, together with
+an evaluation-period count of one or two, on a percentile or average statistic. Then measure the
+metric's own density over the same period — if periods routinely contain few datapoints, the
+percentile is not a stable statistic at that period length and the single-datapoint decision is the
+defect. Confirm the alarm is code-managed rather than console-authored before proposing the fix, so
+the fix lands where the next apply will not revert it.
+
+**False positives.** Deliberately twitchy alarms whose only consumer is a dashboard or a
+low-priority digest, documented as such; alarms on genuinely high-volume metrics where a single
+period is a large sample; step-change detectors that are supposed to fire on one datapoint by
+design, such as an availability floor; alarms whose flapping is a real intermittent fault, which the
+metric itself will show as a bimodal distribution rather than a long tail.

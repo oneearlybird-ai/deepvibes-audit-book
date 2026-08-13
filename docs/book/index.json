@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 803,
+ "rule_count": 809,
  "sections": [
   {
    "id": "A",
@@ -859,7 +859,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 32,
+   "rule_count": 34,
    "rules": [
     {
      "id": "G:1",
@@ -988,6 +988,14 @@
     {
      "id": "G:32",
      "title": "The outage alarm counts failures, so the total-failure case publishes no datapoint and the alarm reports healthy"
+    },
+    {
+     "id": "G:33",
+     "title": "Tracing is enabled on the workload but its execution identity was never granted the telemetry-publish action, so the exporter throws on every invocation while the work itself succeeds"
+    },
+    {
+     "id": "G:34",
+     "title": "A percentile alarm on a sparse metric evaluates a single datapoint, so ordinary variance transitions it dozens of times a day and the channel is desensitized"
     }
    ]
   },
@@ -1073,7 +1081,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "I:1",
@@ -1170,6 +1178,10 @@
     {
      "id": "I:24",
      "title": "The dialog makes its whole card the scroll container, so dismiss and commit controls scroll out of reach on short viewports"
+    },
+    {
+     "id": "I:25",
+     "title": "The client synthesizes the series the API never returned, so interpolation between two real endpoints is rendered as measurement"
     }
    ]
   },
@@ -1940,7 +1952,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "T:1",
@@ -2061,6 +2073,10 @@
     {
      "id": "T:30",
      "title": "A session-scoped credential's revocation flag has writers only for the granting value, so the revocation gate is dead code and the credential's oversized TTL becomes the only bound"
+    },
+    {
+     "id": "T:31",
+     "title": "The consented scope set is frozen at grant time while the set of endpoints the integration calls keeps growing, so a new feature breaks every existing connection and only per-connection re-consent repairs it"
     }
    ]
   },
@@ -3144,7 +3160,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 25,
+   "rule_count": 27,
    "rules": [
     {
      "id": "JJ:1",
@@ -3245,6 +3261,14 @@
     {
      "id": "JJ:25",
      "title": "Single-window availability cannot express service-class-specific windows — urgent/after-hours classes have no lane"
+    },
+    {
+     "id": "JJ:26",
+     "title": "The cutover moves a collection to a new canonical home but leaves the old one in place and empty, so every unmigrated reader enumerates zero entries and takes the nothing-to-do branch"
+    },
+    {
+     "id": "JJ:27",
+     "title": "A period-stamped counter row is read without comparing its own period key to the current period, so a quiet period serves the previous active period's numbers as current"
     }
    ]
   },

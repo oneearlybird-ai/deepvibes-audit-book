@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 812,
+ "rule_count": 815,
  "sections": [
   {
    "id": "A",
@@ -859,7 +859,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "G:1",
@@ -996,6 +996,10 @@
     {
      "id": "G:34",
      "title": "A percentile alarm on a sparse metric evaluates a single datapoint, so ordinary variance transitions it dozens of times a day and the channel is desensitized"
+    },
+    {
+     "id": "G:35",
+     "title": "Caught failure paths answer the user with a graceful degradation and never touch the platform error metric, so the alarm suite watches a number that polite outages cannot move"
     }
    ]
   },
@@ -2534,7 +2538,7 @@
    "title": "Modern Webhooks & Outbound Notification Systems",
    "group": "saas-core",
    "file": "sections/Z-modern-webhooks-and-outbound-notification-systems.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "Z:1",
@@ -2579,6 +2583,10 @@
     {
      "id": "Z:11",
      "title": "TOCTOU: Target URL validated at registration only — DNS rebinding flips it to an interna…"
+    },
+    {
+     "id": "Z:12",
+     "title": "The callback route goes live in one deploy unit and its gateway-to-function invoke grant in another, so the vendor's POSTs die at the gateway during the window — and fire-and-forget callbacks never tell anyone"
     }
    ]
   },
@@ -2810,7 +2818,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "DD:1",
@@ -2903,6 +2911,10 @@
     {
      "id": "DD:23",
      "title": "A security tunable is declared as independent literals at multiple sites instead of one config-plane value, so adjusting the intended single knob silently misses copies"
+    },
+    {
+     "id": "DD:24",
+     "title": "Completeness is validated where the config is CONSUMED, never where it is AUTHORED, so every gap is discovered by an end user at service time instead of by the author at save time"
     }
    ]
   },

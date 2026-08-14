@@ -543,3 +543,28 @@ low-priority digest, documented as such; alarms on genuinely high-volume metrics
 period is a large sample; step-change detectors that are supposed to fire on one datapoint by
 design, such as an availability floor; alarms whose flapping is a real intermittent fault, which the
 metric itself will show as a bimodal distribution rather than a long tail.
+
+## G:35 — Caught failure paths answer the user with a graceful degradation and never touch the platform error metric, so the alarm suite watches a number that polite outages cannot move
+
+**Statement.** A handler catches an internal failure and returns a designed degradation — an
+apology message, a fallback response, a clean hangup — which is correct user-facing behavior and
+also means the invocation SUCCEEDS as the platform counts it: the error metric the alarm suite
+watches (invocation errors, 5xx counts) never increments. The failure exists only as an
+error-level line in the application log. Unless each such caught path has its own log-metric
+filter and alarm, a workspace, tenant, or business line can fail EVERY request politely and
+indefinitely — the operator dashboard stays green, and discovery arrives through the affected
+customer's complaints. The trap compounds because teams typically add the log-metric pattern for
+the first caught path that burns them and not for siblings added later: coverage decays one
+graceful catch at a time.
+
+**Detect.** Enumerate every catch block that returns a degraded-but-successful response and logs
+at error level; for each, demand the matching log-metric filter + alarm (and verify the filter's
+pattern syntax matches the log group's format — a JSON pattern on a text group matches nothing).
+Diff the set of error-level log markers in code against the set of metric-filter patterns in IaC;
+every unmatched marker is an unmonitored polite outage. Confirm the alarm's missing-data policy
+fits sparse traffic.
+
+**False positives.** Degradations that are genuinely user-preference outcomes rather than
+failures; caught paths that re-emit into an errors metric the alarms DO watch (custom EMF error
+counters); environments where a log-aggregation alerting layer (not metric filters) demonstrably
+alerts on the specific marker — verify the alert rule exists, not the aggregator.

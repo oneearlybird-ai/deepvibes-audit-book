@@ -469,3 +469,31 @@ copies already drifted once.
 consumer (one source, many importers, is correct); values that genuinely must differ per site
 (document why); test fixtures mirroring a production constant.
 
+
+## DD:24 — Completeness is validated where the config is CONSUMED, never where it is AUTHORED, so every gap is discovered by an end user at service time instead of by the author at save time
+
+**Statement.** A consumer of per-record configuration (a template renderer, a policy evaluator, a
+session builder) enforces required fields fail-closed at read time — the correct last line of
+defense against serving around blanks. But the write path that AUTHORS the record (the settings
+API, the onboarding wizard, the admin console) accepts and persists the record without evaluating
+the same requiredness, even though the requirement is fully knowable at save time (the record
+already names the template/policy/class that demands the field). The defect is born silently at
+authoring and detonates per end-user interaction: every request served from the incomplete record
+takes the fail-closed lane — an apology, a refusal, a dead feature — one user at a time, while the
+author who could fix it in seconds was never told anything was missing. Read-side and write-side
+validation are twins; shipping only the read side converts an instant authoring-time correction
+into a slow-burning service-time outage.
+
+**Detect.** For each fail-closed requiredness check in a consumer, locate the write path that
+persists the record and demand the same evaluation there (shared implementation, not a re-typed
+copy), surfaced to the author as a rejection or an explicit gap warning in the write response.
+Test by saving a record missing a consumer-required field: a write that returns success with no
+gap signal is the defect. Cross-check requiredness sources: if templates/policies declare their
+required fields, the write path must resolve the record's template and evaluate against it, not
+against a hardcoded list that drifts.
+
+**False positives.** Records deliberately savable as drafts with the gap surfaced at
+publish/go-live time instead (verify the publish gate exists); requiredness genuinely unknowable
+at write time (the consuming template is chosen per-request); write paths that DO return
+structured gap warnings the caller chooses to ignore — that is a client display gap, cite the
+client instead.

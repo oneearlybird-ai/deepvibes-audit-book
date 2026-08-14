@@ -198,3 +198,31 @@ before accepting the full re-walk as necessary.
 where the bound is stated; providers with no incremental axis and no webhook, where periodic full
 reconciliation is the only correct option — that is an accepted posture, not this rule, provided the
 schedule is set to match; first runs and explicitly requested re-imports.
+
+## V:19 — A dispatcher that hits a closed regulatory or quiet-hours window drops the work item instead of holding it, so the obligation silently expires with nothing recorded
+
+**Statement.** An outbound job — a call, an SMS, a notification — is gated by a legally or
+contractually defined contact window (quiet hours, business hours, a jurisdictional cutoff). The
+gate is implemented at the moment of send, as a refusal: the attempt is consumed, an error or
+`skipped` is returned, and the work item ends. Because the refusal is *correct* — the send genuinely
+must not happen — it reads as compliance working, and the missing half is invisible: the item is
+never rescheduled to the window's reopening, so an obligation created near the boundary (a job
+queued at 22:00 against a window that closes at 21:00) simply dies overnight. Nobody is contacted,
+no terminal outcome is stamped on the record, and the operator surface shows the item as
+in-flight-forever or reverts it to its pre-dispatch state — indistinguishable from one that was
+never started. The compounding failure is retry policy: where a refusal is counted as a failed
+attempt, a few boundary-adjacent refusals exhaust the retry budget and the item is abandoned during
+the very hours it was allowed to run.
+
+**Detect.** For every window/quiet-hours check, follow the refusal branch to its terminal state:
+require that it computes the window's next opening, persists that instant on the work item, and
+re-enters a wait rather than returning a terminal status; require that a refusal does not decrement
+the attempt budget. Verify the held item is re-evaluated on wake (windows move with timezone and
+DST, and an overnight hold can outlive the owning claim/lease — the wake must re-check both). Assert
+that every non-success terminal path stamps a readable outcome on the record; a work item that can
+end with no outcome field set is the defect regardless of the window logic.
+
+**False positives.** Fire-and-forget notifications with no delivery obligation, where dropping is
+the specified behavior; windows enforced by a downstream provider that itself queues until open
+(verify the provider queues rather than rejects); systems where a separate sweeper demonstrably
+re-enqueues dropped items — verify the sweeper's query actually selects them.

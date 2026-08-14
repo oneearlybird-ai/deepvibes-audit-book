@@ -568,3 +568,30 @@ fits sparse traffic.
 failures; caught paths that re-emit into an errors metric the alarms DO watch (custom EMF error
 counters); environments where a log-aggregation alerting layer (not metric filters) demonstrably
 alerts on the specific marker — verify the alert rule exists, not the aggregator.
+
+## G:36 — A validation branch returns a client-visible error status while emitting no log line, so a failure the user can see is undiagnosable from the server side
+
+**Statement.** A handler rejects a request in a guard clause — unrecognized keys, a failed shape
+check, an empty projection — and returns a 4xx with a short machine code. The branch logs nothing:
+it is not an exception, the platform counts the invocation as a success, and the author's mental
+model is that a 4xx is the client's problem to read. The result is a request that is loud at the
+client and completely silent at the server: the access log shows a normal short invocation, tracing
+shows no downstream subsegments (because the handler returned before touching anything), and the
+error metric never moves. Every hop between the two ends — edge, gateway, integration, body
+decoding — then has to be excluded one at a time by an operator who cannot see which guard fired or
+what it received, which is why this class converts a one-line bug into a multi-day investigation.
+It is strictly worse than an unhandled throw, which would at least leave a stack trace.
+
+**Detect.** Enumerate every branch that returns a 4xx (or any non-success envelope) without
+throwing, and require each to log a distinct structured marker naming the guard and the *shape* of
+what it received — received key names, decoded body length, content-type — never the values, so the
+line stays safe for payloads carrying customer data. Cross-check the set of returnable error codes
+in the handler against the set of markers in its log group over a window where that code is known to
+have been returned; a code with no corresponding marker is the defect. Where a body-decoding
+fallback exists, require it to log the encoding facts it observed, since a mis-decoded body reaches
+the guard looking like a legitimately empty one.
+
+**False positives.** Guards on hot unauthenticated paths where per-request logging is a documented
+denial-of-service or cost decision and a sampled/aggregated counter demonstrably exists instead;
+rejections already emitted by a shared middleware that logs centrally — verify the middleware runs
+for that route; health and probe endpoints.

@@ -497,3 +497,30 @@ publish/go-live time instead (verify the publish gate exists); requiredness genu
 at write time (the consuming template is chosen per-request); write paths that DO return
 structured gap warnings the caller chooses to ignore — that is a client display gap, cite the
 client instead.
+
+## DD:25 — One concept is persisted in two stores and the editing surface writes the one the runtime read path never consults, so every edit reports success and changes nothing
+
+**Statement.** A configuration concept — a field mapping, a routing target, an entitlement — ends up
+with two homes: an authoritative row the runtime actually reads, and a generic attribute bag on some
+neighbouring record (an integration row's `settings`, a profile's `metadata`) that grew organically
+because it was the convenient place to put things. The editing surface writes the bag; the runtime
+reads the row. Both halves are individually defensible in review, and the write returns 200 with the
+value echoed back, so the UI renders the saved state from its own optimistic copy and every
+verification an author can perform from the surface passes. The concept is only ever observed as
+broken from the far end — the integration silently does nothing — and the distance between the
+symptom and the cause is the whole system, which is why this class routinely burns days. The
+asymmetry is what makes it durable: a store with a writer and no reader raises no error, produces no
+metric, and looks exactly like a store that works.
+
+**Detect.** For each configuration concept, enumerate its writers and its readers independently
+(grep the persisted key names, not the API field names, which usually differ) and intersect them: a
+store with writers and no runtime reader is the defect, as is a store with a reader whose only
+writers are seed/migration paths. Trace at least one concrete value from the editing surface's
+request body to the exact attribute the runtime dereferences, and require they be the same
+attribute of the same item. Treat a successful write response as no evidence at all — the assertion
+must be made at the consumer.
+
+**False positives.** Deliberate projections where one store is a derived cache the runtime refreshes
+from the authoritative one (verify the refresh path runs and is not itself dead); attribute bags
+read by a different consumer than the one under test — enumerate all consumers before concluding
+nothing reads it; transitional states inside a single change that also deletes the loser.

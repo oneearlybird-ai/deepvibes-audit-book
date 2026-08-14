@@ -369,3 +369,32 @@ defect.
 **False positives.** Prompts in operator-only utilities that no automated lane invokes; prompts
 already behind an interactivity check with a fail-closed branch; runners that allocate a pseudo-tty
 for every recipe — verify the allocation, never assume it.
+
+## U:32 — A build/bake provisioner declares environment variables the command template never interpolates, so every declared var is silently absent and the scripts run on their own defaults
+
+**Statement.** An image-build or provisioning step declares variables for its scripts in one field
+(an `environment_vars`/`env` list) and overrides the command that runs them in another (a custom
+`execute_command`/entrypoint template). The two are joined only by an interpolation token the
+template must contain; omit it and the declaration becomes decorative — the variable list is parsed,
+validated, and shown in build output, while the script process is spawned with none of it. Nothing
+errors, because a build script that reads an unset variable takes its own default. The defect
+therefore hides for as long as every default happens to equal the value the template was passing,
+which is the normal case when the template was written by copying the script's own default. It
+surfaces only when one script starts *requiring* a variable, or when a version pin is bumped in the
+template and the built image keeps shipping the old version — and at that moment the pin, the
+template, and the build log all still read as correct. The blast radius is every artifact baked
+since the template was written, and the artifact is what runs in production.
+
+**Detect.** For every provisioner that overrides the default command, diff the set of declared
+variables against the tokens actually interpolated in the command template; a non-empty declaration
+with no delivery token is the defect. Do not accept the build log as evidence — it prints the
+declaration, not the delivery. Prove it by having one script echo a sentinel variable into the image
+and reading the sentinel out of the built artifact, or by asserting the built artifact's version
+strings against the values the template passed. Sweep sibling templates in the same repo together:
+this is copy-paste-shaped and is almost never present at only one site.
+
+**False positives.** Runners whose default command already exports the declared variables and whose
+template was overridden for an unrelated reason (verify the default's documented behavior for that
+tool and version); variables consumed by the provisioner itself rather than the spawned script;
+declarations deliberately kept for documentation where the scripts read the values from a
+config file instead — verify the scripts genuinely never reference the environment.

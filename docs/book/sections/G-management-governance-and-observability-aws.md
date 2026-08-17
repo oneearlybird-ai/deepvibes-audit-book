@@ -627,3 +627,26 @@ meant to record every emission (append-only archives, metric streams); genuinely
 once-per-transition sources feeding low-rate targets where one ticket per rare transition is the
 intended paper trail; rejection paths demonstrably filtered out of the failure signal (a
 dead-letter consumer or alarm that excludes the duplicate-rejection error code).
+
+## G:38 — A compliance or findings producer with no freshness signal — silence is indistinguishable from a clean bill of health
+
+**Statement.** A custom checker — a Config rule, a scheduled auditor, a Security Hub
+BatchImportFindings producer — reports violations into a dashboard, and the dashboard is consumed
+as current truth. But nothing watches the PRODUCER: no last-successful-run alarm, no dead-man
+timer, no maximum-age check on the findings it emits. When the producer breaks (permission rot, a
+lost schedule, a refactor orphaning its trigger), its last findings freeze in place: the feed's
+silence reads as improvement, and its stale findings read as live problems that burn triage on
+ghosts. Verification systems must themselves be verified — the test-suite version of this lesson
+("a green suite is not evidence anything was captured") has a production twin: the checker whose
+heartbeat nobody checks.
+
+**Detect.** Inventory every non-AWS-managed findings producer. For each, locate its freshness
+signal: a max-age alarm on the last successful run, a dead-man switch, or an alert on
+newest-finding age. No signal = the finding. Then cross-check each producer's newest finding
+UpdatedAt against its intended cadence — staleness beyond twice the cadence means the producer is
+already dead and the dashboard is archaeology.
+
+**False positives.** Producers deliberately decommissioned WITH their findings archived — an
+orphaned ACTIVE finding set is precisely the failure, so archival is what earns the exemption;
+event-driven producers with legitimately rare triggers — those need a synthetic heartbeat event,
+and its absence is the finding, not an excuse.

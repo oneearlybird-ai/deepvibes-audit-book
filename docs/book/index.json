@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 823,
+ "rule_count": 827,
  "sections": [
   {
    "id": "A",
@@ -867,7 +867,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "G:1",
@@ -1016,6 +1016,10 @@
     {
      "id": "G:37",
      "title": "A ticket-per-event target on a re-emitting findings source multiplies open tickets per refresh cycle, and once deduplication is added the absorbed duplicates read as delivery failures"
+    },
+    {
+     "id": "G:38",
+     "title": "A compliance or findings producer with no freshness signal — silence is indistinguishable from a clean bill of health"
     }
    ]
   },

@@ -393,3 +393,38 @@ verified against the provider's documentation rather than assumed; endpoints cal
 feature flag that is off for every existing connection; integrations whose credential is a
 provider-issued application key rather than a delegated grant, where a deploy does fix it; scope
 lists that are generated from the endpoint map at build time, which is the remediated shape.
+
+
+## T:32 — Security-facing device labels are derived by ordered substring user-agent sniffing, so platforms whose UA embeds another platform's token are misattributed and the session list users audit for intrusions lies about their own devices
+
+**Statement.** Session-management and security screens ("your active sessions", "devices signed
+in") show OS/browser/device labels derived from a hand-rolled user-agent parser: a chain of
+substring tests evaluated in order, first match wins. User-agent strings deliberately embed other
+platforms' tokens for compatibility — every iOS UA contains "like Mac OS X", every Android UA
+contains "Linux", Edge contains "Chrome", Chrome and nearly everything else contain "Safari",
+in-app webviews (search apps, social apps) present as the host platform's browser. Any chain that
+tests a broader token before the platform whose UA merely embeds it misattributes the device — an
+iPhone recorded as macOS, an Android tablet as Linux, Edge as Chrome. The label is typically
+computed once at session mint and written into an audit/device row, never re-derived, so the wrong
+label outlives any parser fix for the session's lifetime. The harm concentrates in exactly the
+screen the label exists for: a user auditing "is this login mine?" sees their own phone listed as
+an unfamiliar desktop — a phantom intruder that triggers panic revocations and support load — or,
+worse, learns that the list is unreliable and stops reading it, so a real intruder's session
+scrolls past as noise.
+
+**Detect.** Find where session/device audit rows get their os/browser/deviceType values. If the
+source is a hand-rolled ordered substring chain, table a real-world UA corpus against the chain
+order and prove each lands correctly: iOS Safari ("like Mac OS X" — the iOS test must precede any
+mac test), Android Chrome ("Linux" — the Android test must precede any Linux test), Edge
+("Chrome" and "Safari" — Edge before Chrome before Safari), plus at least one in-app webview.
+Then check whether the computed label is snapshotted into a persisted row at mint: if so, note
+that existing rows keep the wrong label after the parser is fixed, and the finding includes the
+stale-row decay window.
+
+**False positives.** Parsers delegating to a maintained UA library with documented token
+precedence (verify the shipped version actually handles the failing corpus entry); surfaces that
+display the raw UA string without classifying it; iPadOS in desktop mode, which presents a
+Macintosh UA genuinely indistinguishable from macOS Safari without UA-Client-Hints — misattribution
+there is a platform limitation, not an ordering bug (flag it only if client-hint headers were
+available and ignored); deviceType/browser fields that are correct while only a cosmetic label
+elsewhere is wrong — scope the finding to the fields actually misattributed.

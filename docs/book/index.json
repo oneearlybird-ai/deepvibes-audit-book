@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 819,
+ "rule_count": 820,
  "sections": [
   {
    "id": "A",
@@ -1964,7 +1964,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "T:1",
@@ -2089,6 +2089,10 @@
     {
      "id": "T:31",
      "title": "The consented scope set is frozen at grant time while the set of endpoints the integration calls keeps growing, so a new feature breaks every existing connection and only per-connection re-consent repairs it"
+    },
+    {
+     "id": "T:32",
+     "title": "Security-facing device labels are derived by ordered substring user-agent sniffing, so platforms whose UA embeds another platform's token are misattributed and the session list users audit for intrusions lies about their own devices"
     }
    ]
   },

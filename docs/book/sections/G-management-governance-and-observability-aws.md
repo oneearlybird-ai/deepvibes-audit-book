@@ -676,3 +676,36 @@ deletion mints another immortal entry.
 resolves it; pipelines with a working stale-finding reaper — verify by finding an entry it
 actually reaped, not by reading its configuration; deliberate forensic retention of
 deleted-resource findings, distinguishable because they are marked resolved rather than open.
+
+## G:40 — A compliance evaluator embeds its model of the system as code constants, so the checker drifts from the architecture it judges and errs in both directions at once
+
+**Statement.** A custom evaluator needs a model of the system to judge it: which data stores hold
+tenant data, which planes are exempt and why, what the sanctioned access patterns are. When that
+model is written down as constants in the evaluator's own source — table lists, exemption sets,
+plane prefixes — it freezes at authorship while the system keeps moving, and the checker begins to
+err in both directions simultaneously: resources created after the freeze are invisible to
+set-scoped checks (the newest, often most sensitive stores get no coverage), while planes built
+after the freeze are judged by rules that never modeled them (whole function families flagged for
+violating expectations that do not apply to their sanctioned design). Both failure modes are
+silent: under-coverage produces no finding at all, and over-flagging produces findings that look
+actionable. Observed in production: an isolation evaluator modeling 15 of 55 live tables — blind
+to the transcript and consent stores created after its authorship — while flagging an entire
+administrative plane whose sanctioned access path (tagged STS assumption) postdated the
+evaluator's world-model. The same system already held a versioned, contract-style catalog of its
+resources that the evaluator loaded at runtime — and read only the account id from it.
+
+**Detect.** For every custom evaluator, find where its expectations come from. Constants in source
+(resource name sets, exemption lists, prefix tables) are the defect surface: diff each set against
+the live inventory it claims to model (list the real tables, functions, planes) and count what
+exists in the system but not in the model, and what exists in the model but not in the system.
+Then check whether a machine-readable source of truth the evaluator could derive from already
+exists — a contract document, a tagged inventory, a registry the provisioner writes — and whether
+the evaluator consumes it. An evaluator that loads a living catalog but reads only metadata from
+it is one refactor away from never drifting again; note it as such. Expectation sources loaded at
+runtime from the same artifact the system itself deploys (a live layer, a versioned contract) are
+the sound pattern and need no flag.
+
+**False positives.** Deliberately pinned models with a documented review cadence that is actually
+observed (verify a past review happened, not that one is scheduled); evaluators whose scope is a
+closed, finished subsystem that genuinely cannot grow; constants that are performance caches of a
+living source refreshed at deploy time — verify the refresh mechanism exists and ran recently.

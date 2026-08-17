@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 829,
+ "rule_count": 831,
  "sections": [
   {
    "id": "A",
@@ -710,7 +710,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "F:1",
@@ -859,6 +859,10 @@
     {
      "id": "F:37",
      "title": "A role trust policy that names a human IAM user is a standing personal backdoor into the service plane"
+    },
+    {
+     "id": "F:38",
+     "title": "The security scanner's own principal is exempted from its scans, so dead privileged grants on the audit tooling outlive every review"
     }
    ]
   },
@@ -867,7 +871,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "G:1",
@@ -1024,6 +1028,10 @@
     {
      "id": "G:39",
      "title": "A compliance evaluator that emits a cannot-evaluate status for deleted resources creates immortal findings no lifecycle ever closes"
+    },
+    {
+     "id": "G:40",
+     "title": "A compliance evaluator embeds its model of the system as code constants, so the checker drifts from the architecture it judges and errs in both directions at once"
     }
    ]
   },

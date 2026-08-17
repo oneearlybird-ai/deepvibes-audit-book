@@ -542,3 +542,32 @@ one half leaves the other as latent re-enablement.
 **False positives.** Deliberate break-glass roles — acceptable only when documented, MFA-
 conditioned, alarmed on every assumption, and reviewed on a cadence. The documentation and the
 alarm are load-bearing: their absence converts the break-glass claim back into this finding.
+
+## F:38 — The security scanner's own principal is exempted from its scans, so dead privileged grants on the audit tooling outlive every review
+
+**Statement.** Compliance scanners routinely carry a self-exemption — their own function name in
+the skip list — to avoid recursive or self-referential evaluations. The side effect is a permanent
+blind spot exactly where trust is highest: the scanner's execution role is the one principal in the
+fleet that no automated review ever reads. Grants accumulate there across design generations — an
+early version that queried data stores directly keeps its assume-path to an administrative role
+long after a rewrite made the scanner read-only — and nothing flags them, because the tool whose
+job is flagging them is the one thing it never examines. The result is a maximum-value dormant
+credential: a principal with code-download rights across the fleet holding an unused escalation
+path to administrative data access. Observed in production: a tenant-isolation scanner whose role
+carried sts:AssumeRole to the platform-administrator role; the code contained zero STS calls — the
+grant was a fossil from a pre-rewrite design — and the scanner's own skip list guaranteed no scan
+would ever surface it.
+
+**Detect.** Enumerate the scanning/auditing principals (Config rule lambdas, scheduled auditors,
+findings producers) and diff each role's granted actions against the API calls its current code
+actually makes — the same executable-truth binding the scanner applies to everyone else. Any grant
+with no call site is a finding, and privileged grants (sts:AssumeRole to admin roles, data-plane
+reads, kms:Decrypt) are the severe class. Then read the scanner's exemption list and require every
+self-exemption to be paired with an external check that covers the scanner's own posture — an
+exemption without a compensating reviewer is the blind spot itself.
+
+**False positives.** Grants used only on rare code paths (error handlers, backfill flags) — trace
+the full module, not just the hot path, before calling a grant dead; break-glass grants documented
+with an owner and a review date; scanners whose role is deliberately shared with a remediation
+component that does use the privilege — verify the sharing is intentional and documented, then
+flag the sharing itself as its own least-privilege finding.

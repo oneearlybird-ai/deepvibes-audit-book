@@ -185,3 +185,26 @@ against the service's desired/running counts before calling it dead.
 **False positives.** Blue/green or migration windows where both twins are intentionally live and
 tracked; name-similar groups that genuinely serve different planes (verify by attachment, not by
 name).
+## C:26 — A no-egress posture enforced at only one layer — SG rules over a subnet whose route table still offers a default route — is one edit away from exfiltration
+
+**Statement.** A sensitive compute plane is declared "no internet" because its security group has
+no egress rule reaching 0.0.0.0/0 — while its subnet's route table still carries a default route
+to a NAT or internet gateway. The posture is real but single-layered: any future SG edit (a
+debugging rule, a copy-pasted allow-all egress) instantly opens a WORKING internet path, because
+the route layer was never closed. Depth for data-plane isolation means the route table itself
+offers no internet route — then the mistaken SG rule leads nowhere. The regression pattern to
+watch: a workload MOVES from a purpose-built isolated network (where no NAT existed at all) into a
+shared VPC that has one. The SG posture survives the move; the route-layer guarantee silently does
+not.
+
+**Detect.** For each sensitive plane: subnet → route table → look for 0.0.0.0/0 or ::/0. Where
+present, establish whether the workload needs it at all; if every dependency rides interface
+endpoints and gateway-endpoint prefix lists (including OS updates via S3-hosted distro mirrors),
+give the subnet a dedicated route table with only local + gateway-endpoint routes. Check the route
+table's ASSOCIATIONS before editing — a table shared with internet-needing neighbors must be
+split, not stripped.
+
+**False positives.** Planes with a genuine, enumerated internet dependency — document the
+destination class and prefer proxied egress; route tables shared by design where SG-only is a
+documented accepted risk carrying a compensating detective control (flow-log alerting on the
+plane's ENIs). An undocumented single lock is the finding; a documented one is a posture.

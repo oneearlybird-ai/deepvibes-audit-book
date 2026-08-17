@@ -520,3 +520,25 @@ health after a grant narrowing verifies nothing.
 by describing the task definitions and launch templates, never by observing traffic; and narrowings
 landed in the same change that repoints every consumer to the surviving key (the atomic form, which
 is the correct shape).
+## F:37 — A role trust policy that names a human IAM user is a standing personal backdoor into the service plane
+
+**Statement.** Service roles exist so services act with scoped, auditable identity. When a role's
+trust policy hardcodes an individual human user ARN as a principal (directly or via an
+aws:PrincipalArn condition on an account-root principal), that human — or anyone holding their
+long-lived access keys — can silently become the service, bypassing the group/SSO surface where
+admin access is actually reviewed. These statements are typically born of dev-loop convenience
+("let me impersonate the Lambda from my laptop") or demo lanes, then outlive renames and cleanups
+because trust policies are rarely re-read after creation. They pair with identity-side artifacts —
+inline sts:AssumeRole policies attached directly to the user (a CIS IAM.2 trigger) — that keep the
+lane intact even as the group model evolves.
+
+**Detect.** Enumerate every role trust policy and flag any principal or condition matching
+arn:aws:iam::*:user/*. For each hit, pull the role's RoleLastUsed, action-level Access Advisor for
+the named user's STS activity, and recent CloudTrail — distinguishing live human dependence (needs
+a redesign: SSO or a proper break-glass role) from fossil (delete the role, or strip the
+statement). Sweep the paired user-side inline assume policies in the same change; removing only
+one half leaves the other as latent re-enablement.
+
+**False positives.** Deliberate break-glass roles — acceptable only when documented, MFA-
+conditioned, alarmed on every assumption, and reviewed on a cadence. The documentation and the
+alarm are load-bearing: their absence converts the break-glass claim back into this finding.

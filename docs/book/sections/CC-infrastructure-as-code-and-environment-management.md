@@ -315,3 +315,29 @@ out-of-band edits to the published artifact AND is paired with a consumer-side s
 elsewhere — verify the pair exists in code, not in a comment; artifacts whose consumers are
 unreachable third parties where a consumer-side read is impossible — record the residual blindness
 as an accepted posture instead of pretending the check covers it.
+## CC:21 — A renamed or relocated workload leaves its origin environment standing — sealed, empty, and billing — because the migration program had no demolition step
+
+**Statement.** A workload is renamed or moved to a new network or environment. The migration is
+declared done when the service runs in its new home — and the origin (VPC, paid interface
+endpoints, DNS-override zones, guard security groups, flow-log taps) survives with no owner, no
+consumer, and an active bill. Because the old environment's guest lists name only principals that
+no longer exist and no route connects it to anything, it is invisible to traffic monitoring and to
+IaC review alike — frequently it was never IaC-managed, or only fragments were. The cost is
+threefold: standing spend on per-hour resources (interface endpoints bill whether or not a single
+packet moves), a vocabulary collision when the origin's name is later reused by a different
+system, and audit tax — every future reviewer must re-derive whether the shell is load-bearing
+before any cleanup can proceed.
+
+**Detect.** Inventory environments (VPCs, clusters, namespaces) against workload placement: an
+environment whose only network interfaces belong to its own plumbing (endpoints, NAT, EIC) has no
+tenant. Then prove deadness rather than assume it, on four independent axes: topology (no
+peering/TGW attachment, no IGW, no NAT — nothing can reach it), permission (its endpoint SGs admit
+only security groups with zero members), traffic (a flow-log window in which 100% of records are
+NODATA), and reference (repo-wide grep for the environment's VPC/subnet/SG ids finds no live
+consumer). Cost Explorer by usage type — endpoint-hours attributed to environments with no compute
+ENIs — is the cheapest standing detector.
+
+**False positives.** Warm-standby / DR environments — but these must carry a documented activation
+runbook, and the runbook's absence is itself the finding; compliance-retention environments;
+shared-services environments consumed cross-VPC — verify via peering/TGW/RAM shares BEFORE
+declaring them dead. Checking topology first is exactly what separates demolition from outage.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 821,
+ "rule_count": 823,
  "sections": [
   {
    "id": "A",
@@ -17,31 +17,31 @@
     },
     {
      "id": "A:2",
-     "title": "EC2/ASG: Auto Scaling Group lacks scale-in protection during stateful processing, riskinâ€¦"
+     "title": "EC2/ASG: Auto Scaling Group lacks scale-in protection during stateful processing, riskin…"
     },
     {
      "id": "A:3",
-     "title": "Lambda: Missing a Dead-Letter Queue (DLQ) or On-Failure Destination for asynchronous invâ€¦"
+     "title": "Lambda: Missing a Dead-Letter Queue (DLQ) or On-Failure Destination for asynchronous inv…"
     },
     {
      "id": "A:4",
-     "title": "Lambda: Unbounded concurrency (Missing Reserved Concurrency limits), creating massive Doâ€¦"
+     "title": "Lambda: Unbounded concurrency (Missing Reserved Concurrency limits), creating massive Do…"
     },
     {
      "id": "A:5",
-     "title": "Lambda: Hardcoded secrets in environment variables instead of dynamically resolving AWSâ€¦"
+     "title": "Lambda: Hardcoded secrets in environment variables instead of dynamically resolving AWS…"
     },
     {
      "id": "A:6",
-     "title": "Lambda: Over-permissioned Execution Role (e.g., using Action: \"*\" or Resource: \"*\" insteâ€¦"
+     "title": "Lambda: Over-permissioned Execution Role (e.g., using Action: \"*\" or Resource: \"*\" inste…"
     },
     {
      "id": "A:7",
-     "title": "ECS/EKS: Task Definitions or Pods running containers as the root user without readonlyRoâ€¦"
+     "title": "ECS/EKS: Task Definitions or Pods running containers as the root user without readonlyRo…"
     },
     {
      "id": "A:8",
-     "title": "ECS (Fargate): Containers mapped directly to public IP addresses instead of residing inâ€¦"
+     "title": "ECS (Fargate): Containers mapped directly to public IP addresses instead of residing in…"
     },
     {
      "id": "A:9",
@@ -69,27 +69,27 @@
     },
     {
      "id": "A:15",
-     "title": "Lambda: Latency-critical synchronous endpoints lacking Provisioned Concurrency, exposingâ€¦"
+     "title": "Lambda: Latency-critical synchronous endpoints lacking Provisioned Concurrency, exposing…"
     },
     {
      "id": "A:16",
-     "title": "Lambda: Oversized deployment packages and unused layers inflating cold-start init time aâ€¦"
+     "title": "Lambda: Oversized deployment packages and unused layers inflating cold-start init time a…"
     },
     {
      "id": "A:17",
-     "title": "Lambda: Function timeout configured longer than the API Gateway 29s integration limit, dâ€¦"
+     "title": "Lambda: Function timeout configured longer than the API Gateway 29s integration limit, d…"
     },
     {
      "id": "A:18",
-     "title": "Lambda: Recursive invocation loops (e.g., S3-triggered function writing back into the saâ€¦"
+     "title": "Lambda: Recursive invocation loops (e.g., S3-triggered function writing back into the sa…"
     },
     {
      "id": "A:19",
-     "title": "Lambda: Missing X-Ray/OpenTelemetry tracing on functions participating in multi-hop chaiâ€¦"
+     "title": "Lambda: Missing X-Ray/OpenTelemetry tracing on functions participating in multi-hop chai…"
     },
     {
      "id": "A:20",
-     "title": "Lambda: Init-phase \"load once at boot\" caching of secrets/clients in the warm sandbox wiâ€¦"
+     "title": "Lambda: Init-phase \"load once at boot\" caching of secrets/clients in the warm sandbox wi…"
     },
     {
      "id": "A:21",
@@ -97,55 +97,55 @@
     },
     {
      "id": "A:22",
-     "title": "Lambda: Function URLs configured with AuthType: NONE, exposing direct unauthenticated inâ€¦"
+     "title": "Lambda: Function URLs configured with AuthType: NONE, exposing direct unauthenticated in…"
     },
     {
      "id": "A:23",
-     "title": "Lambda: Event source mappings without partial-batch responses (ReportBatchItemFailures),â€¦"
+     "title": "Lambda: Event source mappings without partial-batch responses (ReportBatchItemFailures),…"
     },
     {
      "id": "A:24",
-     "title": "Lambda: Async invokes missing MaximumEventAge/MaximumRetryAttempts tuning, replaying houâ€¦"
+     "title": "Lambda: Async invokes missing MaximumEventAge/MaximumRetryAttempts tuning, replaying hou…"
     },
     {
      "id": "A:25",
-     "title": "ECS: Secrets passed as plaintext environment variables in task definitions instead of thâ€¦"
+     "title": "ECS: Secrets passed as plaintext environment variables in task definitions instead of th…"
     },
     {
      "id": "A:26",
-     "title": "ECS: Container health checks missing or misaligned with ALB target group health checks,â€¦"
+     "title": "ECS: Container health checks missing or misaligned with ALB target group health checks,…"
     },
     {
      "id": "A:27",
-     "title": "EKS: Cluster API endpoint publicly accessible without CIDR restriction or private-endpoiâ€¦"
+     "title": "EKS: Cluster API endpoint publicly accessible without CIDR restriction or private-endpoi…"
     },
     {
      "id": "A:28",
-     "title": "EKS: Pods using the node instance role instead of IRSA/Pod Identity, granting every podâ€¦"
+     "title": "EKS: Pods using the node instance role instead of IRSA/Pod Identity, granting every pod…"
     },
     {
      "id": "A:29",
-     "title": "EC2: Launch templates not enforcing encrypted EBS root volumes, leaving sensitive scratcâ€¦"
+     "title": "EC2: Launch templates not enforcing encrypted EBS root volumes, leaving sensitive scratc…"
     },
     {
      "id": "A:30",
-     "title": "EC2: SSH key pairs and open SSH daemons still present on instances instead of SSM Sessioâ€¦"
+     "title": "EC2: SSH key pairs and open SSH daemons still present on instances instead of SSM Sessio…"
     },
     {
      "id": "A:31",
-     "title": "Compute: Missing SIGTERM/graceful-shutdown handling, dropping in-flight requests on everâ€¦"
+     "title": "Compute: Missing SIGTERM/graceful-shutdown handling, dropping in-flight requests on ever…"
     },
     {
      "id": "A:32",
-     "title": "Fargate: Task platform version unpinned or stale, silently picking up breaking platformâ€¦"
+     "title": "Fargate: Task platform version unpinned or stale, silently picking up breaking platform…"
     },
     {
      "id": "A:33",
-     "title": "Lambda: Multiple unrelated responsibilities packed into one \"do-everything\" function, coâ€¦"
+     "title": "Lambda: Multiple unrelated responsibilities packed into one \"do-everything\" function, co…"
     },
     {
      "id": "A:34",
-     "title": "Compute: AMI/image pipeline lacking automated rebuild on upstream CVE disclosure (goldenâ€¦"
+     "title": "Compute: AMI/image pipeline lacking automated rebuild on upstream CVE disclosure (golden…"
     },
     {
      "id": "A:35",
@@ -157,7 +157,7 @@
     },
     {
      "id": "A:37",
-     "title": "Function imports a bare specifier that only a layer resolves, and the layer is not attached â€” every invocation dies at module load"
+     "title": "Function imports a bare specifier that only a layer resolves, and the layer is not attached — every invocation dies at module load"
     },
     {
      "id": "A:38",
@@ -173,7 +173,7 @@
     },
     {
      "id": "A:41",
-     "title": "Deployment auto-rollback rewrites the service's desired definition, so the natural retry â€” \"redeploy latest\" â€” faithfully redeploys the rollback"
+     "title": "Deployment auto-rollback rewrites the service's desired definition, so the natural retry — \"redeploy latest\" — faithfully redeploys the rollback"
     }
    ]
   },
@@ -190,19 +190,19 @@
     },
     {
      "id": "B:2",
-     "title": "S3: Object Versioning is enabled but missing a strict Lifecycle Policy, resulting in infâ€¦"
+     "title": "S3: Object Versioning is enabled but missing a strict Lifecycle Policy, resulting in inf…"
     },
     {
      "id": "B:3",
-     "title": "S3: Bucket Policy missing the aws:SecureTransport condition, allowing unencrypted plainâ€¦"
+     "title": "S3: Bucket Policy missing the aws:SecureTransport condition, allowing unencrypted plain…"
     },
     {
      "id": "B:4",
-     "title": "S3: Presigned URLs generated dynamically in code without strict, short-lived expirationâ€¦"
+     "title": "S3: Presigned URLs generated dynamically in code without strict, short-lived expiration…"
     },
     {
      "id": "B:5",
-     "title": "EBS: Attached block volumes are unencrypted or using AWS-managed default keys instead ofâ€¦"
+     "title": "EBS: Attached block volumes are unencrypted or using AWS-managed default keys instead of…"
     },
     {
      "id": "B:6",
@@ -210,7 +210,7 @@
     },
     {
      "id": "B:7",
-     "title": "CloudFront: Distribution Viewer Protocol Policy allows HTTP instead of forcing Redirectâ€¦"
+     "title": "CloudFront: Distribution Viewer Protocol Policy allows HTTP instead of forcing Redirect…"
     },
     {
      "id": "B:8",
@@ -238,15 +238,15 @@
     },
     {
      "id": "B:14",
-     "title": "S3: Default bucket encryption left at SSE-S3 where the data classification requires a Cuâ€¦"
+     "title": "S3: Default bucket encryption left at SSE-S3 where the data classification requires a Cu…"
     },
     {
      "id": "B:15",
-     "title": "S3: Object Ownership not set to BucketOwnerEnforced â€” legacy ACLs still active and grantâ€¦"
+     "title": "S3: Object Ownership not set to BucketOwnerEnforced — legacy ACLs still active and grant…"
     },
     {
      "id": "B:16",
-     "title": "S3: Server access logging / CloudTrail data events absent on buckets holding sensitive oâ€¦"
+     "title": "S3: Server access logging / CloudTrail data events absent on buckets holding sensitive o…"
     },
     {
      "id": "B:17",
@@ -254,47 +254,47 @@
     },
     {
      "id": "B:18",
-     "title": "S3: Lifecycle rules missing AbortIncompleteMultipartUpload, accumulating invisible billaâ€¦"
+     "title": "S3: Lifecycle rules missing AbortIncompleteMultipartUpload, accumulating invisible billa…"
     },
     {
      "id": "B:19",
-     "title": "S3: Event notifications fanning into non-idempotent consumers (S3 may deliver duplicateâ€¦"
+     "title": "S3: Event notifications fanning into non-idempotent consumers (S3 may deliver duplicate…"
     },
     {
      "id": "B:20",
-     "title": "S3: Unknown access patterns never evaluated for Intelligent-Tiering or storage-class anaâ€¦"
+     "title": "S3: Unknown access patterns never evaluated for Intelligent-Tiering or storage-class ana…"
     },
     {
      "id": "B:21",
-     "title": "CloudFront: Missing Response Headers Policy (HSTS, X-Content-Type-Options, Referrer-Poliâ€¦"
+     "title": "CloudFront: Missing Response Headers Policy (HSTS, X-Content-Type-Options, Referrer-Poli…"
     },
     {
      "id": "B:22",
-     "title": "CloudFront: Signed URLs/cookies using legacy root-account CloudFront key pairs instead oâ€¦"
+     "title": "CloudFront: Signed URLs/cookies using legacy root-account CloudFront key pairs instead o…"
     },
     {
      "id": "B:23",
-     "title": "CloudFront: Authenticated API responses cached because Authorization/Cookie headers areâ€¦"
+     "title": "CloudFront: Authenticated API responses cached because Authorization/Cookie headers are…"
     },
     {
      "id": "B:24",
-     "title": "CloudFront: No origin failover group for static assets â€” a single-origin hard dependency"
+     "title": "CloudFront: No origin failover group for static assets — a single-origin hard dependency"
     },
     {
      "id": "B:25",
-     "title": "EFS: File systems mounted without Access Points enforcing POSIX identity and root-directâ€¦"
+     "title": "EFS: File systems mounted without Access Points enforcing POSIX identity and root-direct…"
     },
     {
      "id": "B:26",
-     "title": "EBS: No Data Lifecycle Manager snapshot policies â€” manual snapshots only, on an untestedâ€¦"
+     "title": "EBS: No Data Lifecycle Manager snapshot policies — manual snapshots only, on an untested…"
     },
     {
      "id": "B:27",
-     "title": "S3: Replication configuration missing explicit delete-marker replication decisions, sileâ€¦"
+     "title": "S3: Replication configuration missing explicit delete-marker replication decisions, sile…"
     },
     {
      "id": "B:28",
-     "title": "CloudFront: Edge logs capturing sensitive query strings (tokens, emails) shipped into wiâ€¦"
+     "title": "CloudFront: Edge logs capturing sensitive query strings (tokens, emails) shipped into wi…"
     },
     {
      "id": "B:29",
@@ -315,27 +315,27 @@
    "rules": [
     {
      "id": "C:1",
-     "title": "VPC: Database or caching subnets configured with a direct route to an Internet Gateway (â€¦"
+     "title": "VPC: Database or caching subnets configured with a direct route to an Internet Gateway (…"
     },
     {
      "id": "C:2",
-     "title": "VPC: Missing VPC Flow Logs pushed to CloudWatch/S3 for network traffic anomaly detectionâ€¦"
+     "title": "VPC: Missing VPC Flow Logs pushed to CloudWatch/S3 for network traffic anomaly detection…"
     },
     {
      "id": "C:3",
-     "title": "Security Groups: Unrestricted inbound access (0.0.0.0/0) on management/database ports (2â€¦"
+     "title": "Security Groups: Unrestricted inbound access (0.0.0.0/0) on management/database ports (2…"
     },
     {
      "id": "C:4",
-     "title": "Security Groups: Wildcard outbound egress rules instead of strictly scoped destination Câ€¦"
+     "title": "Security Groups: Wildcard outbound egress rules instead of strictly scoped destination C…"
     },
     {
      "id": "C:5",
-     "title": "VPC Endpoints: Missing Gateway Endpoints for S3/DynamoDB, resulting in internal API trafâ€¦"
+     "title": "VPC Endpoints: Missing Gateway Endpoints for S3/DynamoDB, resulting in internal API traf…"
     },
     {
      "id": "C:6",
-     "title": "ELB (ALB): Dropping invalid HTTP headers is disabled, leaving the load balancer vulnerabâ€¦"
+     "title": "ELB (ALB): Dropping invalid HTTP headers is disabled, leaving the load balancer vulnerab…"
     },
     {
      "id": "C:7",
@@ -355,31 +355,31 @@
     },
     {
      "id": "C:11",
-     "title": "NACLs: Default allow-all relied upon everywhere â€” no defense-in-depth layer behind securâ€¦"
+     "title": "NACLs: Default allow-all relied upon everywhere — no defense-in-depth layer behind secur…"
     },
     {
      "id": "C:12",
-     "title": "TGW/Peering: Overly broad route propagation linking unrelated environments (dev can routâ€¦"
+     "title": "TGW/Peering: Overly broad route propagation linking unrelated environments (dev can rout…"
     },
     {
      "id": "C:13",
-     "title": "Route 53: Dangling DNS records pointing at deleted ELBs/S3 buckets/IPs â€” subdomain takeoâ€¦"
+     "title": "Route 53: Dangling DNS records pointing at deleted ELBs/S3 buckets/IPs — subdomain takeo…"
     },
     {
      "id": "C:14",
-     "title": "ALB/NLB: TLS listeners using outdated security policies permitting TLS 1.0/1.1 or weak câ€¦"
+     "title": "ALB/NLB: TLS listeners using outdated security policies permitting TLS 1.0/1.1 or weak c…"
     },
     {
      "id": "C:15",
-     "title": "ALB: Port 80 listener serving content instead of issuing an immediate 301 redirect to HTâ€¦"
+     "title": "ALB: Port 80 listener serving content instead of issuing an immediate 301 redirect to HT…"
     },
     {
      "id": "C:16",
-     "title": "ALB: Target group deregistration delay misaligned with application drain time, killing iâ€¦"
+     "title": "ALB: Target group deregistration delay misaligned with application drain time, killing i…"
     },
     {
      "id": "C:17",
-     "title": "PrivateLink: Interface endpoints without endpoint policies â€” the full service API surfacâ€¦"
+     "title": "PrivateLink: Interface endpoints without endpoint policies — the full service API surfac…"
     },
     {
      "id": "C:18",
@@ -387,15 +387,15 @@
     },
     {
      "id": "C:19",
-     "title": "VPC: enableDnsSupport/enableDnsHostnames disabled, breaking private DNS for interface enâ€¦"
+     "title": "VPC: enableDnsSupport/enableDnsHostnames disabled, breaking private DNS for interface en…"
     },
     {
      "id": "C:20",
-     "title": "Load Balancing: Client IP not preserved or X-Forwarded-For mis-parsed â€” rate limits andâ€¦"
+     "title": "Load Balancing: Client IP not preserved or X-Forwarded-For mis-parsed — rate limits and…"
     },
     {
      "id": "C:21",
-     "title": "IPv6: Dual-stack enabled without mirroring security group/NACL rules for ::/0, silentlyâ€¦"
+     "title": "IPv6: Dual-stack enabled without mirroring security group/NACL rules for ::/0, silently…"
     },
     {
      "id": "C:22",
@@ -411,7 +411,7 @@
     },
     {
      "id": "C:25",
-     "title": "Near-duplicate security-group twins split the authority â€” rule resources target one while workloads (or nothing) attach the other"
+     "title": "Near-duplicate security-group twins split the authority — rule resources target one while workloads (or nothing) attach the other"
     },
     {
      "id": "C:26",
@@ -432,11 +432,11 @@
     },
     {
      "id": "D:2",
-     "title": "DynamoDB: Global Secondary Indexes (GSIs) projecting ALL attributes instead of specificâ€¦"
+     "title": "DynamoDB: Global Secondary Indexes (GSIs) projecting ALL attributes instead of specific…"
     },
     {
      "id": "D:3",
-     "title": "DynamoDB: Application backend relies on unbounded Scan operations on large tables insteaâ€¦"
+     "title": "DynamoDB: Application backend relies on unbounded Scan operations on large tables instea…"
     },
     {
      "id": "D:4",
@@ -448,11 +448,11 @@
     },
     {
      "id": "D:6",
-     "title": "RDS: IAM Database Authentication is disabled; backend relies entirely on static, hardcodâ€¦"
+     "title": "RDS: IAM Database Authentication is disabled; backend relies entirely on static, hardcod…"
     },
     {
      "id": "D:7",
-     "title": "ElastiCache (Redis): Cluster lacks AUTH tokens and TLS Encryption-in-Transit, allowing uâ€¦"
+     "title": "ElastiCache (Redis): Cluster lacks AUTH tokens and TLS Encryption-in-Transit, allowing u…"
     },
     {
      "id": "D:8",
@@ -472,67 +472,67 @@
     },
     {
      "id": "D:12",
-     "title": "DynamoDB: Ephemeral rows (sessions, locks, idempotency keys) without a TTL attribute, grâ€¦"
+     "title": "DynamoDB: Ephemeral rows (sessions, locks, idempotency keys) without a TTL attribute, gr…"
     },
     {
      "id": "D:13",
-     "title": "DynamoDB: TTL expiry relied on as a security boundary â€” TTL deletions can lag by up to dâ€¦"
+     "title": "DynamoDB: TTL expiry relied on as a security boundary — TTL deletions can lag by up to d…"
     },
     {
      "id": "D:14",
-     "title": "DynamoDB Streams: Consumers not idempotent despite at-least-once delivery, double-applyiâ€¦"
+     "title": "DynamoDB Streams: Consumers not idempotent despite at-least-once delivery, double-applyi…"
     },
     {
      "id": "D:15",
-     "title": "DynamoDB: Multi-item invariants written without TransactWriteItems, leaving partial statâ€¦"
+     "title": "DynamoDB: Multi-item invariants written without TransactWriteItems, leaving partial stat…"
     },
     {
      "id": "D:16",
-     "title": "DynamoDB: Writes without ConditionExpression guards â€” concurrent writers silently overwrâ€¦"
+     "title": "DynamoDB: Writes without ConditionExpression guards — concurrent writers silently overwr…"
     },
     {
      "id": "D:17",
-     "title": "DynamoDB: Billing mode (on-demand vs provisioned) never revisited against real traffic câ€¦"
+     "title": "DynamoDB: Billing mode (on-demand vs provisioned) never revisited against real traffic c…"
     },
     {
      "id": "D:18",
-     "title": "RDS: Storage autoscaling disabled â€” disk-full incidents take the database read-only in pâ€¦"
+     "title": "RDS: Storage autoscaling disabled — disk-full incidents take the database read-only in p…"
     },
     {
      "id": "D:19",
-     "title": "RDS: Backup retention set to the minimum and snapshots never copied cross-account/cross-â€¦"
+     "title": "RDS: Backup retention set to the minimum and snapshots never copied cross-account/cross-…"
     },
     {
      "id": "D:20",
-     "title": "RDS: Performance Insights and slow-query logging disabled, leaving query regressions undâ€¦"
+     "title": "RDS: Performance Insights and slow-query logging disabled, leaving query regressions und…"
     },
     {
      "id": "D:21",
-     "title": "RDS: Lambda/serverless callers connecting directly without RDS Proxy, exhausting connectâ€¦"
+     "title": "RDS: Lambda/serverless callers connecting directly without RDS Proxy, exhausting connect…"
     },
     {
      "id": "D:22",
-     "title": "Redis: Cache keys without TTLs treated as durable storage, participating in auth/rotatioâ€¦"
+     "title": "Redis: Cache keys without TTLs treated as durable storage, participating in auth/rotatio…"
     },
     {
      "id": "D:23",
-     "title": "Redis: Hot-key cache stampede â€” synchronized expiry without jitter or request coalescingâ€¦"
+     "title": "Redis: Hot-key cache stampede — synchronized expiry without jitter or request coalescing…"
     },
     {
      "id": "D:24",
-     "title": "OpenSearch: Domains without fine-grained access control or VPC placement; index-level muâ€¦"
+     "title": "OpenSearch: Domains without fine-grained access control or VPC placement; index-level mu…"
     },
     {
      "id": "D:25",
-     "title": "SQL/ORM: N+1 lazy-loading query patterns on hot endpoints, multiplying latency under lisâ€¦"
+     "title": "SQL/ORM: N+1 lazy-loading query patterns on hot endpoints, multiplying latency under lis…"
     },
     {
      "id": "D:26",
-     "title": "Migrations: Schema migrations run at process boot without distributed locks â€” parallel iâ€¦"
+     "title": "Migrations: Schema migrations run at process boot without distributed locks — parallel i…"
     },
     {
      "id": "D:27",
-     "title": "DynamoDB: GSI queried against a key schema it does not have â€” runtime ValidationException CI never sees"
+     "title": "DynamoDB: GSI queried against a key schema it does not have — runtime ValidationException CI never sees"
     },
     {
      "id": "D:28",
@@ -549,11 +549,11 @@
    "rules": [
     {
      "id": "E:1",
-     "title": "SQS: Visibility timeout is configured shorter than the consumer Lambda's maximum executiâ€¦"
+     "title": "SQS: Visibility timeout is configured shorter than the consumer Lambda's maximum executi…"
     },
     {
      "id": "E:2",
-     "title": "SQS: Missing Dead-Letter Queue (DLQ) with appropriate maxReceiveCount limits for poison-â€¦"
+     "title": "SQS: Missing Dead-Letter Queue (DLQ) with appropriate maxReceiveCount limits for poison-…"
     },
     {
      "id": "E:3",
@@ -561,19 +561,19 @@
     },
     {
      "id": "E:4",
-     "title": "EventBridge: Rules use excessively broad wildcard matching (\"source\": [\"*\"]), risking inâ€¦"
+     "title": "EventBridge: Rules use excessively broad wildcard matching (\"source\": [\"*\"]), risking in…"
     },
     {
      "id": "E:5",
-     "title": "API Gateway: Missing endpoint-level Usage Plans, Rate Limiting, or Throttling limits (Unâ€¦"
+     "title": "API Gateway: Missing endpoint-level Usage Plans, Rate Limiting, or Throttling limits (Un…"
     },
     {
      "id": "E:6",
-     "title": "API Gateway: Endpoints lacking Custom Authorizers, Cognito validation, or IAM auth (Uninâ€¦"
+     "title": "API Gateway: Endpoints lacking Custom Authorizers, Cognito validation, or IAM auth (Unin…"
     },
     {
      "id": "E:7",
-     "title": "Step Functions: State machines missing explicit Catch/Retry blocks (States.ALL) for tranâ€¦"
+     "title": "Step Functions: State machines missing explicit Catch/Retry blocks (States.ALL) for tran…"
     },
     {
      "id": "E:8",
@@ -593,31 +593,31 @@
     },
     {
      "id": "E:12",
-     "title": "SQS FIFO: All traffic funneled through a single MessageGroupId, serializing throughput tâ€¦"
+     "title": "SQS FIFO: All traffic funneled through a single MessageGroupId, serializing throughput t…"
     },
     {
      "id": "E:13",
-     "title": "SQS: Short polling left enabled (WaitTimeSeconds=0), burning request costs and adding laâ€¦"
+     "title": "SQS: Short polling left enabled (WaitTimeSeconds=0), burning request costs and adding la…"
     },
     {
      "id": "E:14",
-     "title": "SNSâ†’SQS: Raw message delivery disabled â€” consumers parse double-wrapped JSON envelopes tâ€¦"
+     "title": "SNS→SQS: Raw message delivery disabled — consumers parse double-wrapped JSON envelopes t…"
     },
     {
      "id": "E:15",
-     "title": "SNS: Delivery status logging disabled â€” failed fan-out deliveries are invisible"
+     "title": "SNS: Delivery status logging disabled — failed fan-out deliveries are invisible"
     },
     {
      "id": "E:16",
-     "title": "EventBridge: Rule targets without DLQs â€” events silently dropped after the (invisible) râ€¦"
+     "title": "EventBridge: Rule targets without DLQs — events silently dropped after the (invisible) r…"
     },
     {
      "id": "E:17",
-     "title": "EventBridge: Event contracts unversioned and unregistered â€” producers and consumers drifâ€¦"
+     "title": "EventBridge: Event contracts unversioned and unregistered — producers and consumers drif…"
     },
     {
      "id": "E:18",
-     "title": "API Gateway: Request validation models absent â€” malformed payloads reach Lambda and burnâ€¦"
+     "title": "API Gateway: Request validation models absent — malformed payloads reach Lambda and burn…"
     },
     {
      "id": "E:19",
@@ -625,35 +625,35 @@
     },
     {
      "id": "E:20",
-     "title": "API Gateway: Lambda resource policies with overly broad SourceArn wildcards, letting anyâ€¦"
+     "title": "API Gateway: Lambda resource policies with overly broad SourceArn wildcards, letting any…"
     },
     {
      "id": "E:21",
-     "title": "API Gateway/CORS: Reflecting arbitrary Origin values while sending Access-Control-Allow-â€¦"
+     "title": "API Gateway/CORS: Reflecting arbitrary Origin values while sending Access-Control-Allow-…"
     },
     {
      "id": "E:22",
-     "title": "WebSocket API: $connect route without an authorizer â€” auth deferred to application messaâ€¦"
+     "title": "WebSocket API: $connect route without an authorizer — auth deferred to application messa…"
     },
     {
      "id": "E:23",
-     "title": "Step Functions: Standard workflows used for high-volume short executions (or Express forâ€¦"
+     "title": "Step Functions: Standard workflows used for high-volume short executions (or Express for…"
     },
     {
      "id": "E:24",
-     "title": "Step Functions: Full payloads threaded between states toward the 256KB limit instead ofâ€¦"
+     "title": "Step Functions: Full payloads threaded between states toward the 256KB limit instead of…"
     },
     {
      "id": "E:25",
-     "title": "Kinesis: Static shard counts under growing traffic; GetRecords.IteratorAgeMilliseconds uâ€¦"
+     "title": "Kinesis: Static shard counts under growing traffic; GetRecords.IteratorAgeMilliseconds u…"
     },
     {
      "id": "E:26",
-     "title": "EventBridge: consumer's accepted event vocabulary has no producer â€” a feature that can never fire"
+     "title": "EventBridge: consumer's accepted event vocabulary has no producer — a feature that can never fire"
     },
     {
      "id": "E:27",
-     "title": "Step Functions: inter-state payload contract drift â€” states reference JSONPaths their predecessors do not produce"
+     "title": "Step Functions: inter-state payload contract drift — states reference JSONPaths their predecessors do not produce"
     },
     {
      "id": "E:28",
@@ -681,7 +681,7 @@
     },
     {
      "id": "E:34",
-     "title": "Event-bus input-transformer template authored through a JSON encoder that escapes angle brackets â€” placeholders never substitute"
+     "title": "Event-bus input-transformer template authored through a JSON encoder that escapes angle brackets — placeholders never substitute"
     },
     {
      "id": "E:35",
@@ -714,11 +714,11 @@
    "rules": [
     {
      "id": "F:1",
-     "title": "IAM: Trust policies utilizing sts:AssumeRole without enforcing sts:ExternalId (Confusedâ€¦"
+     "title": "IAM: Trust policies utilizing sts:AssumeRole without enforcing sts:ExternalId (Confused…"
     },
     {
      "id": "F:2",
-     "title": "IAM: Policies combining the iam:PassRole permission with wildcard * resources, allowingâ€¦"
+     "title": "IAM: Policies combining the iam:PassRole permission with wildcard * resources, allowing…"
     },
     {
      "id": "F:3",
@@ -726,11 +726,11 @@
     },
     {
      "id": "F:4",
-     "title": "Cognito: User Pools lacking Advanced Security Features (compromised credentials checks)â€¦"
+     "title": "Cognito: User Pools lacking Advanced Security Features (compromised credentials checks)…"
     },
     {
      "id": "F:5",
-     "title": "IAM/SSO: IAM Users generated with static, long-lived access keys instead of utilizing IAâ€¦"
+     "title": "IAM/SSO: IAM Users generated with static, long-lived access keys instead of utilizing IA…"
     },
     {
      "id": "F:6",
@@ -746,11 +746,11 @@
     },
     {
      "id": "F:9",
-     "title": "IAM: Roles created by CI/CD without permissions boundaries â€” the pipeline can mint adminâ€¦"
+     "title": "IAM: Roles created by CI/CD without permissions boundaries — the pipeline can mint admin…"
     },
     {
      "id": "F:10",
-     "title": "IAM: Trust policies allowing the entire account root principal instead of the specific sâ€¦"
+     "title": "IAM: Trust policies allowing the entire account root principal instead of the specific s…"
     },
     {
      "id": "F:11",
@@ -758,31 +758,31 @@
     },
     {
      "id": "F:12",
-     "title": "IAM: Unused roles, users, and access keys never pruned â€” no Access Analyzer or last-acceâ€¦"
+     "title": "IAM: Unused roles, users, and access keys never pruned — no Access Analyzer or last-acce…"
     },
     {
      "id": "F:13",
-     "title": "Cognito: Identity pool unauthenticated role grants reaching beyond the intended public-râ€¦"
+     "title": "Cognito: Identity pool unauthenticated role grants reaching beyond the intended public-r…"
     },
     {
      "id": "F:14",
-     "title": "Cognito: Token revocation unimplemented and access token TTLs measured in hours â€” bannedâ€¦"
+     "title": "Cognito: Token revocation unimplemented and access token TTLs measured in hours — banned…"
     },
     {
      "id": "F:15",
-     "title": "KMS: kms:Decrypt granted broadly at the IAM layer across keys instead of per-key, per-seâ€¦"
+     "title": "KMS: kms:Decrypt granted broadly at the IAM layer across keys instead of per-key, per-se…"
     },
     {
      "id": "F:16",
-     "title": "STS: Maximum session durations set to 12h where 1h suffices, extending the blast windowâ€¦"
+     "title": "STS: Maximum session durations set to 12h where 1h suffices, extending the blast window…"
     },
     {
      "id": "F:17",
-     "title": "IaC: Secrets materialized in plaintext inside Terraform state/CloudFormation outputs reaâ€¦"
+     "title": "IaC: Secrets materialized in plaintext inside Terraform state/CloudFormation outputs rea…"
     },
     {
      "id": "F:18",
-     "title": "GuardDuty/Security Hub/Inspector: Disabled, or enabled with findings routed nowhere actiâ€¦"
+     "title": "GuardDuty/Security Hub/Inspector: Disabled, or enabled with findings routed nowhere acti…"
     },
     {
      "id": "F:19",
@@ -790,11 +790,11 @@
     },
     {
      "id": "F:20",
-     "title": "IAM: Hand-rolled policies replicating (worse) what AWS-managed service-role policies alrâ€¦"
+     "title": "IAM: Hand-rolled policies replicating (worse) what AWS-managed service-role policies alr…"
     },
     {
      "id": "F:21",
-     "title": "KMS: Service-principal key-policy statements without kms:CallerAccount / kms:ViaService â€” cross-account confused deputy through the service"
+     "title": "KMS: Service-principal key-policy statements without kms:CallerAccount / kms:ViaService — cross-account confused deputy through the service"
     },
     {
      "id": "F:22",
@@ -810,11 +810,11 @@
     },
     {
      "id": "F:25",
-     "title": "Identity: User-pool password policy departs from the audited benchmark with no recorded acceptance â€” and a pool factory re-stamps it on every tenant"
+     "title": "Identity: User-pool password policy departs from the audited benchmark with no recorded acceptance — and a pool factory re-stamps it on every tenant"
     },
     {
      "id": "F:26",
-     "title": "Grant names only the base resource ARN while the code reads through a secondary index, whose child ARN the grant never covers â€” every indexed read is denied"
+     "title": "Grant names only the base resource ARN while the code reads through a secondary index, whose child ARN the grant never covers — every indexed read is denied"
     },
     {
      "id": "F:27",
@@ -871,19 +871,19 @@
    "rules": [
     {
      "id": "G:1",
-     "title": "CloudTrail: Multi-region trails disabled, or Log File Validation disabled (allowing undeâ€¦"
+     "title": "CloudTrail: Multi-region trails disabled, or Log File Validation disabled (allowing unde…"
     },
     {
      "id": "G:2",
-     "title": "CloudWatch: Log Groups lacking retention periods, causing infinite compounding log storaâ€¦"
+     "title": "CloudWatch: Log Groups lacking retention periods, causing infinite compounding log stora…"
     },
     {
      "id": "G:3",
-     "title": "CloudWatch: Missing critical anomaly Alarms for SQS DLQ depth (ApproximateNumberOfMessagâ€¦"
+     "title": "CloudWatch: Missing critical anomaly Alarms for SQS DLQ depth (ApproximateNumberOfMessag…"
     },
     {
      "id": "G:4",
-     "title": "AWS Organizations: Missing Service Control Policies (SCPs) to Prevent Resource Modificatâ€¦"
+     "title": "AWS Organizations: Missing Service Control Policies (SCPs) to Prevent Resource Modificat…"
     },
     {
      "id": "G:5",
@@ -895,51 +895,51 @@
     },
     {
      "id": "G:7",
-     "title": "CloudWatch: Alarms without actions, or actions routed to dead/unsubscribed SNS topics â€”â€¦"
+     "title": "CloudWatch: Alarms without actions, or actions routed to dead/unsubscribed SNS topics —…"
     },
     {
      "id": "G:8",
-     "title": "CloudWatch: No composite alarms â€” a single incident pages 40 times across correlated symâ€¦"
+     "title": "CloudWatch: No composite alarms — a single incident pages 40 times across correlated sym…"
     },
     {
      "id": "G:9",
-     "title": "Logging: Unstructured printf/console logging in production instead of structured JSON wiâ€¦"
+     "title": "Logging: Unstructured printf/console logging in production instead of structured JSON wi…"
     },
     {
      "id": "G:10",
-     "title": "Logging: Correlation/request IDs not propagated across service hops â€” cross-service tracâ€¦"
+     "title": "Logging: Correlation/request IDs not propagated across service hops — cross-service trac…"
     },
     {
      "id": "G:11",
-     "title": "AWS Config: Recording disabled â€” no resource-drift history or compliance snapshots availâ€¦"
+     "title": "AWS Config: Recording disabled — no resource-drift history or compliance snapshots avail…"
     },
     {
      "id": "G:12",
-     "title": "Tagging: Cost-allocation and ownership tags unenforced â€” orphan resources nobody can attâ€¦"
+     "title": "Tagging: Cost-allocation and ownership tags unenforced — orphan resources nobody can att…"
     },
     {
      "id": "G:13",
-     "title": "Tracing: No distributed tracing across async hops (Lambdaâ†’SQSâ†’Lambda), making end-to-endâ€¦"
+     "title": "Tracing: No distributed tracing across async hops (Lambda→SQS→Lambda), making end-to-end…"
     },
     {
      "id": "G:14",
-     "title": "Dashboards: No single per-workload health dashboard; incident response starts with ad-hoâ€¦"
+     "title": "Dashboards: No single per-workload health dashboard; incident response starts with ad-ho…"
     },
     {
      "id": "G:15",
-     "title": "Budgets: No AWS Budgets or Cost Anomaly Detection alerts â€” runaway spend discovered on tâ€¦"
+     "title": "Budgets: No AWS Budgets or Cost Anomaly Detection alerts — runaway spend discovered on t…"
     },
     {
      "id": "G:16",
-     "title": "CloudWatch: High-cardinality custom metric dimensions (per-user/per-request) exploding mâ€¦"
+     "title": "CloudWatch: High-cardinality custom metric dimensions (per-user/per-request) exploding m…"
     },
     {
      "id": "G:17",
-     "title": "SSM: Session Manager sessions without session logging to encrypted S3/CloudWatch â€” priviâ€¦"
+     "title": "SSM: Session Manager sessions without session logging to encrypted S3/CloudWatch — privi…"
     },
     {
      "id": "G:18",
-     "title": "CloudWatch: Alarm dimensions referencing nonexistent resources â€” INSUFFICIENT_DATA forever, monitoring theater"
+     "title": "CloudWatch: Alarm dimensions referencing nonexistent resources — INSUFFICIENT_DATA forever, monitoring theater"
     },
     {
      "id": "G:19",
@@ -959,7 +959,7 @@
     },
     {
      "id": "G:23",
-     "title": "Detective alarm whose trigger datapoint an unauthenticated party can mint â€” pageable at will, and pinnable to suppress the real event"
+     "title": "Detective alarm whose trigger datapoint an unauthenticated party can mint — pageable at will, and pinnable to suppress the real event"
     },
     {
      "id": "G:24",
@@ -971,7 +971,7 @@
     },
     {
      "id": "G:26",
-     "title": "Dead-letter queue given a depth alarm but no drain owner or redrive procedure â€” the alarm latches on permanently and the messages are never recovered"
+     "title": "Dead-letter queue given a depth alarm but no drain owner or redrive procedure — the alarm latches on permanently and the messages are never recovered"
     },
     {
      "id": "G:27",
@@ -1028,7 +1028,7 @@
    "rules": [
     {
      "id": "H:1",
-     "title": "Bedrock: Unsanitized user inputs passed directly into system LLM prompts without validatâ€¦"
+     "title": "Bedrock: Unsanitized user inputs passed directly into system LLM prompts without validat…"
     },
     {
      "id": "H:2",
@@ -1036,7 +1036,7 @@
     },
     {
      "id": "H:3",
-     "title": "Athena: Queries executed against unpartitioned S3 data layers, causing massive full-buckâ€¦"
+     "title": "Athena: Queries executed against unpartitioned S3 data layers, causing massive full-buck…"
     },
     {
      "id": "H:4",
@@ -1052,23 +1052,23 @@
     },
     {
      "id": "H:7",
-     "title": "Bedrock: Model invocation logging enabled while prompts carry PII â€” sensitive data repliâ€¦"
+     "title": "Bedrock: Model invocation logging enabled while prompts carry PII — sensitive data repli…"
     },
     {
      "id": "H:8",
-     "title": "Bedrock: No retry/backoff handling for ThrottlingException and no fallback model/regionâ€¦"
+     "title": "Bedrock: No retry/backoff handling for ThrottlingException and no fallback model/region…"
     },
     {
      "id": "H:9",
-     "title": "LLM: System prompts embedding secrets, internal URLs, or tenant data â€” extractable via pâ€¦"
+     "title": "LLM: System prompts embedding secrets, internal URLs, or tenant data — extractable via p…"
     },
     {
      "id": "H:10",
-     "title": "LLM: Model output used to build SQL/shell/API calls without strict validation â€” indirectâ€¦"
+     "title": "LLM: Model output used to build SQL/shell/API calls without strict validation — indirect…"
     },
     {
      "id": "H:11",
-     "title": "LLM: No per-request/per-tenant token ceilings â€” a single conversation can stream unboundâ€¦"
+     "title": "LLM: No per-request/per-tenant token ceilings — a single conversation can stream unbound…"
     },
     {
      "id": "H:12",
@@ -1080,15 +1080,15 @@
     },
     {
      "id": "H:14",
-     "title": "Data: Training/eval datasets and production write paths sharing buckets and roles â€” poisâ€¦"
+     "title": "Data: Training/eval datasets and production write paths sharing buckets and roles — pois…"
     },
     {
      "id": "H:15",
-     "title": "LLM: Nondeterministic outputs feeding pipelines that assume idempotent, schema-stable reâ€¦"
+     "title": "LLM: Nondeterministic outputs feeding pipelines that assume idempotent, schema-stable re…"
     },
     {
      "id": "H:16",
-     "title": "Agents: Tool-call loops without execution-count ceilings â€” an agent can call the same toâ€¦"
+     "title": "Agents: Tool-call loops without execution-count ceilings — an agent can call the same to…"
     },
     {
      "id": "H:17",
@@ -1105,19 +1105,19 @@
    "rules": [
     {
      "id": "I:1",
-     "title": "SSR: Synchronous blocking database/API operations inside Server Components severely inflâ€¦"
+     "title": "SSR: Synchronous blocking database/API operations inside Server Components severely infl…"
     },
     {
      "id": "I:2",
-     "title": "CSR/Hydration: Mismatches between server HTML and client initial state (e.g., using typeâ€¦"
+     "title": "CSR/Hydration: Mismatches between server HTML and client initial state (e.g., using type…"
     },
     {
      "id": "I:3",
-     "title": "RSC: React Server Components unintentionally leaking backend secrets/DB instances into tâ€¦"
+     "title": "RSC: React Server Components unintentionally leaking backend secrets/DB instances into t…"
     },
     {
      "id": "I:4",
-     "title": "Code Splitting: Monolithic JavaScript bundles sent on initial load instead of utilizingâ€¦"
+     "title": "Code Splitting: Monolithic JavaScript bundles sent on initial load instead of utilizing…"
     },
     {
      "id": "I:5",
@@ -1133,23 +1133,23 @@
     },
     {
      "id": "I:8",
-     "title": "Next.js: Fetch/route caching semantics (force-cache vs no-store, revalidate) misappliedâ€¦"
+     "title": "Next.js: Fetch/route caching semantics (force-cache vs no-store, revalidate) misapplied…"
     },
     {
      "id": "I:9",
-     "title": "Streaming SSR: Missing Suspense boundaries â€” the slowest data dependency blocks first paâ€¦"
+     "title": "Streaming SSR: Missing Suspense boundaries — the slowest data dependency blocks first pa…"
     },
     {
      "id": "I:10",
-     "title": "Fonts: Render-blocking webfonts loaded without next/font or font-display: swap, stallingâ€¦"
+     "title": "Fonts: Render-blocking webfonts loaded without next/font or font-display: swap, stalling…"
     },
     {
      "id": "I:11",
-     "title": "Images: Full-resolution origin images bypassing next/image or CDN resizing â€” multi-MB LCâ€¦"
+     "title": "Images: Full-resolution origin images bypassing next/image or CDN resizing — multi-MB LC…"
     },
     {
      "id": "I:12",
-     "title": "Bundles: Duplicate dependency versions (two Reacts, two date libraries) silently doublinâ€¦"
+     "title": "Bundles: Duplicate dependency versions (two Reacts, two date libraries) silently doublin…"
     },
     {
      "id": "I:13",
@@ -1157,11 +1157,11 @@
     },
     {
      "id": "I:14",
-     "title": "Scripts: Third-party analytics/chat widgets loaded synchronously in <head> instead of deâ€¦"
+     "title": "Scripts: Third-party analytics/chat widgets loaded synchronously in <head> instead of de…"
     },
     {
      "id": "I:15",
-     "title": "i18n: Locale negotiation done client-side post-hydration, flashing wrong-language contenâ€¦"
+     "title": "i18n: Locale negotiation done client-side post-hydration, flashing wrong-language conten…"
     },
     {
      "id": "I:16",
@@ -1214,15 +1214,15 @@
    "rules": [
     {
      "id": "J:1",
-     "title": "Route Guards: Protected routes evaluating session state purely on the client-side UI, alâ€¦"
+     "title": "Route Guards: Protected routes evaluating session state purely on the client-side UI, al…"
     },
     {
      "id": "J:2",
-     "title": "Dynamic Routes: Unsanitized dynamic route parameters ([id]) utilized directly in API fetâ€¦"
+     "title": "Dynamic Routes: Unsanitized dynamic route parameters ([id]) utilized directly in API fet…"
     },
     {
      "id": "J:3",
-     "title": "Middleware: Performing heavy cryptography or synchronous operations in Edge Middleware,â€¦"
+     "title": "Middleware: Performing heavy cryptography or synchronous operations in Edge Middleware,…"
     },
     {
      "id": "J:4",
@@ -1234,23 +1234,23 @@
     },
     {
      "id": "J:6",
-     "title": "Open Redirects: redirect/returnTo/next params consumed unvalidated â€” phishing-grade rediâ€¦"
+     "title": "Open Redirects: redirect/returnTo/next params consumed unvalidated — phishing-grade redi…"
     },
     {
      "id": "J:7",
-     "title": "Server Actions: Next.js server actions missing internal auth/authz checks â€” protected onâ€¦"
+     "title": "Server Actions: Next.js server actions missing internal auth/authz checks — protected on…"
     },
     {
      "id": "J:8",
-     "title": "Layouts: Auth enforced in page components but not layouts/templates/route handlers â€” parâ€¦"
+     "title": "Layouts: Auth enforced in page components but not layouts/templates/route handlers — par…"
     },
     {
      "id": "J:9",
-     "title": "API Routes: Handlers not enforcing HTTP method â€” state mutations reachable via GET (CSRFâ€¦"
+     "title": "API Routes: Handlers not enforcing HTTP method — state mutations reachable via GET (CSRF…"
     },
     {
      "id": "J:10",
-     "title": "Deep Links: Post-login redirect handling leaking query params/tokens to third-party destâ€¦"
+     "title": "Deep Links: Post-login redirect handling leaking query params/tokens to third-party dest…"
     },
     {
      "id": "J:11",
@@ -1266,7 +1266,7 @@
     },
     {
      "id": "J:14",
-     "title": "One feature's sibling routes guard inconsistently â€” the unguarded sibling serves the feature with its backing absent"
+     "title": "One feature's sibling routes guard inconsistently — the unguarded sibling serves the feature with its backing absent"
     },
     {
      "id": "J:15",
@@ -1287,15 +1287,15 @@
    "rules": [
     {
      "id": "K:1",
-     "title": "Caching: Aggressive client-side caching (TanStack Query / SWR) held without proper invalâ€¦"
+     "title": "Caching: Aggressive client-side caching (TanStack Query / SWR) held without proper inval…"
     },
     {
      "id": "K:2",
-     "title": "State Bloat: Dumping massive API payloads into global state managers (Redux/Zustand) insâ€¦"
+     "title": "State Bloat: Dumping massive API payloads into global state managers (Redux/Zustand) ins…"
     },
     {
      "id": "K:3",
-     "title": "Storage: Persisting sensitive user PII or JWT access tokens in plain localStorage or sesâ€¦"
+     "title": "Storage: Persisting sensitive user PII or JWT access tokens in plain localStorage or ses…"
     },
     {
      "id": "K:4",
@@ -1307,31 +1307,31 @@
     },
     {
      "id": "K:6",
-     "title": "Optimistic Updates: UI mutated optimistically with no rollback on mutation failure â€” phaâ€¦"
+     "title": "Optimistic Updates: UI mutated optimistically with no rollback on mutation failure — pha…"
     },
     {
      "id": "K:7",
-     "title": "Identity Switch: Login/logout/tenant-switch without a full query-cache reset â€” the previâ€¦"
+     "title": "Identity Switch: Login/logout/tenant-switch without a full query-cache reset — the previ…"
     },
     {
      "id": "K:8",
-     "title": "Polling: Fixed-interval refetch loops where event-driven invalidation belongs, hammeringâ€¦"
+     "title": "Polling: Fixed-interval refetch loops where event-driven invalidation belongs, hammering…"
     },
     {
      "id": "K:9",
-     "title": "Races: Out-of-order responses overwriting newer state â€” no AbortController or request-veâ€¦"
+     "title": "Races: Out-of-order responses overwriting newer state — no AbortController or request-ve…"
     },
     {
      "id": "K:10",
-     "title": "WebSockets: Reconnect logic that doesn't resubscribe or resync missed events â€” silentlyâ€¦"
+     "title": "WebSockets: Reconnect logic that doesn't resubscribe or resync missed events — silently…"
     },
     {
      "id": "K:11",
-     "title": "Derived State: Computable values stored in state alongside their sources, inevitably divâ€¦"
+     "title": "Derived State: Computable values stored in state alongside their sources, inevitably div…"
     },
     {
      "id": "K:12",
-     "title": "Forms: Dirty-state navigation without guards â€” users silently lose long-form input"
+     "title": "Forms: Dirty-state navigation without guards — users silently lose long-form input"
     },
     {
      "id": "K:13",
@@ -1339,11 +1339,11 @@
     },
     {
      "id": "K:14",
-     "title": "Data Flow: Boundary-captured fields dropped by an intermediate carrier â€” downstream state documents values that can never arrive"
+     "title": "Data Flow: Boundary-captured fields dropped by an intermediate carrier — downstream state documents values that can never arrive"
     },
     {
      "id": "K:15",
-     "title": "Ranges: One labeled time-range selector, multiple data lanes with different window vocabularies â€” the narrower lane silently coerces"
+     "title": "Ranges: One labeled time-range selector, multiple data lanes with different window vocabularies — the narrower lane silently coerces"
     },
     {
      "id": "K:16",
@@ -1392,23 +1392,23 @@
    "rules": [
     {
      "id": "L:1",
-     "title": "XSS: Rendering user-generated content via dangerouslySetInnerHTML without passing it thrâ€¦"
+     "title": "XSS: Rendering user-generated content via dangerouslySetInnerHTML without passing it thr…"
     },
     {
      "id": "L:2",
-     "title": "CSP: Missing Content Security Policy headers, or overly permissive directives (allowingâ€¦"
+     "title": "CSP: Missing Content Security Policy headers, or overly permissive directives (allowing…"
     },
     {
      "id": "L:3",
-     "title": "Cookies: Authentication session cookies lacking HttpOnly, Secure, and SameSite=Strict atâ€¦"
+     "title": "Cookies: Authentication session cookies lacking HttpOnly, Secure, and SameSite=Strict at…"
     },
     {
      "id": "L:4",
-     "title": "CSRF: Missing Anti-CSRF tokens on state-mutating requests when relying on cookie-based sâ€¦"
+     "title": "CSRF: Missing Anti-CSRF tokens on state-mutating requests when relying on cookie-based s…"
     },
     {
      "id": "L:5",
-     "title": "Injection: Frontend passing unsanitized user query strings directly into eval() or unescâ€¦"
+     "title": "Injection: Frontend passing unsanitized user query strings directly into eval() or unesc…"
     },
     {
      "id": "L:6",
@@ -1420,7 +1420,7 @@
     },
     {
      "id": "L:8",
-     "title": "postMessage: Message handlers without strict event.origin validation â€” any embedding pagâ€¦"
+     "title": "postMessage: Message handlers without strict event.origin validation — any embedding pag…"
     },
     {
      "id": "L:9",
@@ -1436,23 +1436,23 @@
     },
     {
      "id": "L:12",
-     "title": "Token Exposure: OAuth tokens/reset codes in URL query/fragment persisted to history, anaâ€¦"
+     "title": "Token Exposure: OAuth tokens/reset codes in URL query/fragment persisted to history, ana…"
     },
     {
      "id": "L:13",
-     "title": "Trusted Types: Not enforced where supported, leaving DOM-XSS sinks (innerHTML, document.â€¦"
+     "title": "Trusted Types: Not enforced where supported, leaving DOM-XSS sinks (innerHTML, document.…"
     },
     {
      "id": "L:14",
-     "title": "Source Maps: Production source maps publicly served, exposing original source and internâ€¦"
+     "title": "Source Maps: Production source maps publicly served, exposing original source and intern…"
     },
     {
      "id": "L:15",
-     "title": "Error Reporting: Sentry/replay tooling capturing PII (inputs, cookies, request bodies) iâ€¦"
+     "title": "Error Reporting: Sentry/replay tooling capturing PII (inputs, cookies, request bodies) i…"
     },
     {
      "id": "L:16",
-     "title": "Prototype Pollution: Client-side deep-merge of untrusted JSON into config objects (__proâ€¦"
+     "title": "Prototype Pollution: Client-side deep-merge of untrusted JSON into config objects (__pro…"
     },
     {
      "id": "L:17",
@@ -1485,19 +1485,19 @@
    "title": "Frontend: Component Lifecycle & Performance",
    "group": "frontend",
    "file": "sections/M-frontend-component-lifecycle-and-performance.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "M:1",
-     "title": "Memory Leaks: useEffect hooks missing cleanup return functions for setInterval, WebSockeâ€¦"
+     "title": "Memory Leaks: useEffect hooks missing cleanup return functions for setInterval, WebSocke…"
     },
     {
      "id": "M:2",
-     "title": "Re-rendering Thrashing: Missing useMemo or useCallback on heavy object/function props paâ€¦"
+     "title": "Re-rendering Thrashing: Missing useMemo or useCallback on heavy object/function props pa…"
     },
     {
      "id": "M:3",
-     "title": "LCP/CLS: Images missing strict dimension attributes (width/height) or fetchpriority loadâ€¦"
+     "title": "LCP/CLS: Images missing strict dimension attributes (width/height) or fetchpriority load…"
     },
     {
      "id": "M:4",
@@ -1509,35 +1509,39 @@
     },
     {
      "id": "M:6",
-     "title": "Virtualization: 10k-row lists fully rendered to the DOM instead of windowed rendering (râ€¦"
+     "title": "Virtualization: 10k-row lists fully rendered to the DOM instead of windowed rendering (r…"
     },
     {
      "id": "M:7",
-     "title": "Context: High-frequency-changing values placed in one broad React Context, re-renderingâ€¦"
+     "title": "Context: High-frequency-changing values placed in one broad React Context, re-rendering…"
     },
     {
      "id": "M:8",
-     "title": "Render Loops: setState during render or effect chains re-triggering themselves â€” runawayâ€¦"
+     "title": "Render Loops: setState during render or effect chains re-triggering themselves — runaway…"
     },
     {
      "id": "M:9",
-     "title": "Stale Closures: Effects/callbacks capturing outdated state due to missing or incorrect dâ€¦"
+     "title": "Stale Closures: Effects/callbacks capturing outdated state due to missing or incorrect d…"
     },
     {
      "id": "M:10",
-     "title": "Aborting: Fetches without AbortController â€” unmounted components updating state and raciâ€¦"
+     "title": "Aborting: Fetches without AbortController — unmounted components updating state and raci…"
     },
     {
      "id": "M:11",
-     "title": "Main Thread: Heavy parsing/computation on the UI thread instead of Web Workers â€” long taâ€¦"
+     "title": "Main Thread: Heavy parsing/computation on the UI thread instead of Web Workers — long ta…"
     },
     {
      "id": "M:12",
-     "title": "Animations: Animating layout properties (top/left/width) instead of transform/opacity â€”â€¦"
+     "title": "Animations: Animating layout properties (top/left/width) instead of transform/opacity —…"
     },
     {
      "id": "M:13",
      "title": "A hook called after an early return, so the hook count changes with the component's own visibility state and the render crashes on toggle"
+    },
+    {
+     "id": "M:14",
+     "title": "Above-the-fold autoplay video shipped at source scale with no poster — the largest paint waits on a multi-megabyte decode"
     }
    ]
   },
@@ -1546,19 +1550,19 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "N:1",
-     "title": "a11y: Attaching interactive onClick events to generic <div> or <span> elements without râ€¦"
+     "title": "a11y: Attaching interactive onClick events to generic <div> or <span> elements without r…"
     },
     {
      "id": "N:2",
-     "title": "Focus Traps: Missing focus traps for modal dialogs, allowing users to tab out into the oâ€¦"
+     "title": "Focus Traps: Missing focus traps for modal dialogs, allowing users to tab out into the o…"
     },
     {
      "id": "N:3",
-     "title": "DOM: Direct document.querySelector manipulation bypassing the framework's virtual DOM reâ€¦"
+     "title": "DOM: Direct document.querySelector manipulation bypassing the framework's virtual DOM re…"
     },
     {
      "id": "N:4",
@@ -1578,15 +1582,15 @@
     },
     {
      "id": "N:8",
-     "title": "Error Semantics: Validation errors conveyed by color alone â€” no text/aria-describedby foâ€¦"
+     "title": "Error Semantics: Validation errors conveyed by color alone — no text/aria-describedby fo…"
     },
     {
      "id": "N:9",
-     "title": "Motion: prefers-reduced-motion ignored â€” parallax and auto-playing motion forced on sensâ€¦"
+     "title": "Motion: prefers-reduced-motion ignored — parallax and auto-playing motion forced on sens…"
     },
     {
      "id": "N:10",
-     "title": "Headings: Broken heading hierarchy (h1â†’h4 jumps) destroying screen-reader document outliâ€¦"
+     "title": "Headings: Broken heading hierarchy (h1→h4 jumps) destroying screen-reader document outli…"
     },
     {
      "id": "N:11",
@@ -1594,11 +1598,15 @@
     },
     {
      "id": "N:12",
-     "title": "Skip Links: No skip-to-content link â€” keyboard users tab through the full nav on every pâ€¦"
+     "title": "Skip Links: No skip-to-content link — keyboard users tab through the full nav on every p…"
     },
     {
      "id": "N:13",
      "title": "Design-token indirection consumed in a form the build or the browser cannot resolve, yielding invisible or mis-themed UI with no error"
+    },
+    {
+     "id": "N:14",
+     "title": "Decorative ambient media exposed to assistive tech — background video announced as content"
     }
    ]
   },
@@ -1611,19 +1619,19 @@
    "rules": [
     {
      "id": "O:1",
-     "title": "Environment Variables: Sensitive backend API keys unintentionally prefixed with NEXT_PUBâ€¦"
+     "title": "Environment Variables: Sensitive backend API keys unintentionally prefixed with NEXT_PUB…"
     },
     {
      "id": "O:2",
-     "title": "Edge Caching: Unintentional edge caching of dynamic user-specific pages due to misconfigâ€¦"
+     "title": "Edge Caching: Unintentional edge caching of dynamic user-specific pages due to misconfig…"
     },
     {
      "id": "O:3",
-     "title": "Execution Limits: Vercel Serverless functions processing heavy logic (e.g., PDF generatiâ€¦"
+     "title": "Execution Limits: Vercel Serverless functions processing heavy logic (e.g., PDF generati…"
     },
     {
      "id": "O:4",
-     "title": "Security: Vercel Preview Deployments lacking SSO/Password Protection, leaking unreleasedâ€¦"
+     "title": "Security: Vercel Preview Deployments lacking SSO/Password Protection, leaking unreleased…"
     },
     {
      "id": "O:5",
@@ -1635,27 +1643,27 @@
     },
     {
      "id": "O:7",
-     "title": "ISR: Incremental static regeneration caching one variant of pages that differ for loggedâ€¦"
+     "title": "ISR: Incremental static regeneration caching one variant of pages that differ for logged…"
     },
     {
      "id": "O:8",
-     "title": "Cron: Vercel cron endpoints publicly invokable â€” no CRON_SECRET/authorization check on tâ€¦"
+     "title": "Cron: Vercel cron endpoints publicly invokable — no CRON_SECRET/authorization check on t…"
     },
     {
      "id": "O:9",
-     "title": "Protection Bypass: Deployment-protection bypass tokens committed to repos or shared in pâ€¦"
+     "title": "Protection Bypass: Deployment-protection bypass tokens committed to repos or shared in p…"
     },
     {
      "id": "O:10",
-     "title": "Skew: Version-skew protection unconfigured â€” stale clients call mismatched serverless fuâ€¦"
+     "title": "Skew: Version-skew protection unconfigured — stale clients call mismatched serverless fu…"
     },
     {
      "id": "O:11",
-     "title": "Spend: No spend management/usage alerts â€” traffic spikes (or attacks) convert directly iâ€¦"
+     "title": "Spend: No spend management/usage alerts — traffic spikes (or attacks) convert directly i…"
     },
     {
      "id": "O:12",
-     "title": "Proxying: Rewrites/proxies forwarding internal headers or exposing origin hostnames to câ€¦"
+     "title": "Proxying: Rewrites/proxies forwarding internal headers or exposing origin hostnames to c…"
     }
    ]
   },
@@ -1668,19 +1676,19 @@
    "rules": [
     {
      "id": "P:1",
-     "title": "Webhooks: Stripe webhook handlers immediately parsing req.body without cryptographicallyâ€¦"
+     "title": "Webhooks: Stripe webhook handlers immediately parsing req.body without cryptographically…"
     },
     {
      "id": "P:2",
-     "title": "Idempotency: Mutating API calls (Charges, Subscriptions) missing Idempotency-Key headersâ€¦"
+     "title": "Idempotency: Mutating API calls (Charges, Subscriptions) missing Idempotency-Key headers…"
     },
     {
      "id": "P:3",
-     "title": "Price Trust: Client-side calculating cart totals and sending raw pricing amounts to theâ€¦"
+     "title": "Price Trust: Client-side calculating cart totals and sending raw pricing amounts to the…"
     },
     {
      "id": "P:4",
-     "title": "Webhook Timeouts: Webhook processors blocking synchronously on heavy internal database oâ€¦"
+     "title": "Webhook Timeouts: Webhook processors blocking synchronously on heavy internal database o…"
     },
     {
      "id": "P:5",
@@ -1696,47 +1704,47 @@
     },
     {
      "id": "P:8",
-     "title": "Webhooks: No event.id-keyed dedupe store â€” Stripe's at-least-once delivery double-firesâ€¦"
+     "title": "Webhooks: No event.id-keyed dedupe store — Stripe's at-least-once delivery double-fires…"
     },
     {
      "id": "P:9",
-     "title": "Checkout: Success-URL provisioning without server-side verification of session payment_sâ€¦"
+     "title": "Checkout: Success-URL provisioning without server-side verification of session payment_s…"
     },
     {
      "id": "P:10",
-     "title": "Dunning: past_due/incomplete/unpaid subscription states unhandled â€” no grace logic, no râ€¦"
+     "title": "Dunning: past_due/incomplete/unpaid subscription states unhandled — no grace logic, no r…"
     },
     {
      "id": "P:11",
-     "title": "Keys: Test/live key mixups across environments; no runtime assertion on key prefix (sk_lâ€¦"
+     "title": "Keys: Test/live key mixups across environments; no runtime assertion on key prefix (sk_l…"
     },
     {
      "id": "P:12",
-     "title": "Keys: The full-access secret key used everywhere instead of restricted keys scoped per sâ€¦"
+     "title": "Keys: The full-access secret key used everywhere instead of restricted keys scoped per s…"
     },
     {
      "id": "P:13",
-     "title": "Async Methods: Bank-debit/delayed-notification payment methods treated as instantly finaâ€¦"
+     "title": "Async Methods: Bank-debit/delayed-notification payment methods treated as instantly fina…"
     },
     {
      "id": "P:14",
-     "title": "Disputes: charge.dispute.created/refund events unhandled â€” refunded or disputed customerâ€¦"
+     "title": "Disputes: charge.dispute.created/refund events unhandled — refunded or disputed customer…"
     },
     {
      "id": "P:15",
-     "title": "Amounts: Currency math in floats instead of integer minor units; zero-decimal currenciesâ€¦"
+     "title": "Amounts: Currency math in floats instead of integer minor units; zero-decimal currencies…"
     },
     {
      "id": "P:16",
-     "title": "Proration: Mid-cycle upgrades/downgrades unmodeled â€” entitlement state diverges from bilâ€¦"
+     "title": "Proration: Mid-cycle upgrades/downgrades unmodeled — entitlement state diverges from bil…"
     },
     {
      "id": "P:17",
-     "title": "Portal: Customer Portal configuration allowing plan switches/cancellation flows the applâ€¦"
+     "title": "Portal: Customer Portal configuration allowing plan switches/cancellation flows the appl…"
     },
     {
      "id": "P:18",
-     "title": "Mandates: standing card-on-file charge authorization persisted as bare config â€” no consent artifact, no amount bound, no change notification"
+     "title": "Mandates: standing card-on-file charge authorization persisted as bare config — no consent artifact, no amount bound, no change notification"
     },
     {
      "id": "P:19",
@@ -1757,15 +1765,15 @@
    "rules": [
     {
      "id": "Q:1",
-     "title": "Webhooks: Inbound SMS/Voice webhook endpoints completely missing Request Validation (cheâ€¦"
+     "title": "Webhooks: Inbound SMS/Voice webhook endpoints completely missing Request Validation (che…"
     },
     {
      "id": "Q:2",
-     "title": "Toll Fraud: Outbound SMS logic lacking aggressive user-level rate limiting or CAPTCHA, eâ€¦"
+     "title": "Toll Fraud: Outbound SMS logic lacking aggressive user-level rate limiting or CAPTCHA, e…"
     },
     {
      "id": "Q:3",
-     "title": "TwiML Injection: Unsanitized user inputs dynamically interpolated and returned directlyâ€¦"
+     "title": "TwiML Injection: Unsanitized user inputs dynamically interpolated and returned directly…"
     },
     {
      "id": "Q:4",
@@ -1777,35 +1785,35 @@
     },
     {
      "id": "Q:6",
-     "title": "Geo Permissions: International/premium-rate destinations left enabled, multiplying toll-â€¦"
+     "title": "Geo Permissions: International/premium-rate destinations left enabled, multiplying toll-…"
     },
     {
      "id": "Q:7",
-     "title": "Credentials: Master Auth Token used in app code instead of scoped API keys; no subaccounâ€¦"
+     "title": "Credentials: Master Auth Token used in app code instead of scoped API keys; no subaccoun…"
     },
     {
      "id": "Q:8",
-     "title": "Status Callbacks: Delivery failures invisible â€” no handler for failed/undelivered messagâ€¦"
+     "title": "Status Callbacks: Delivery failures invisible — no handler for failed/undelivered messag…"
     },
     {
      "id": "Q:9",
-     "title": "Voice: No fallback URL on phone-number config â€” a single webhook outage hard-drops liveâ€¦"
+     "title": "Voice: No fallback URL on phone-number config — a single webhook outage hard-drops live…"
     },
     {
      "id": "Q:10",
-     "title": "Media: Inbound MMS media URLs fetched server-side without validation/content-type checksâ€¦"
+     "title": "Media: Inbound MMS media URLs fetched server-side without validation/content-type checks…"
     },
     {
      "id": "Q:11",
-     "title": "Opt-Out: STOP/HELP keywords not honored in custom sending paths â€” direct TCPA liability"
+     "title": "Opt-Out: STOP/HELP keywords not honored in custom sending paths — direct TCPA liability"
     },
     {
      "id": "Q:12",
-     "title": "Streams: Media Streams/ConversationRelay WebSocket endpoints accepting connections withoâ€¦"
+     "title": "Streams: Media Streams/ConversationRelay WebSocket endpoints accepting connections witho…"
     },
     {
      "id": "Q:13",
-     "title": "Throughput: Outbound bursts exceeding carrier/number throughput with no queue â€” 429s andâ€¦"
+     "title": "Throughput: Outbound bursts exceeding carrier/number throughput with no queue — 429s and…"
     },
     {
      "id": "Q:14",
@@ -1817,7 +1825,7 @@
     },
     {
      "id": "Q:16",
-     "title": "Voice: no explicit call-duration ceiling â€” the vendor default (hours) silently governs, while an internal drain budget is mistaken for the call cap"
+     "title": "Voice: no explicit call-duration ceiling — the vendor default (hours) silently governs, while an internal drain budget is mistaken for the call cap"
     },
     {
      "id": "Q:17",
@@ -1834,15 +1842,15 @@
    "rules": [
     {
      "id": "R:1",
-     "title": "Key Exposure: ElevenLabs API Key exposed directly to the frontend/browser to generate auâ€¦"
+     "title": "Key Exposure: ElevenLabs API Key exposed directly to the frontend/browser to generate au…"
     },
     {
      "id": "R:2",
-     "title": "Quota Exhaustion: Backend not caching frequently requested identical TTS snippets in S3/â€¦"
+     "title": "Quota Exhaustion: Backend not caching frequently requested identical TTS snippets in S3/…"
     },
     {
      "id": "R:3",
-     "title": "Latency: Synchronous audio generation blocking the main backend thread instead of streamâ€¦"
+     "title": "Latency: Synchronous audio generation blocking the main backend thread instead of stream…"
     },
     {
      "id": "R:4",
@@ -1854,27 +1862,27 @@
     },
     {
      "id": "R:6",
-     "title": "Cloning: Voice-clone creation without consent verification flows â€” impersonation and likâ€¦"
+     "title": "Cloning: Voice-clone creation without consent verification flows — impersonation and lik…"
     },
     {
      "id": "R:7",
-     "title": "Webhooks: Platform callbacks (e.g., agent events) consumed without HMAC signature verifiâ€¦"
+     "title": "Webhooks: Platform callbacks (e.g., agent events) consumed without HMAC signature verifi…"
     },
     {
      "id": "R:8",
-     "title": "Streaming: No backpressure on TTS streams â€” slow clients balloon server memory per conneâ€¦"
+     "title": "Streaming: No backpressure on TTS streams — slow clients balloon server memory per conne…"
     },
     {
      "id": "R:9",
-     "title": "Input Bounds: Unbounded text length accepted for synthesis â€” one request can burn a montâ€¦"
+     "title": "Input Bounds: Unbounded text length accepted for synthesis — one request can burn a mont…"
     },
     {
      "id": "R:10",
-     "title": "Pinning: Voice/model IDs hardcoded with no fallback â€” upstream deprecation breaks producâ€¦"
+     "title": "Pinning: Voice/model IDs hardcoded with no fallback — upstream deprecation breaks produc…"
     },
     {
      "id": "R:11",
-     "title": "Concurrency: 429/concurrency-limit responses unhandled â€” no queueing, retry budget, or dâ€¦"
+     "title": "Concurrency: 429/concurrency-limit responses unhandled — no queueing, retry budget, or d…"
     },
     {
      "id": "R:12",
@@ -1898,7 +1906,7 @@
     },
     {
      "id": "R:17",
-     "title": "Per-call tool-id overrides resolved from an account-wide nameâ†’id map while the platform mints tool records per agent â€” the override cites records the agent does not own, silently dropped until a vendor-side validation rollout kills every call at initiation"
+     "title": "Per-call tool-id overrides resolved from an account-wide name→id map while the platform mints tool records per agent — the override cites records the agent does not own, silently dropped until a vendor-side validation rollout kills every call at initiation"
     }
    ]
   },
@@ -1927,27 +1935,27 @@
     },
     {
      "id": "S:5",
-     "title": "Async Context: Background jobs and queue consumers running without tenant context propagâ€¦"
+     "title": "Async Context: Background jobs and queue consumers running without tenant context propag…"
     },
     {
      "id": "S:6",
-     "title": "Crypto Isolation: Per-tenant encryption keys promised contractually, but all data encrypâ€¦"
+     "title": "Crypto Isolation: Per-tenant encryption keys promised contractually, but all data encryp…"
     },
     {
      "id": "S:7",
-     "title": "Search: Shared search indexes (OpenSearch/Algolia) queried without enforced tenant filteâ€¦"
+     "title": "Search: Shared search indexes (OpenSearch/Algolia) queried without enforced tenant filte…"
     },
     {
      "id": "S:8",
-     "title": "Offboarding: Tenant deletion leaving orphaned S3 prefixes, queues, schedules, and vectorâ€¦"
+     "title": "Offboarding: Tenant deletion leaving orphaned S3 prefixes, queues, schedules, and vector…"
     },
     {
      "id": "S:9",
-     "title": "Impersonation: Support \"login as customer\" without explicit consent capture, time-boxingâ€¦"
+     "title": "Impersonation: Support \"login as customer\" without explicit consent capture, time-boxing…"
     },
     {
      "id": "S:10",
-     "title": "Limits: Rate/usage limits enforced globally instead of per-tenant â€” one noisy tenant conâ€¦"
+     "title": "Limits: Rate/usage limits enforced globally instead of per-tenant — one noisy tenant con…"
     },
     {
      "id": "S:11",
@@ -1955,7 +1963,7 @@
     },
     {
      "id": "S:12",
-     "title": "Analytics: Cross-tenant aggregate reporting computed without anonymization thresholds â€”â€¦"
+     "title": "Analytics: Cross-tenant aggregate reporting computed without anonymization thresholds —…"
     },
     {
      "id": "S:13",
@@ -1963,7 +1971,7 @@
     },
     {
      "id": "S:14",
-     "title": "Rows written under a retired provisioning flow persist in live tenant tables â€” current code refuses or misreads them"
+     "title": "Rows written under a retired provisioning flow persist in live tenant tables — current code refuses or misreads them"
     },
     {
      "id": "S:15",
@@ -1996,7 +2004,7 @@
     },
     {
      "id": "T:5",
-     "title": "JWT Claims: aud/iss/exp/nbf unvalidated â€” tokens minted for other apps in the same IdP aâ€¦"
+     "title": "JWT Claims: aud/iss/exp/nbf unvalidated — tokens minted for other apps in the same IdP a…"
     },
     {
      "id": "T:6",
@@ -2004,39 +2012,39 @@
     },
     {
      "id": "T:7",
-     "title": "Reset Tokens: Password-reset tokens long-lived, multi-use, or surviving a successful pasâ€¦"
+     "title": "Reset Tokens: Password-reset tokens long-lived, multi-use, or surviving a successful pas…"
     },
     {
      "id": "T:8",
-     "title": "OAuth: Public clients without PKCE; state parameter unchecked â€” auth-code interception aâ€¦"
+     "title": "OAuth: Public clients without PKCE; state parameter unchecked — auth-code interception a…"
     },
     {
      "id": "T:9",
-     "title": "MFA: Step-up/re-auth absent on sensitive operations; recovery paths (SMS, backup email)â€¦"
+     "title": "MFA: Step-up/re-auth absent on sensitive operations; recovery paths (SMS, backup email)…"
     },
     {
      "id": "T:10",
-     "title": "BOLA/IDOR: Authorization checked at the route level but not per-object in service/data lâ€¦"
+     "title": "BOLA/IDOR: Authorization checked at the route level but not per-object in service/data l…"
     },
     {
      "id": "T:11",
-     "title": "Staleness: Role/permission changes only take effect at next login â€” no token refresh orâ€¦"
+     "title": "Staleness: Role/permission changes only take effect at next login — no token refresh or…"
     },
     {
      "id": "T:12",
-     "title": "Brute Force: Login, OTP, and reset endpoints without progressive delays, lockouts, or deâ€¦"
+     "title": "Brute Force: Login, OTP, and reset endpoints without progressive delays, lockouts, or de…"
     },
     {
      "id": "T:13",
-     "title": "JWKS: Key sets fetched per-request without caching/kid handling â€” or cached forever, breâ€¦"
+     "title": "JWKS: Key sets fetched per-request without caching/kid handling — or cached forever, bre…"
     },
     {
      "id": "T:14",
-     "title": "Logout: Client-side-only logout â€” the server session and refresh token remain valid"
+     "title": "Logout: Client-side-only logout — the server session and refresh token remain valid"
     },
     {
      "id": "T:15",
-     "title": "Email Change: Address changes without re-verifying both old and new addresses â€” a silentâ€¦"
+     "title": "Email Change: Address changes without re-verifying both old and new addresses — a silent…"
     },
     {
      "id": "T:16",
@@ -2044,7 +2052,7 @@
     },
     {
      "id": "T:17",
-     "title": "Cookie Scope: Cookie-conditioned server behavior unreachable under the cookie's own scoping â€” Strict cookies expected on cross-site callbacks"
+     "title": "Cookie Scope: Cookie-conditioned server behavior unreachable under the cookie's own scoping — Strict cookies expected on cross-site callbacks"
     },
     {
      "id": "T:18",
@@ -2084,11 +2092,11 @@
     },
     {
      "id": "T:27",
-     "title": "System-context credential path carries an end-user identity attribute the privilege boundary forbids â€” the lane fails on every invocation"
+     "title": "System-context credential path carries an end-user identity attribute the privilege boundary forbids — the lane fails on every invocation"
     },
     {
      "id": "T:28",
-     "title": "Verdict discard: transport success conflated with semantic approval â€” 200-with-negative-verdict treated as verified"
+     "title": "Verdict discard: transport success conflated with semantic approval — 200-with-negative-verdict treated as verified"
     },
     {
      "id": "T:29",
@@ -2125,7 +2133,7 @@
     },
     {
      "id": "U:3",
-     "title": "Container Bloat: Building Production Container Images from Untrusted, Unscanned Base Disâ€¦"
+     "title": "Container Bloat: Building Production Container Images from Untrusted, Unscanned Base Dis…"
     },
     {
      "id": "U:4",
@@ -2133,47 +2141,47 @@
     },
     {
      "id": "U:5",
-     "title": "Lockfiles: Not committed or not enforced in CI (install vs ci) â€” builds non-reproducibleâ€¦"
+     "title": "Lockfiles: Not committed or not enforced in CI (install vs ci) — builds non-reproducible…"
     },
     {
      "id": "U:6",
-     "title": "SCA: No dependency-vulnerability gate (osv-scanner/npm audit/Dependabot) â€” known-CVE depâ€¦"
+     "title": "SCA: No dependency-vulnerability gate (osv-scanner/npm audit/Dependabot) — known-CVE dep…"
     },
     {
      "id": "U:7",
-     "title": "Secret Scanning: No gitleaks/trufflehog hook on push â€” credentials reach remote historyâ€¦"
+     "title": "Secret Scanning: No gitleaks/trufflehog hook on push — credentials reach remote history…"
     },
     {
      "id": "U:8",
-     "title": "Actions Pinning: Third-party CI actions referenced by mutable tags instead of commit SHAâ€¦"
+     "title": "Actions Pinning: Third-party CI actions referenced by mutable tags instead of commit SHA…"
     },
     {
      "id": "U:9",
-     "title": "Privilege: One deploy credential spanning environments â€” the staging pipeline can mutateâ€¦"
+     "title": "Privilege: One deploy credential spanning environments — the staging pipeline can mutate…"
     },
     {
      "id": "U:10",
-     "title": "Rollback: Forward-only deploys with no rehearsed revert path â€” incident recovery is \"fixâ€¦"
+     "title": "Rollback: Forward-only deploys with no rehearsed revert path — incident recovery is \"fix…"
     },
     {
      "id": "U:11",
-     "title": "Smoke Tests: No post-deploy verification â€” failure detection is user complaints"
+     "title": "Smoke Tests: No post-deploy verification — failure detection is user complaints"
     },
     {
      "id": "U:12",
-     "title": "Parity: Staging drifts from production (config, data shape, scale) until a green stagingâ€¦"
+     "title": "Parity: Staging drifts from production (config, data shape, scale) until a green staging…"
     },
     {
      "id": "U:13",
-     "title": "ClickOps: Manual console changes uncaptured by IaC, undetected by drift checks, lost onâ€¦"
+     "title": "ClickOps: Manual console changes uncaptured by IaC, undetected by drift checks, lost on…"
     },
     {
      "id": "U:14",
-     "title": "Install Scripts: Dependency postinstall scripts executing in CI runners that hold secretâ€¦"
+     "title": "Install Scripts: Dependency postinstall scripts executing in CI runners that hold secret…"
     },
     {
      "id": "U:15",
-     "title": "Permissions: CI workflow tokens (GITHUB_TOKEN) with default write-all permissions insteaâ€¦"
+     "title": "Permissions: CI workflow tokens (GITHUB_TOKEN) with default write-all permissions instea…"
     },
     {
      "id": "U:16",
@@ -2181,7 +2189,7 @@
     },
     {
      "id": "U:17",
-     "title": "Gate Liveness: a pipeline gate's per-item client retry worst-case exceeds the gate's own kill timeout, with no progress output â€” one wedged connection reads as \"gate too slow\" and the control gets bypassed or deleted"
+     "title": "Gate Liveness: a pipeline gate's per-item client retry worst-case exceeds the gate's own kill timeout, with no progress output — one wedged connection reads as \"gate too slow\" and the control gets bypassed or deleted"
     },
     {
      "id": "U:18",
@@ -2270,7 +2278,7 @@
     },
     {
      "id": "V:5",
-     "title": "Overlap: Job runtime exceeding its schedule interval without overlap locks â€” concurrentâ€¦"
+     "title": "Overlap: Job runtime exceeding its schedule interval without overlap locks — concurrent…"
     },
     {
      "id": "V:6",
@@ -2278,27 +2286,27 @@
     },
     {
      "id": "V:7",
-     "title": "Duplication: Schedules defined both in code and infrastructure â€” the same job firing twiâ€¦"
+     "title": "Duplication: Schedules defined both in code and infrastructure — the same job firing twi…"
     },
     {
      "id": "V:8",
-     "title": "Silent Death: No \"last successful run\" monitoring â€” dead cron jobs discovered weeks lateâ€¦"
+     "title": "Silent Death: No \"last successful run\" monitoring — dead cron jobs discovered weeks late…"
     },
     {
      "id": "V:9",
-     "title": "Retry Storms: Failed jobs requeued without backoff or retry budgets, amplifying downstreâ€¦"
+     "title": "Retry Storms: Failed jobs requeued without backoff or retry budgets, amplifying downstre…"
     },
     {
      "id": "V:10",
-     "title": "Checkpointing: Long batch jobs without progress checkpoints â€” any restart reprocesses frâ€¦"
+     "title": "Checkpointing: Long batch jobs without progress checkpoints — any restart reprocesses fr…"
     },
     {
      "id": "V:11",
-     "title": "Scaling Signal: Workers autoscaled on CPU instead of queue depth/age â€” backlog grows whiâ€¦"
+     "title": "Scaling Signal: Workers autoscaled on CPU instead of queue depth/age — backlog grows whi…"
     },
     {
      "id": "V:12",
-     "title": "Lease Extension: Long tasks exceeding visibility/lease timeouts without heartbeat extensâ€¦"
+     "title": "Lease Extension: Long tasks exceeding visibility/lease timeouts without heartbeat extens…"
     },
     {
      "id": "V:13",
@@ -2359,39 +2367,39 @@
     },
     {
      "id": "W:6",
-     "title": "Pagination: Page-size parameters honored unbounded â€” limit=100000 enables bulk extractioâ€¦"
+     "title": "Pagination: Page-size parameters honored unbounded — limit=100000 enables bulk extractio…"
     },
     {
      "id": "W:7",
-     "title": "Mass Assignment: Request bodies bound wholesale to models â€” isAdmin/tenantId settable viâ€¦"
+     "title": "Mass Assignment: Request bodies bound wholesale to models — isAdmin/tenantId settable vi…"
     },
     {
      "id": "W:8",
-     "title": "Error Hygiene: Stack traces, internal hostnames, and dependency versions leaking in APIâ€¦"
+     "title": "Error Hygiene: Stack traces, internal hostnames, and dependency versions leaking in API…"
     },
     {
      "id": "W:9",
-     "title": "Versioning: No API versioning/deprecation policy â€” breaking changes ship under the sameâ€¦"
+     "title": "Versioning: No API versioning/deprecation policy — breaking changes ship under the same…"
     },
     {
      "id": "W:10",
-     "title": "Enumeration: 404-vs-403 semantics and timing differences confirming which resources/userâ€¦"
+     "title": "Enumeration: 404-vs-403 semantics and timing differences confirming which resources/user…"
     },
     {
      "id": "W:11",
-     "title": "Cache Headers: Private API responses emitted without Cache-Control: private/no-store â€” sâ€¦"
+     "title": "Cache Headers: Private API responses emitted without Cache-Control: private/no-store — s…"
     },
     {
      "id": "W:12",
-     "title": "Replay: Signed/webhook-style requests without timestamp+nonce windows â€” captured requestâ€¦"
+     "title": "Replay: Signed/webhook-style requests without timestamp+nonce windows — captured request…"
     },
     {
      "id": "W:13",
-     "title": "Parsers: Content-Type not enforced â€” XML/multipart parsers reachable on JSON endpoints (â€¦"
+     "title": "Parsers: Content-Type not enforced — XML/multipart parsers reachable on JSON endpoints (…"
     },
     {
      "id": "W:14",
-     "title": "ReDoS: User-supplied search/filter input compiled into regexes without escaping or timeoâ€¦"
+     "title": "ReDoS: User-supplied search/filter input compiled into regexes without escaping or timeo…"
     },
     {
      "id": "W:15",
@@ -2444,7 +2452,7 @@
     },
     {
      "id": "X:3",
-     "title": "Cascade Failures: Missing Circuit Breaker Infrastructure on Fragile Downstream Integratiâ€¦"
+     "title": "Cascade Failures: Missing Circuit Breaker Infrastructure on Fragile Downstream Integrati…"
     },
     {
      "id": "X:4",
@@ -2452,35 +2460,35 @@
     },
     {
      "id": "X:5",
-     "title": "Objectives: RTO/RPO undefined â€” backup cadence and architecture never derived from actuaâ€¦"
+     "title": "Objectives: RTO/RPO undefined — backup cadence and architecture never derived from actua…"
     },
     {
      "id": "X:6",
-     "title": "Restore Tests: Backups never restore-tested end-to-end â€” recovery confidence is purely tâ€¦"
+     "title": "Restore Tests: Backups never restore-tested end-to-end — recovery confidence is purely t…"
     },
     {
      "id": "X:7",
-     "title": "Health Checks: Shallow checks (static 200) hiding dead dependencies â€” or over-deep checkâ€¦"
+     "title": "Health Checks: Shallow checks (static 200) hiding dead dependencies — or over-deep check…"
     },
     {
      "id": "X:8",
-     "title": "Timeout Budgets: Nested timeouts not budgeted (caller waits 30s on a dependency that retâ€¦"
+     "title": "Timeout Budgets: Nested timeouts not budgeted (caller waits 30s on a dependency that ret…"
     },
     {
      "id": "X:9",
-     "title": "Idempotency: Write retries during incidents without idempotency keys â€” duplicated side eâ€¦"
+     "title": "Idempotency: Write retries during incidents without idempotency keys — duplicated side e…"
     },
     {
      "id": "X:10",
-     "title": "Load Shedding: No feature-flag kill switches or degradation tiers â€” the only choice duriâ€¦"
+     "title": "Load Shedding: No feature-flag kill switches or degradation tiers — the only choice duri…"
     },
     {
      "id": "X:11",
-     "title": "SPOFs: Single NAT/queue/region/third-party dependencies with no documented fallback or aâ€¦"
+     "title": "SPOFs: Single NAT/queue/region/third-party dependencies with no documented fallback or a…"
     },
     {
      "id": "X:12",
-     "title": "Quotas: Service limits (Lambda concurrency, SES rate, connection caps) unmonitored untilâ€¦"
+     "title": "Quotas: Service limits (Lambda concurrency, SES rate, connection caps) unmonitored until…"
     },
     {
      "id": "X:13",
@@ -2517,11 +2525,11 @@
     },
     {
      "id": "Y:5",
-     "title": "Retention: No per-data-class retention schedule â€” everything retained indefinitely \"justâ€¦"
+     "title": "Retention: No per-data-class retention schedule — everything retained indefinitely \"just…"
     },
     {
      "id": "Y:6",
-     "title": "DSAR: Subject access/export requests handled by ad-hoc production DB queries â€” slow, errâ€¦"
+     "title": "DSAR: Subject access/export requests handled by ad-hoc production DB queries — slow, err…"
     },
     {
      "id": "Y:7",
@@ -2529,19 +2537,19 @@
     },
     {
      "id": "Y:8",
-     "title": "Subprocessors: Vendor list stale; data flowing to tools without DPAs or documented transâ€¦"
+     "title": "Subprocessors: Vendor list stale; data flowing to tools without DPAs or documented trans…"
     },
     {
      "id": "Y:9",
-     "title": "Claims Drift: Security/privacy policy claims (encryption, retention) not matching the acâ€¦"
+     "title": "Claims Drift: Security/privacy policy claims (encryption, retention) not matching the ac…"
     },
     {
      "id": "Y:10",
-     "title": "Access Reviews: No periodic review of who holds production data access; departed-employeâ€¦"
+     "title": "Access Reviews: No periodic review of who holds production data access; departed-employe…"
     },
     {
      "id": "Y:11",
-     "title": "Justification: Admin reads of customer data without actor, reason, and ticket referenceâ€¦"
+     "title": "Justification: Admin reads of customer data without actor, reason, and ticket reference…"
     },
     {
      "id": "Y:12",
@@ -2553,11 +2561,11 @@
     },
     {
      "id": "Y:14",
-     "title": "Analytics PII: Session-replay/product-analytics tooling capturing form inputs and identiâ€¦"
+     "title": "Analytics PII: Session-replay/product-analytics tooling capturing form inputs and identi…"
     },
     {
      "id": "Y:15",
-     "title": "Consent evidence exists only inside transient or co-mingled artifacts â€” no durable per-subject consent record, so send-eligibility is unprovable"
+     "title": "Consent evidence exists only inside transient or co-mingled artifacts — no durable per-subject consent record, so send-eligibility is unprovable"
     }
    ]
   },
@@ -2586,35 +2594,35 @@
     },
     {
      "id": "Z:5",
-     "title": "Replay: Signature schemes without timestamps â€” captured payloads stay valid forever"
+     "title": "Replay: Signature schemes without timestamps — captured payloads stay valid forever"
     },
     {
      "id": "Z:6",
-     "title": "Secret Rotation: Per-endpoint webhook secrets not rotatable with a dual-secret overlap wâ€¦"
+     "title": "Secret Rotation: Per-endpoint webhook secrets not rotatable with a dual-secret overlap w…"
     },
     {
      "id": "Z:7",
-     "title": "Timeouts: Dispatchers without per-delivery timeouts â€” one slow subscriber stalls the shaâ€¦"
+     "title": "Timeouts: Dispatchers without per-delivery timeouts — one slow subscriber stalls the sha…"
     },
     {
      "id": "Z:8",
-     "title": "Visibility: No customer-facing delivery log/dead-letter view â€” subscribers can't see whaâ€¦"
+     "title": "Visibility: No customer-facing delivery log/dead-letter view — subscribers can't see wha…"
     },
     {
      "id": "Z:9",
-     "title": "Payload Scope: Full PII objects pushed in webhook bodies instead of IDs + authenticatedâ€¦"
+     "title": "Payload Scope: Full PII objects pushed in webhook bodies instead of IDs + authenticated…"
     },
     {
      "id": "Z:10",
-     "title": "Redirects: Outbound webhook clients following 3xx responses â€” a validated URL redirectsâ€¦"
+     "title": "Redirects: Outbound webhook clients following 3xx responses — a validated URL redirects…"
     },
     {
      "id": "Z:11",
-     "title": "TOCTOU: Target URL validated at registration only â€” DNS rebinding flips it to an internaâ€¦"
+     "title": "TOCTOU: Target URL validated at registration only — DNS rebinding flips it to an interna…"
     },
     {
      "id": "Z:12",
-     "title": "The callback route goes live in one deploy unit and its gateway-to-function invoke grant in another, so the vendor's POSTs die at the gateway during the window â€” and fire-and-forget callbacks never tell anyone"
+     "title": "The callback route goes live in one deploy unit and its gateway-to-function invoke grant in another, so the vendor's POSTs die at the gateway during the window — and fire-and-forget callbacks never tell anyone"
     }
    ]
   },
@@ -2643,7 +2651,7 @@
     },
     {
      "id": "AA:5",
-     "title": "Tool Scope: Agents granted broad state-mutating API surfaces for read-mostly tasks â€” blaâ€¦"
+     "title": "Tool Scope: Agents granted broad state-mutating API surfaces for read-mostly tasks — bla…"
     },
     {
      "id": "AA:6",
@@ -2651,27 +2659,27 @@
     },
     {
      "id": "AA:7",
-     "title": "Citations: RAG answers without source attribution â€” unverifiable claims presented as fact"
+     "title": "Citations: RAG answers without source attribution — unverifiable claims presented as fact"
     },
     {
      "id": "AA:8",
-     "title": "Index Drift: Embedding model upgraded without a full index rebuild â€” mixed vector spacesâ€¦"
+     "title": "Index Drift: Embedding model upgraded without a full index rebuild — mixed vector spaces…"
     },
     {
      "id": "AA:9",
-     "title": "Deletion Sync: Source-document deletion not propagated to vector indexes â€” \"deleted\" conâ€¦"
+     "title": "Deletion Sync: Source-document deletion not propagated to vector indexes — \"deleted\" con…"
     },
     {
      "id": "AA:10",
-     "title": "Execution: Agent output executed as code/SQL/shell without sandboxing or allowlisted opeâ€¦"
+     "title": "Execution: Agent output executed as code/SQL/shell without sandboxing or allowlisted ope…"
     },
     {
      "id": "AA:11",
-     "title": "Metadata Injection: Retrieved chunk metadata (filenames, titles) interpolated into prompâ€¦"
+     "title": "Metadata Injection: Retrieved chunk metadata (filenames, titles) interpolated into promp…"
     },
     {
      "id": "AA:12",
-     "title": "Evals: Prompt/model changes shipped without a regression evaluation suite â€” quality drifâ€¦"
+     "title": "Evals: Prompt/model changes shipped without a regression evaluation suite — quality drif…"
     },
     {
      "id": "AA:13",
@@ -2683,15 +2691,15 @@
     },
     {
      "id": "AA:15",
-     "title": "Untrusted text fenced into a prompt by a literal delimiter the untrusted text is free to emit â€” a forgeable boundary read as isolation"
+     "title": "Untrusted text fenced into a prompt by a literal delimiter the untrusted text is free to emit — a forgeable boundary read as isolation"
     },
     {
      "id": "AA:16",
-     "title": "Compliance-relevant caller challenges (recording objection, consent refusal) have no grounded state and no designed path â€” the agent improvises legally-consequential assurances"
+     "title": "Compliance-relevant caller challenges (recording objection, consent refusal) have no grounded state and no designed path — the agent improvises legally-consequential assurances"
     },
     {
      "id": "AA:17",
-     "title": "Interaction lanes hand the agent partial views of the domain â€” attributes and context present in the system never reach the lane where the conversation needs them"
+     "title": "Interaction lanes hand the agent partial views of the domain — attributes and context present in the system never reach the lane where the conversation needs them"
     }
    ]
   },
@@ -2720,27 +2728,27 @@
     },
     {
      "id": "BB:5",
-     "title": "Cache Trust: Untrusted PR builds permitted to write to the shared remote build cache â€” aâ€¦"
+     "title": "Cache Trust: Untrusted PR builds permitted to write to the shared remote build cache — a…"
     },
     {
      "id": "BB:6",
-     "title": "Inputs: Task hash inputs undeclared (env vars, config files) â€” stale cache hits ship outâ€¦"
+     "title": "Inputs: Task hash inputs undeclared (env vars, config files) — stale cache hits ship out…"
     },
     {
      "id": "BB:7",
-     "title": "Config Drift: Per-package TypeScript/ESLint configs diverging â€” safety guarantees vary sâ€¦"
+     "title": "Config Drift: Per-package TypeScript/ESLint configs diverging — safety guarantees vary s…"
     },
     {
      "id": "BB:8",
-     "title": "Dependency Confusion: Internal package names unscoped/unregistered publicly â€” an attackeâ€¦"
+     "title": "Dependency Confusion: Internal package names unscoped/unregistered publicly — an attacke…"
     },
     {
      "id": "BB:9",
-     "title": "Define Leaks: Bundler define/env replacement inlining server-only constants into clientâ€¦"
+     "title": "Define Leaks: Bundler define/env replacement inlining server-only constants into client…"
     },
     {
      "id": "BB:10",
-     "title": "Type Gates: Transpile-only builds (esbuild/swc) in CI without a separate typecheck stepâ€¦"
+     "title": "Type Gates: Transpile-only builds (esbuild/swc) in CI without a separate typecheck step…"
     },
     {
      "id": "BB:11",
@@ -2761,31 +2769,31 @@
    "rules": [
     {
      "id": "CC:1",
-     "title": "State: Terraform state without a remote encrypted backend + locking â€” concurrent appliesâ€¦"
+     "title": "State: Terraform state without a remote encrypted backend + locking — concurrent applies…"
     },
     {
      "id": "CC:2",
-     "title": "State Access: State files containing secrets in plaintext; the state bucket readable farâ€¦"
+     "title": "State Access: State files containing secrets in plaintext; the state bucket readable far…"
     },
     {
      "id": "CC:3",
-     "title": "Plan Gates: Applies executed without a reviewed plan diff (human or CI policy check) â€” sâ€¦"
+     "title": "Plan Gates: Applies executed without a reviewed plan diff (human or CI policy check) — s…"
     },
     {
      "id": "CC:4",
-     "title": "ignore_changes: lifecycle.ignore_changes masking drift on security-relevant attributes (â€¦"
+     "title": "ignore_changes: lifecycle.ignore_changes masking drift on security-relevant attributes (…"
     },
     {
      "id": "CC:5",
-     "title": "Pinning: Providers and modules unpinned â€” applies pull breaking upstream changes nondeteâ€¦"
+     "title": "Pinning: Providers and modules unpinned — applies pull breaking upstream changes nondete…"
     },
     {
      "id": "CC:6",
-     "title": "Keys: count/for_each keyed on mutable values â€” innocuous edits churn and recreate statefâ€¦"
+     "title": "Keys: count/for_each keyed on mutable values — innocuous edits churn and recreate statef…"
     },
     {
      "id": "CC:7",
-     "title": "Destroy Guards: No prevent_destroy/deletion protection on databases, state stores, and Kâ€¦"
+     "title": "Destroy Guards: No prevent_destroy/deletion protection on databases, state stores, and K…"
     },
     {
      "id": "CC:8",
@@ -2793,11 +2801,11 @@
     },
     {
      "id": "CC:9",
-     "title": "Data Sources: \"Latest\" lookups (AMIs, certs) without stable filter chains that survive râ€¦"
+     "title": "Data Sources: \"Latest\" lookups (AMIs, certs) without stable filter chains that survive r…"
     },
     {
      "id": "CC:10",
-     "title": "Orphans: Resources removed from code but left running (state rm misuse) â€” unmanaged, unpâ€¦"
+     "title": "Orphans: Resources removed from code but left running (state rm misuse) — unmanaged, unp…"
     },
     {
      "id": "CC:11",
@@ -2813,7 +2821,7 @@
     },
     {
      "id": "CC:14",
-     "title": "An honest apply of a singleton policy enumerates only the consumers IaC knows â€” out-of-band consumers are revoked silently"
+     "title": "An honest apply of a singleton policy enumerates only the consumers IaC knows — out-of-band consumers are revoked silently"
     },
     {
      "id": "CC:15",
@@ -2854,15 +2862,15 @@
    "rules": [
     {
      "id": "DD:1",
-     "title": "Flag Debt: Flags without owners and expiry dates â€” permanent dead branches accumulatingâ€¦"
+     "title": "Flag Debt: Flags without owners and expiry dates — permanent dead branches accumulating…"
     },
     {
      "id": "DD:2",
-     "title": "Validators: Config deployments without schema/semantic validators â€” malformed config shiâ€¦"
+     "title": "Validators: Config deployments without schema/semantic validators — malformed config shi…"
     },
     {
      "id": "DD:3",
-     "title": "Versioning: Config documents unversioned â€” consumers parse blind and break on shape chanâ€¦"
+     "title": "Versioning: Config documents unversioned — consumers parse blind and break on shape chan…"
     },
     {
      "id": "DD:4",
@@ -2870,19 +2878,19 @@
     },
     {
      "id": "DD:5",
-     "title": "Exposure: Client-evaluated flags shipping unreleased feature logic inside the public bunâ€¦"
+     "title": "Exposure: Client-evaluated flags shipping unreleased feature logic inside the public bun…"
     },
     {
      "id": "DD:6",
-     "title": "Kill Switch: Config cache TTLs so long that the emergency kill switch takes effect in hoâ€¦"
+     "title": "Kill Switch: Config cache TTLs so long that the emergency kill switch takes effect in ho…"
     },
     {
      "id": "DD:7",
-     "title": "Sentinels: Placeholder values not treated as boot-fatal â€” services run on \"placeholder-sâ€¦"
+     "title": "Sentinels: Placeholder values not treated as boot-fatal — services run on \"placeholder-s…"
     },
     {
      "id": "DD:8",
-     "title": "Store Misuse: Secrets embedded in non-secret config documents (AppConfig/JSON) instead oâ€¦"
+     "title": "Store Misuse: Secrets embedded in non-secret config documents (AppConfig/JSON) instead o…"
     },
     {
      "id": "DD:9",
@@ -2914,7 +2922,7 @@
     },
     {
      "id": "DD:16",
-     "title": "Replace-semantics update API re-stated by hand â€” every omitted field silently resets, including by the factory's own harden step"
+     "title": "Replace-semantics update API re-stated by hand — every omitted field silently resets, including by the factory's own harden step"
     },
     {
      "id": "DD:17",
@@ -2963,35 +2971,35 @@
    "rules": [
     {
      "id": "EE:1",
-     "title": "Upgrade Auth: WS connections accepted without authenticating the upgrade/$connect â€” authâ€¦"
+     "title": "Upgrade Auth: WS connections accepted without authenticating the upgrade/$connect — auth…"
     },
     {
      "id": "EE:2",
-     "title": "Heartbeats: No ping/pong idle detection â€” zombie connections exhaust connection quotas"
+     "title": "Heartbeats: No ping/pong idle detection — zombie connections exhaust connection quotas"
     },
     {
      "id": "EE:3",
-     "title": "Fan-out AuthZ: Broadcasts pushing full objects to every subscriber without per-recipientâ€¦"
+     "title": "Fan-out AuthZ: Broadcasts pushing full objects to every subscriber without per-recipient…"
     },
     {
      "id": "EE:4",
-     "title": "Reconnect Storms: Deploy-triggered mass reconnects without jittered backoff â€” a self-infâ€¦"
+     "title": "Reconnect Storms: Deploy-triggered mass reconnects without jittered backoff — a self-inf…"
     },
     {
      "id": "EE:5",
-     "title": "Gap Recovery: No resume cursor/sequence numbers â€” events emitted during a reconnect windâ€¦"
+     "title": "Gap Recovery: No resume cursor/sequence numbers — events emitted during a reconnect wind…"
     },
     {
      "id": "EE:6",
-     "title": "Connection Hygiene: Stale connection IDs never purged from the connection table; sends tâ€¦"
+     "title": "Connection Hygiene: Stale connection IDs never purged from the connection table; sends t…"
     },
     {
      "id": "EE:7",
-     "title": "Backpressure: Per-client send queues unbounded â€” one slow consumer balloons server memory"
+     "title": "Backpressure: Per-client send queues unbounded — one slow consumer balloons server memory"
     },
     {
      "id": "EE:8",
-     "title": "SSE: Event streams behind buffering proxies/CDNs without no-buffering headers â€” \"real-tiâ€¦"
+     "title": "SSE: Event streams behind buffering proxies/CDNs without no-buffering headers — \"real-ti…"
     },
     {
      "id": "EE:9",
@@ -3007,7 +3015,7 @@
     },
     {
      "id": "EE:12",
-     "title": "Pre-authentication frame buffer bounded by entry count while each entry is attacker-sized, so the real ceiling is count Ã— max-payload"
+     "title": "Pre-authentication frame buffer bounded by entry count while each entry is attacker-sized, so the real ceiling is count × max-payload"
     },
     {
      "id": "EE:13",
@@ -3024,15 +3032,15 @@
    "rules": [
     {
      "id": "FF:1",
-     "title": "Auth: SPF/DKIM/DMARC unconfigured, or DMARC parked at p=none indefinitely â€” the domain râ€¦"
+     "title": "Auth: SPF/DKIM/DMARC unconfigured, or DMARC parked at p=none indefinitely — the domain r…"
     },
     {
      "id": "FF:2",
-     "title": "Reputation: Bounce/complaint feedback loops unhandled â€” SES/SendGrid suspends sending atâ€¦"
+     "title": "Reputation: Bounce/complaint feedback loops unhandled — SES/SendGrid suspends sending at…"
     },
     {
      "id": "FF:3",
-     "title": "Suppression: No suppression-list check before send â€” repeatedly mailing hard-bounced andâ€¦"
+     "title": "Suppression: No suppression-list check before send — repeatedly mailing hard-bounced and…"
     },
     {
      "id": "FF:4",
@@ -3044,15 +3052,15 @@
     },
     {
      "id": "FF:6",
-     "title": "Environments: Staging sharing the production sending domain â€” test blasts damage productâ€¦"
+     "title": "Environments: Staging sharing the production sending domain — test blasts damage product…"
     },
     {
      "id": "FF:7",
-     "title": "Criticality Tiers: OTP/security email sharing queues and rate limits with marketing â€” loâ€¦"
+     "title": "Criticality Tiers: OTP/security email sharing queues and rate limits with marketing — lo…"
     },
     {
      "id": "FF:8",
-     "title": "Transport: Outbound sending configuration leaves TLS optional â€” silent downgrade to cleartext SMTP"
+     "title": "Transport: Outbound sending configuration leaves TLS optional — silent downgrade to cleartext SMTP"
     }
    ]
   },
@@ -3065,23 +3073,23 @@
    "rules": [
     {
      "id": "GG:1",
-     "title": "Attribution: No per-feature/per-tenant cost attribution â€” unit economics unknowable"
+     "title": "Attribution: No per-feature/per-tenant cost attribution — unit economics unknowable"
     },
     {
      "id": "GG:2",
-     "title": "Idle Waste: Unattached EIPs, idle load balancers, stopped-instance EBS volumes, and agedâ€¦"
+     "title": "Idle Waste: Unattached EIPs, idle load balancers, stopped-instance EBS volumes, and aged…"
     },
     {
      "id": "GG:3",
-     "title": "Transfer: Cross-AZ and egress data-transfer patterns unexamined â€” architecture decisionsâ€¦"
+     "title": "Transfer: Cross-AZ and egress data-transfer patterns unexamined — architecture decisions…"
     },
     {
      "id": "GG:4",
-     "title": "Log Spend: Debug-level logging at production scale â€” CloudWatch ingestion quietly dominaâ€¦"
+     "title": "Log Spend: Debug-level logging at production scale — CloudWatch ingestion quietly domina…"
     },
     {
      "id": "GG:5",
-     "title": "Tuning: Lambda memory/timeout never profiled (power-tuned) â€” paying for headroom that adâ€¦"
+     "title": "Tuning: Lambda memory/timeout never profiled (power-tuned) — paying for headroom that ad…"
     },
     {
      "id": "GG:6",
@@ -3089,7 +3097,7 @@
     },
     {
      "id": "GG:7",
-     "title": "Commitments: Savings Plans/Reserved coverage unmanaged â€” 100% on-demand pricing for steaâ€¦"
+     "title": "Commitments: Savings Plans/Reserved coverage unmanaged — 100% on-demand pricing for stea…"
     },
     {
      "id": "GG:8",
@@ -3106,11 +3114,11 @@
    "rules": [
     {
      "id": "HH:1",
-     "title": "Embedded Secrets: API keys/secrets compiled into the app binary â€” extractable with strinâ€¦"
+     "title": "Embedded Secrets: API keys/secrets compiled into the app binary — extractable with strin…"
     },
     {
      "id": "HH:2",
-     "title": "Pinning: Certificate/public-key pinning absent â€” or hard-pinned with no rotation path, bâ€¦"
+     "title": "Pinning: Certificate/public-key pinning absent — or hard-pinned with no rotation path, b…"
     },
     {
      "id": "HH:3",
@@ -3118,15 +3126,15 @@
     },
     {
      "id": "HH:4",
-     "title": "Deep Links: Universal/app links processing unvalidated parameters straight into navigatiâ€¦"
+     "title": "Deep Links: Universal/app links processing unvalidated parameters straight into navigati…"
     },
     {
      "id": "HH:5",
-     "title": "Version Gates: No minimum-supported-version enforcement â€” ancient clients hit removed APâ€¦"
+     "title": "Version Gates: No minimum-supported-version enforcement — ancient clients hit removed AP…"
     },
     {
      "id": "HH:6",
-     "title": "Push Hygiene: Push tokens not unregistered on logout â€” notifications (with content) reacâ€¦"
+     "title": "Push Hygiene: Push tokens not unregistered on logout — notifications (with content) reac…"
     },
     {
      "id": "HH:7",
@@ -3134,7 +3142,7 @@
     },
     {
      "id": "HH:8",
-     "title": "ATS: App Transport Security exceptions permitting cleartext HTTP \"temporarily, for one eâ€¦"
+     "title": "ATS: App Transport Security exceptions permitting cleartext HTTP \"temporarily, for one e…"
     },
     {
      "id": "HH:9",
@@ -3175,7 +3183,7 @@
     },
     {
      "id": "II:6",
-     "title": "Events applied without ordering guards â€” stale data overwrites newer"
+     "title": "Events applied without ordering guards — stale data overwrites newer"
     },
     {
      "id": "II:7",
@@ -3304,7 +3312,7 @@
     },
     {
      "id": "JJ:21",
-     "title": "A settled cross-surface decision ships one half; the unshipped half exists nowhere â€” no code, no tracking row, no revised decision"
+     "title": "A settled cross-surface decision ships one half; the unshipped half exists nowhere — no code, no tracking row, no revised decision"
     },
     {
      "id": "JJ:22",
@@ -3320,7 +3328,7 @@
     },
     {
      "id": "JJ:25",
-     "title": "Single-window availability cannot express service-class-specific windows â€” urgent/after-hours classes have no lane"
+     "title": "Single-window availability cannot express service-class-specific windows — urgent/after-hours classes have no lane"
     },
     {
      "id": "JJ:26",
@@ -3616,15 +3624,15 @@
     },
     {
      "id": "NN:20",
-     "title": "Remediation deploys and still fails, differently, at the same boundary â€” the finding closes on a landed diff and green gates because nothing re-reads the live signal that opened it"
+     "title": "Remediation deploys and still fails, differently, at the same boundary — the finding closes on a landed diff and green gates because nothing re-reads the live signal that opened it"
     },
     {
      "id": "NN:21",
-     "title": "Fence identity keys derived from invocation-relative context â€” the same finding matches or misses depending on how the tool was called"
+     "title": "Fence identity keys derived from invocation-relative context — the same finding matches or misses depending on how the tool was called"
     },
     {
      "id": "NN:22",
-     "title": "Fence-store regeneration scoped narrower than the store â€” the update command silently discards the rest of the fence"
+     "title": "Fence-store regeneration scoped narrower than the store — the update command silently discards the rest of the fence"
     },
     {
      "id": "NN:23",
@@ -3640,7 +3648,7 @@
     },
     {
      "id": "NN:26",
-     "title": "The fail-closed gate has no resolution path for the legitimate first-occurrence case, so it is a permanent block rather than a conditional one â€” and its documented override cannot clear it"
+     "title": "The fail-closed gate has no resolution path for the legitimate first-occurrence case, so it is a permanent block rather than a conditional one — and its documented override cannot clear it"
     },
     {
      "id": "NN:27",

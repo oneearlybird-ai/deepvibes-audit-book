@@ -86,3 +86,27 @@ rendering (still worth fixing, but not a live crash); frameworks whose hook impl
 rather than positional; calls that look like hooks by naming convention but are ordinary functions
 with no hook state; and components where the "early return" is inside a callback or effect body
 rather than the render path, where no ordering contract applies.
+
+## M:14 — Above-the-fold autoplay video shipped at source scale with no poster — the largest paint waits on a multi-megabyte decode
+
+**Statement.** A hero/above-the-fold `<video autoplay>` ships encodes sized for the production
+master (e.g. 4K at streaming bitrates) regardless of the box it actually renders in, lists the
+heaviest source first (browsers take the FIRST playable `<source>`, not the smallest), offers no
+smaller rungs for smaller viewports, and carries no `poster`. Autoplay forces the download for
+every visitor — `preload` hints are moot once autoplay is set — and with no poster the element's
+first paintable frame IS the decode of that download, so the page's largest contentful paint is
+bound to a multi-megabyte media fetch and the hero renders as a blank box in the interim. The
+waste is provable, not aesthetic: compare encoded pixel area against the element's rendered area
+× devicePixelRatio — pixels beyond that product are computed, transferred, and discarded.
+
+**Detect.** Find above-the-fold `<video>` elements with `autoplay`. For each `<source>`, probe
+encoded resolution/bitrate (ffprobe) and file size; compare against the element's rendered box on
+representative viewports (`getBoundingClientRect()` × DPR). Check source ordering against
+per-browser playability and size — the common defect is the largest file listed first. Check for
+a `poster` attribute. Measure the FCP→LCP gap and the media request's transferSize share of the
+page total.
+
+**False positives.** Content players where the video is the product and playback is
+user-initiated; posters genuinely present (first-frame extraction, so the poster→video handoff is
+invisible); multi-rung selection implemented in JS render forks (`<source media>` is unsupported
+for video, so its absence alone is not the finding when a JS fork exists).

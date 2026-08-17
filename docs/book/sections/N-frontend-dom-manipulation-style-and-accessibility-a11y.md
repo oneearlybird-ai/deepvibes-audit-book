@@ -81,3 +81,23 @@ asserts only that tokens are *used* rather than that they *emit* will not catch 
 **False positives.** Utilities deliberately defined statically because no modifier form is ever
 composed on them; intentional transparency; variables documented as channel-only with a lint rule
 enforcing the wrapper at every use site.
+
+## N:14 — Decorative ambient media exposed to assistive tech — background video announced as content
+
+**Statement.** A purely decorative ambient media element — a muted, looping, non-interactive
+background video or animation with no speech and no informational content — is rendered without
+`aria-hidden="true"`, so assistive technology announces it as page content, and a11y tooling
+demands captions/`<track>` elements it cannot meaningfully have. The correct posture for
+ambience is invisibility to assistive tech: captions here would be wrong, not missing. The
+element carries meaning only as atmosphere, and a screen-reader user gains nothing but noise
+from its announcement.
+
+**Detect.** For each `<video>`, `<canvas>`, or animation container in a layout/background role
+(muted + loop + autoplay + no controls, absolutely positioned behind content, or opacity/vignette
+treated), check for `aria-hidden="true"` or `role="presentation"`. Audit-tool output demanding
+caption tracks on speechless ambience is the smell that the element is exposed. Confirm the
+element genuinely carries no informational content before flagging.
+
+**False positives.** Media with speech or informational content (captions genuinely required);
+videos with visible controls; media that IS the page content (product demos, testimonials);
+decorative media already inside an `aria-hidden` ancestor.

@@ -595,3 +595,35 @@ the guard looking like a legitimately empty one.
 denial-of-service or cost decision and a sampled/aggregated counter demonstrably exists instead;
 rejections already emitted by a shared middleware that logs centrally — verify the middleware runs
 for that route; health and probe endpoints.
+
+## G:37 — A ticket-per-event target on a re-emitting findings source multiplies open tickets per refresh cycle, and once deduplication is added the absorbed duplicates read as delivery failures
+
+**Statement.** An event rule whose target creates a ticket (ops item, issue, incident record) for
+every matching event assumes the source emits once per problem. Security-posture and compliance
+services do not: they re-publish every still-open finding on each refresh, rescan, or periodic
+re-evaluation cycle, so the target mints a new ticket per finding per cycle and the open-ticket
+count grows with findings × cycles rather than with new problems — burying the handful of
+actionable items under their own duplicates. Observed in production: roughly 3,900 open tickets
+from under 950 unique findings within days. The defect has a second stage: when a deduplication
+key is later added at the create call, the platform absorbs duplicates by *rejecting* the create,
+and the event bus records that rejection as a failed target invocation — so a dead-letter queue or
+failure alarm wired to the target (correct for real delivery failures) now fires once per absorbed
+duplicate, converting ticket noise into failure-signal noise.
+
+**Detect.** Enumerate event rules whose target creates an entity rather than upserting one. For
+each, establish the source's emission contract from its documentation or by watching a single
+stable finding across two refresh cycles: state-transition sources emit once per change;
+findings-import and compliance-evaluation sources re-emit unchanged items. For re-emitting
+sources, require a deduplication key derived from finding identity in the target input, and check
+its granularity against triage intent — an identity field shared by every finding of one product
+collapses all of them into a single ticket, while per-resource identity recreates the flood on
+first import. Then fire the same event twice against live infrastructure and watch the target's
+failure metric and dead-letter queue: an absorbed duplicate that lands as a failure will hold any
+zero-threshold alarm on that queue permanently in alarm once steady-state refreshes resume.
+
+**False positives.** Targets that are natively idempotent (upsert keyed on event identity, or a
+ticketing system with server-side deduplication) — verify the key, not the vendor claim; sinks
+meant to record every emission (append-only archives, metric streams); genuinely
+once-per-transition sources feeding low-rate targets where one ticket per rare transition is the
+intended paper trail; rejection paths demonstrably filtered out of the failure signal (a
+dead-letter consumer or alarm that excludes the duplicate-rejection error code).

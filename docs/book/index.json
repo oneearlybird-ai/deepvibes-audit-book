@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 820,
+ "rule_count": 821,
  "sections": [
   {
    "id": "A",
@@ -859,7 +859,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "G:1",
@@ -1004,6 +1004,10 @@
     {
      "id": "G:36",
      "title": "A validation branch returns a client-visible error status while emitting no log line, so a failure the user can see is undiagnosable from the server side"
+    },
+    {
+     "id": "G:37",
+     "title": "A ticket-per-event target on a re-emitting findings source multiplies open tickets per refresh cycle, and once deduplication is added the absorbed duplicates read as delivery failures"
     }
    ]
   },

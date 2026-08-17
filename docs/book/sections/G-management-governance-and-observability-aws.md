@@ -615,7 +615,11 @@ each, establish the source's emission contract from its documentation or by watc
 stable finding across two refresh cycles: state-transition sources emit once per change;
 findings-import and compliance-evaluation sources re-emit unchanged items. For re-emitting
 sources, require a deduplication key derived from finding identity in the target input, and check
-its granularity against triage intent — an identity field shared by every finding of one product
+its granularity against triage intent. Check the identity key's COMPOSITION as well as its
+granularity: an emission timestamp inside the finding or ticket id converts every intended update
+into an insert — the producer believes it maintains one record per resource while minting one per
+run — and any resolve/archive path addressed by the same rule writes to the new id, closing a
+record no consumer has ever seen while the original stays open forever — an identity field shared by every finding of one product
 collapses all of them into a single ticket, while per-resource identity recreates the flood on
 first import. Then fire the same event twice against live infrastructure and watch the target's
 failure metric and dead-letter queue: an absorbed duplicate that lands as a failure will hold any

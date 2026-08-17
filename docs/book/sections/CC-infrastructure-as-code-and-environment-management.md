@@ -89,10 +89,22 @@ repository. The failure surfaces later as either a denied delivery (the scoping 
 reverted) or an unnoticed permission widening, and the team debugging it reads the stack they own,
 finds the correct document, and concludes the infrastructure is fine.
 
+The same mechanism reaches past policy attributes to any WHOLE RESOURCE whose create call is an
+upsert keyed on a caller-chosen name — monitoring alarms, dashboards, event rules. Two stacks each
+declare the full definition under one name, both "creates" succeed, and the entire definition —
+metric math, thresholds, notification targets, tags — oscillates with apply order. Observed in
+production: a function-error alarm declared in the function's own stack (plain error-count form,
+one notification topic) and again in a fleet-monitoring stack (metric-math error-rate form, a
+different topic); every apply of either stack rewrote the other's alarm wholesale, and both
+versions looked intentional in their home repository.
+
 **Detect.** For every resource kind whose policy is a singleton document, enumerate ALL declarations
 across every stack — an inline `policy =` argument on the resource AND any standalone `*_policy`
 resource targeting the same physical name — and flag any physical resource with more than one
-declaring stack. Since two stacks can reference the same resource through different addresses (a
+declaring stack. Extend the same enumeration to name-keyed upsert resources (alarms, dashboards,
+event rules), matching on the physical name; the plan-time tell is an in-place UPDATE whose
+before-values match the other stack's declared form exactly — live state is the other declaration,
+not drift. Since two stacks can reference the same resource through different addresses (a
 managed resource in one, a `data` lookup plus policy resource in the other), match on the physical
 name or ARN, never on the IaC address. Then confirm on the live system: fetch the live policy and
 diff it against each stack's recorded state value; a stack whose state differs from live is the loser
@@ -101,7 +113,9 @@ a `Sid` that a stack's state contains is proof.
 
 **False positives.** Providers whose policy resource genuinely merges statements rather than
 replacing the document; one stack declaring the resource while the other only reads it via a data
-source without writing any policy; deliberate hand-off where the inline attribute is paired with
+source without writing any policy; a stack that still carries the name only to hand it out of state
+during an ownership transfer (a `removed` block with `destroy = false`); deliberate hand-off where
+the inline attribute is paired with
 `lifecycle { ignore_changes = [policy] }` so ownership is unambiguous (verify the ignore is actually
 present, and note that this masks drift per CC:4).
 

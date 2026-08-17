@@ -650,3 +650,29 @@ already dead and the dashboard is archaeology.
 orphaned ACTIVE finding set is precisely the failure, so archival is what earns the exemption;
 event-driven producers with legitimately rare triggers — those need a synthetic heartbeat event,
 and its absence is the finding, not an excuse.
+
+## G:39 — A compliance evaluator that emits a cannot-evaluate status for deleted resources creates immortal findings no lifecycle ever closes
+
+**Statement.** Per-resource compliance evaluators report a status for every resource they watch;
+when a resource is deleted, some emit a cannot-evaluate status (NOT_AVAILABLE, "insufficient
+data") instead of a closing one. The findings pipeline imports every status as an open finding,
+its auto-resolution keys on an explicit PASS, and its archival keys on the evaluator re-reporting
+the resource — which it never does for one it can no longer see. The finding is now immortal: it
+keeps its original title, which described the CHECK ("public write prohibited"), not the outcome,
+so the queue fills with entries that read as live exposures on resources that ceased to exist.
+Observed in production: nineteen open "public bucket" findings, every one referencing a bucket
+deleted weeks earlier, sitting above genuinely actionable work precisely because their titles
+demanded triage first.
+
+**Detect.** List open findings whose compliance status is a cannot-evaluate value, then
+existence-check each referenced resource live; a deleted referent is an immortal finding. Age is
+the cheap tell — a cannot-evaluate finding older than the evaluator's re-run period will never
+update again. Then read the pipeline's archival contract directly: name the path that closes a
+finding whose producer stopped reporting it, and if no such path exists, every future resource
+deletion mints another immortal entry.
+
+**False positives.** Transient cannot-evaluate during evaluator permission or throttling outages
+— the existence check passes because the resource is alive, and the next evaluation cycle
+resolves it; pipelines with a working stale-finding reaper — verify by finding an entry it
+actually reaped, not by reading its configuration; deliberate forensic retention of
+deleted-resource findings, distinguishable because they are marked resolved rather than open.

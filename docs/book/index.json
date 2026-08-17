@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 828,
+ "rule_count": 829,
  "sections": [
   {
    "id": "A",
@@ -867,7 +867,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "G:1",
@@ -1020,6 +1020,10 @@
     {
      "id": "G:38",
      "title": "A compliance or findings producer with no freshness signal — silence is indistinguishable from a clean bill of health"
+    },
+    {
+     "id": "G:39",
+     "title": "A compliance evaluator that emits a cannot-evaluate status for deleted resources creates immortal findings no lifecycle ever closes"
     }
    ]
   },

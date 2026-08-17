@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 827,
+ "rule_count": 828,
  "sections": [
   {
    "id": "A",
@@ -2125,7 +2125,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 32,
+   "rule_count": 33,
    "rules": [
     {
      "id": "U:1",
@@ -2254,6 +2254,10 @@
     {
      "id": "U:32",
      "title": "A build/bake provisioner declares environment variables the command template never interpolates, so every declared var is silently absent and the scripts run on their own defaults"
+    },
+    {
+     "id": "U:33",
+     "title": "A hook manager's core.hooksPath displaces the git-lfs hooks, so pushes publish pointer files whose objects never upload"
     }
    ]
   },

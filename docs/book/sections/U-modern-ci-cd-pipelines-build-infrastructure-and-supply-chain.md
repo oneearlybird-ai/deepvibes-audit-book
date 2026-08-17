@@ -398,3 +398,33 @@ template was overridden for an unrelated reason (verify the default's documented
 tool and version); variables consumed by the provisioner itself rather than the spawned script;
 declarations deliberately kept for documentation where the scripts read the values from a
 config file instead — verify the scripts genuinely never reference the environment.
+
+## U:33 — A hook manager's core.hooksPath displaces the git-lfs hooks, so pushes publish pointer files whose objects never upload
+
+**Statement.** A repo adopts a hook manager (husky, lefthook, pre-commit) that sets
+`core.hooksPath` to its own directory. `git lfs install` writes its hooks — pre-push
+chief among them, the one that UPLOADS objects — into `.git/hooks`, which the
+manager's path setting silently displaces. Every push then succeeds at the git
+layer while uploading nothing to the LFS server: the remote accumulates pointer
+text for every LFS-tracked file pushed since adoption. Downstream, any consumer
+that deploys the raw checkout content (a host that does not resolve LFS at build
+time, a CI runner without an lfs fetch step) ships the ~130-byte pointer TEXT
+under the media's filename — the page 200s, the element renders nothing, and the
+file's own name asserts it is a video or image. The failure is doubly silent:
+authors always see their real local file, pushes and builds stay green, and the
+only externally visible symptom is a content-length three orders of magnitude
+too small.
+
+**Detect.** In any repo whose `.gitattributes` carries `filter=lfs` AND whose
+config sets `core.hooksPath` (or a hook-manager directory exists): read the
+manager's pre-push script and confirm it invokes `git lfs pre-push`. Then verify
+remote truth independently: for each LFS-tracked path, compare the deployed/
+served content-length against the size the pointer declares — a ~130-byte
+response where megabytes are declared is the finding. `git lfs push --dry-run`
+listing objects the server lacks confirms the gap; an orphaned ~130-byte "media"
+file committed in history is the scar of a previous undiagnosed hit.
+
+**False positives.** Managers whose hook scripts genuinely chain LFS (grep
+before flagging); hosts that resolve LFS at build time when the objects exist
+server-side; deliberate pointer-only mirrors; repos whose LFS patterns match no
+tracked file.

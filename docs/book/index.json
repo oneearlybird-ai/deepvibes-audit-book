@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 846,
+ "rule_count": 847,
  "sections": [
   {
    "id": "A",
@@ -2008,7 +2008,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "T:1",
@@ -2153,6 +2153,10 @@
     {
      "id": "T:36",
      "title": "The session credential is a single fixed value for the session's whole life, so a stolen copy is arithmetically indistinguishable from the original and its use leaves no trace"
+    },
+    {
+     "id": "T:37",
+     "title": "The client's session state machine has no terminal state for one of the server's rejection shapes, so a dead credential produces endless retry churn instead of a verdict"
     }
    ]
   },

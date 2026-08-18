@@ -554,3 +554,38 @@ clients that store the credential and cannot receive a rotated one, where rotati
 them and a possession proof is the correct control instead; and systems where rotation is
 deliberately deferred behind a documented, dated plan with detection shipped first — measuring the
 signal before enforcing on it is the correct order, not an omission.
+
+## T:37 — The client's session state machine has no terminal state for one of the server's rejection shapes, so a dead credential produces endless retry churn instead of a verdict
+
+**Statement.** A client that manages session lifecycle sorts server rejections into "dead — stop
+and re-authenticate" and "transient — retry later". The defect is a rejection shape the sorter
+does not recognise as death: the gateway in front of the API answers a denied credential with one
+status (commonly 403 from a request authorizer's explicit deny) while the client's death test
+matches only another (commonly 401), so every probe of a genuinely dead credential lands in the
+"transient" bucket. Nothing is wrong loudly: each retry is individually reasonable, the
+re-authentication overlay is raised by one code path and suppressed or cleared by another, pollers
+keep polling, heals keep healing — and the session can neither recover (the credential is dead)
+nor terminate (the verdict never fires). The user sees an interface that flickers between
+signed-in furniture, skeletons, and a sign-in prompt that comes and goes; the server sees an
+even-paced storm of denied requests from one client. The shape is easy to introduce because the
+two statuses genuinely differ in meaning at the ROUTE level (403 is also "authenticated but
+forbidden") — the sorter was written for the route semantics and nobody re-checked it against
+what the GATEWAY returns for a rejected credential on routes where the forbidden meaning cannot
+occur.
+
+**Detect.** Find the client's death test — the predicate that converts a session probe's failure
+into the logged-out/re-auth verdict — and list the statuses it accepts. Then, from the server
+side, enumerate every status a dead or invalid credential actually produces through the real
+front door: the gateway's authorizer-deny mapping, the auth service's own rejections, and any
+edge/proxy rewrites. Every status in the second list but not the first is a limbo path. Confirm
+the probe route cannot produce the ambiguous meaning of the missed status (a probe that needs no
+CSRF and no per-object permission cannot 403 for those reasons). The live signature is a single
+client emitting an unbroken alternation of denied data requests and successful-looking retries
+for minutes to hours, with the re-auth UI raised and lowered repeatedly and no login attempt in
+between.
+
+**False positives.** Clients that deliberately treat the missed status as transient because the
+same status IS ambiguous on their probe route (a per-object 403 on a shared endpoint) — the fix
+there is a dedicated unambiguous probe, not a broader match; short-lived churn bounded by a
+terminal give-up timer that genuinely fires and routes to sign-in; and rejection shapes that
+cannot reach the client because an edge layer already rewrites them to the recognised status.

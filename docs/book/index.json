@@ -1,8 +1,8 @@
 {
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
- "section_count": 41,
- "rule_count": 836,
+ "section_count": 42,
+ "rule_count": 843,
  "sections": [
   {
    "id": "A",
@@ -3714,6 +3714,43 @@
     {
      "id": "OO:2",
      "title": "A fail-open branch justified in-comment by a compensating control that does not cover the same risk"
+    }
+   ]
+  },
+  {
+   "id": "PP",
+   "title": "Third-Party Data Sync & Canonical Mapping",
+   "group": "third-party",
+   "file": "sections/PP-third-party-data-sync-and-canonical-mapping.md",
+   "rule_count": 7,
+   "rules": [
+    {
+     "id": "PP:1",
+     "title": "Outbound writes never resolve the referenced party, so records land unlinked"
+    },
+    {
+     "id": "PP:2",
+     "title": "A constant timezone stamped on inbound canonical records"
+    },
+    {
+     "id": "PP:3",
+     "title": "Opaque provider identifiers flow into human-facing display fields"
+    },
+    {
+     "id": "PP:4",
+     "title": "Aggregates computed from the first element of a multi-element collection"
+    },
+    {
+     "id": "PP:5",
+     "title": "Look-then-create against an eventually-consistent provider search index"
+    },
+    {
+     "id": "PP:6",
+     "title": "Non-credential 401s classified as credential death"
+    },
+    {
+     "id": "PP:7",
+     "title": "Deletion detection dead-coded by a throwing transport"
     }
    ]
   }

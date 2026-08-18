@@ -1,7 +1,7 @@
 {
   "kind": "routing-manifest",
   "version": 2,
-  "note": "The mechanical index->chapter router. During inventory, classify each discovered thing as one or more resource_kinds; the union of the mapped sections is the set of chapters to load and check EXHAUSTIVELY against that resource. Kinds are deliberately coarse — when in doubt, include the extra section. Supersedes taxonomy-map.json surface_sections (v1).",
+  "note": "The mechanical index->chapter router. During inventory, classify each discovered thing as one or more resource_kinds; the union of the mapped sections is the set of chapters to load and check EXHAUSTIVELY against that resource. Kinds are deliberately coarse \u2014 when in doubt, include the extra section. Supersedes taxonomy-map.json surface_sections (v1).",
   "groups": {
     "aws-backend": [
       "A",
@@ -27,7 +27,8 @@
     "third-party": [
       "P",
       "Q",
-      "R"
+      "R",
+      "PP"
     ],
     "saas-core": [
       "S",
@@ -266,7 +267,8 @@
     "webhook-consumer": [
       "Z",
       "W",
-      "MM"
+      "MM",
+      "PP"
     ],
     "webhook-producer": [
       "Z",
@@ -369,6 +371,11 @@
       "LL",
       "HH",
       "NN"
+    ],
+    "crm-scheduling-sync-integration": [
+      "PP",
+      "Z",
+      "W"
     ]
   }
 }

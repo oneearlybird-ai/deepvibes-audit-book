@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 41,
- "rule_count": 831,
+ "rule_count": 836,
  "sections": [
   {
    "id": "A",
@@ -2000,7 +2000,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 32,
+   "rule_count": 35,
    "rules": [
     {
      "id": "T:1",
@@ -2129,6 +2129,18 @@
     {
      "id": "T:32",
      "title": "Security-facing device labels are derived by ordered substring user-agent sniffing, so platforms whose UA embeds another platform's token are misattributed and the session list users audit for intrusions lies about their own devices"
+    },
+    {
+     "id": "T:33",
+     "title": "Server-side auth proxy calls the IdP without forwarding end-client context, so adaptive authentication scores the proxy's egress instead of the user"
+    },
+    {
+     "id": "T:34",
+     "title": "Client-address handling in the auth plane parses IPv4 only, so IPv6 clients silently lose the security telemetry derived from their address"
+    },
+    {
+     "id": "T:35",
+     "title": "Sliding session renewal grants the full multi-week window on any activity — no distinct idle bound, so one brief visit yields a month-scale live credential"
     }
    ]
   },
@@ -3507,7 +3519,7 @@
    "title": "Cryptography & Randomness Misuse",
    "group": "cross-cutting",
    "file": "sections/MM-cryptography-and-randomness-misuse.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "MM:1",
@@ -3556,6 +3568,10 @@
     {
      "id": "MM:12",
      "title": "TLS verification disabled in production paths"
+    },
+    {
+     "id": "MM:13",
+     "title": "Signing secret consumed as a single live version, so rotation instantly invalidates every outstanding signed artifact and therefore never happens"
     }
    ]
   },
@@ -3564,7 +3580,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "NN:1",
@@ -3677,6 +3693,10 @@
     {
      "id": "NN:28",
      "title": "A gate's exception list has no staleness tripwire, so the excepted defect outlives every reason for excepting it"
+    },
+    {
+     "id": "NN:29",
+     "title": "The e2e harness authenticates against the production auth plane and never revokes, so real credentials accumulate in the live credential store"
     }
    ]
   },

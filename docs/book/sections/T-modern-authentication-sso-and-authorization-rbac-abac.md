@@ -30,6 +30,19 @@ JWT Claims: aud/iss/exp/nbf unvalidated — tokens minted for other apps in the 
 
 Session Fixation: Session identifier not rotated at login and privilege elevation.
 
+**False positives.** (2026-08-17, from a refuted candidate) Rotation at privilege change is
+satisfied at a different layer when ALL four hold: (1) the session artifact is an opaque
+server-side pointer carrying no authority — roles/claims are never read from it for authorization;
+(2) authority is re-derived per request from the canonical permission record through a policy
+engine, and any cached allow is fenced by a version number every permission writer atomically bumps,
+with the fence failing closed (see T:25 for the fence-reads-a-different-record failure that voids
+this leg); (3) scope transitions within a session (workspace/profile switch) are themselves
+policy-gated before taking effect; (4) a fresh identifier is minted at every authentication, which
+covers the fixation half on its own. Under all four, rotating the identifier at a privilege change
+adds no authority the policy layer has not already granted per-request — verify each leg in live
+code before accepting, and flag the residual that rotation never addressed anyway: a leaked
+identifier remains a valid identity credential until an idle/absolute bound kills it (T:35).
+
 ## T:7 — Reset Tokens: Password-reset tokens long-lived, multi-use, or surviving a successful pas…
 
 Reset Tokens: Password-reset tokens long-lived, multi-use, or surviving a successful password change.
@@ -428,3 +441,79 @@ Macintosh UA genuinely indistinguishable from macOS Safari without UA-Client-Hin
 there is a platform limitation, not an ordering bug (flag it only if client-hint headers were
 available and ignored); deviceType/browser fields that are correct while only a cosmetic label
 elsewhere is wrong — scope the finding to the fields actually misattributed.
+
+## T:33 — Server-side auth proxy calls the IdP without forwarding end-client context, so adaptive authentication scores the proxy's egress instead of the user
+
+**Statement.** In BFF/proxy architectures the backend authenticates on the user's behalf through the
+IdP's server-side APIs. Those APIs accept an optional context block (client IP, forwarded headers,
+device fingerprint) precisely because the caller is not the client. When the proxy omits it, the
+IdP's adaptive/risk engine — impossible travel, new location, IP reputation, per-IP velocity —
+evaluates every user as the proxy's small set of shared egress addresses, typically cloud-provider
+ranges that rotate and are shared with unrelated workloads. Two failures follow. Detection goes
+blind: an account takeover from anywhere on earth is indistinguishable from the legitimate user,
+because both "arrive" from the same backend IP. And availability inverts: the shared egress
+address accumulates the entire fleet's authentication volume — many identities, high rate, rotating
+datacenter IPs is exactly the fingerprint of credential-stuffing infrastructure — so if the risk
+engine ever blocks that address, every user's sign-in fails at once. The gap is invisible in normal
+operation because sign-ins succeed; only the IdP's auth-event log (every event from datacenter
+addresses) reveals it.
+
+**Detect.** For each server-side call to the IdP's authentication APIs, check whether the request
+carries the end client's address/context in the IdP's designated context field (not a bespoke
+header the IdP ignores). Then read the IdP's auth-event log for recent sign-ins: source IPs in the
+backend's egress ranges rather than consumer networks prove the gap live. A mixed log — the same
+human account showing datacenter IPs on proxied flows and consumer IPs on browser-direct flows —
+confirms the recorded address is flow-dependent, not account-dependent. Weight severity by whether
+the IdP's threat protection is set to enforce (block) rather than audit-only.
+
+**False positives.** Deployments with the IdP's threat features fully disabled AND no consumer of
+the event log's addresses (the context is then dead data — but note that enabling protection later
+silently inherits the blindness); machine-to-machine credentials with no human client behind them;
+proxies that demonstrably cannot know the client address (verify the claim — most have it in the
+request context they already log).
+
+## T:34 — Client-address handling in the auth plane parses IPv4 only, so IPv6 clients silently lose the security telemetry derived from their address
+
+**Statement.** A helper derives address-based security metadata — audit prefix, location hint for
+the "your devices" screen, anomaly key, rate-limit dimension — by IPv4 dotted-quad parsing: split
+on ".", require four octets. IPv6 clients, the majority of mobile traffic, fail the shape test and
+the helper returns null/empty instead of an IPv6-appropriate value (e.g. a /64 prefix). Every
+downstream consumer inherits the blank: audit rows, the user-facing session/device list, heuristics
+keyed on the address. Because the field is present-but-empty rather than an error, nothing alarms;
+coverage quietly degrades to whatever fraction of clients still arrive over IPv4, and the security
+screen built on the field omits location for exactly the sessions a user would want to audit.
+Rate limiters keyed on the raw parse can also collapse — every IPv6 client merging into one empty
+bucket, or bypassing the limit entirely.
+
+**Detect.** Find every derivation from a client address (audit stamps, prefixes, geo hints,
+rate-limit keys). Feed each an IPv6 literal and trace the result: correct v6 value, raw
+passthrough, or null? Then measure live rows: the populated fraction of the derived field is the
+coverage number (a security-telemetry field populated on a small minority of rows is the smoking
+gun). Check rate limiters separately for the merged-bucket/bypass failure mode.
+
+**False positives.** Paths where IPv6 provably terminates upstream (a fronting proxy that always
+presents a translated IPv4 — verify at the hop the parser actually reads, not at the edge); fields
+documented as v4-only diagnostics with an explicit v6 sibling.
+
+## T:35 — Sliding session renewal grants the full multi-week window on any activity — no distinct idle bound, so one brief visit yields a month-scale live credential
+
+**Statement.** Session lifetime is implemented as a slide window renewed on activity or keepalive
+refresh, bounded (at best) by an absolute cap derived from mint time. When the slide window is
+sized for login convenience — weeks — the idle timeout, the control that kills abandoned and stolen
+sessions, does not exist as a distinct short bound: a single three-minute visit leaves a credential
+valid for the entire slide window, and a stolen cookie stays live the same way (or indefinitely
+under the cap, if the thief replays it periodically to keep the slide fresh). On surfaces moving
+toward regulated data (health, finance), the absent idle bound is the specific control auditors
+ask for first — idle windows there are minutes to hours, not weeks.
+
+**Detect.** Read mint and refresh: what extends expiry, by how much, and what bounds total
+lifetime? Compute worst-case validity for (a) a session whose user never returns and (b) a stolen
+credential replayed periodically. If (a) equals a slide window measured in weeks with no shorter
+idle bound, flag it; record the absolute cap's presence separately (its absence compounds the
+finding). A live check strengthens the evidence: a session row with minutes between createdAt and
+lastSeenAt whose expiry sits the full window out.
+
+**False positives.** Deliberately long-session consumer products with no regulated-data trajectory
+and a documented risk acceptance; systems whose server-side revocation plus anomaly-triggered kill
+demonstrably compensates (name the trigger); native-app sessions bound to device attestation where
+the cookie-theft model genuinely differs.

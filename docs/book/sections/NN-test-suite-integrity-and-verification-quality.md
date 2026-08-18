@@ -605,3 +605,27 @@ valid. The repair is the tripwire plus a dated reason per entry.
 enforcement pattern that must literally name what it bans — which should be commented as permanent
 rather than left indistinguishable from forgotten debt; and exception lists in report-only tools
 that gate nothing.
+
+## NN:29 — The e2e harness authenticates against the production auth plane and never revokes, so real credentials accumulate in the live credential store
+
+**Statement.** An authed e2e lane signs in through the real login flow — correct, that is the path
+worth testing — and persists browser state for the specs, but defines no teardown: the minted
+session or token, a REAL credential carrying the test account's full grants and the platform's
+normal multi-week lifetime, is simply abandoned, still valid. Every CI run adds one more. The live
+credential store fills with dozens to hundreds of unexpired credentials belonging to a handful of
+test principals, frequently holding elevated fixture grants (admin-view), each one a theft target
+and none attributable to a person. Second-order damage follows: session-count anomaly signals are
+numbed for exactly the accounts least monitored, per-account session lists become unusable, and
+capacity or TTL assumptions in the session store quietly skew.
+
+**Detect.** Find the authed e2e bootstrap (storage-state capture, login fixtures). Check for a
+teardown that spends the minted credential on the product's real logout/revoke endpoint. Then
+measure live, which proves the finding independent of code reading: count unexpired credentials in
+the production store belonging to test principals and compare against the harness's run cadence —
+dozens of live rows for one test account is the leak made visible. Note the grant level those rows
+carry; cached elevated grants raise severity.
+
+**False positives.** Harnesses running against ephemeral per-run environments destroyed with the
+run; bootstraps minting deliberately short-TTL credentials (minutes) where accumulation
+self-clears; a missing teardown compensated by a scheduled reaper provably scoped to test
+principals — verify the reaper runs and matches, not that it merely exists.

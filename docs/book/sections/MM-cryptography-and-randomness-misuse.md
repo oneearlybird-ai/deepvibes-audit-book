@@ -171,3 +171,30 @@ private CA bundle, never blanket disable.
 
 **False positives.** Local-only dev tooling gated by environment checks that provably cannot activate
 in production builds (verify the gate, not the comment).
+
+## MM:13 — Signing secret consumed as a single live version, so rotation instantly invalidates every outstanding signed artifact and therefore never happens
+
+**Statement.** Signature verification loads exactly one version of the signing secret; artifacts
+signed earlier — session cookies, links, tokens — verify only while that version stays current.
+Rotating the secret is therefore a mass invalidation (every user logged out, every outstanding link
+dead), so rotation is deferred indefinitely and the key's effective lifetime becomes the system's
+lifetime. The gap is invisible until compromise, when the operator discovers the only response to a
+leaked signing key is a self-inflicted fleet-wide outage. This is the verification-side sibling of
+MM:7 (encryption keys unrotatable without re-encrypting the world) and the general form of Z:6
+(webhook secrets without a dual-secret overlap window). The correct shape: verify against current
+plus previous version for a bounded window, sign with current only, and re-sign long-lived
+artifacts on their natural refresh cycle so the fleet migrates off the previous version before it
+retires.
+
+**Detect.** For each signing secret: does verification consult more than the single live version
+(a previous-version stage, a key id resolved against a set, a two-element key list)? Is there a
+re-sign path on refresh for artifacts that outlive any plausible rotation window? Is rotation
+actually configured or scheduled in the secret store (read the store's rotation state — a
+"rotatable" design never exercised is still a finding, at reduced severity)? Single-version
+verification combined with long-lived artifacts proves rotation-as-outage without needing to
+attempt one.
+
+**False positives.** Artifacts with TTLs far shorter than any plausible rotation cadence, where
+invalidation at rotation is an accepted no-op; key-id (kid) schemes already resolving against
+multiple active keys — verify the resolver genuinely accepts the previous kid rather than only
+advertising it.

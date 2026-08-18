@@ -208,3 +208,39 @@ split, not stripped.
 destination class and prefer proxied egress; route tables shared by design where SG-only is a
 documented accepted risk carrying a compensating detective control (flow-log alerting on the
 plane's ENIs). An undocumented single lock is the finding; a documented one is a posture.
+
+## C:27 — A wildcard record to a shared host silently re-creates every dangling name you delete, so the record-by-record remediation verifies as done while the surface is unchanged
+
+**Statement.** C:13's dangling-record finding is usually remediated one record at a time: identify
+the hostname whose provider answers "I hold this name but nothing is bound to it", delete the
+record, confirm it is gone from the zone. That confirmation is worthless while a wildcard for the
+same zone points at the same shared host. The name keeps resolving — now via the wildcard — to the
+same provider, still unbound, still claimable. The remediation passes every check an operator
+thinks to run (the record is gone; the zone no longer lists it) and closes nothing, because the
+wildcard is not one exposure but an unbounded family of them: every hostname anyone can invent
+resolves to a shared host where a stranger may claim the matching name. **The wildcard is the
+finding; individual stale records are symptoms of it.** Two multipliers decide severity. If the
+authentication cookie carries a parent-domain Domain attribute (L:19), any claimed hostname
+receives it from every logged-in visitor — HttpOnly does not help, because the browser sends the
+cookie regardless of whether script can read it, and SameSite does not help, because a sibling
+subdomain is the same site. And if an ACME challenge is delegated to the shared host by NS record,
+the provider can issue a publicly-trusted certificate for the claimed name without further proof.
+
+**Detect.** Enumerate the zone's A/CNAME records and probe each over HTTPS for provider
+"nothing-bound" signals (Vercel `x-vercel-error: DEPLOYMENT_NOT_FOUND`, GitHub Pages' 404 with
+`Server: GitHub.com`, S3's `NoSuchBucket`). Then — the step that is actually load-bearing — resolve
+a hostname that was never configured, something nonsense. If it resolves, a wildcard exists and no
+per-record deletion closes anything until the wildcard is scoped or removed. Before removing it,
+establish what depends on it by checking that every host expected to serve has its OWN explicit
+record; a name that resolves only through the wildcard is either already dead or was never
+attached. Verify the ownership question at the PROVIDER's API, not from an inventory file: a
+registry entry saying the name is "still attached to our project, detach later" reads as
+reassurance and inverts the risk if it is stale, because a name attached to nothing is claimable
+now, while a name genuinely attached to your own project is not.
+
+**False positives.** Zones that deliberately serve per-customer or per-branch hostnames off a
+wildcard, where the shared host binds them dynamically and nothing is ever unclaimed — there the
+wildcard is the product, and the finding is instead the absence of a bound-name inventory. A
+wildcard pointing at infrastructure you alone control (your own load balancer or CDN distribution,
+answering 404 from your own code) is not this finding: nobody else can claim a name there. The
+mechanism requires a SHARED host that hands unclaimed names to whoever asks for them.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 847,
+ "rule_count": 849,
  "sections": [
   {
    "id": "A",
@@ -2008,7 +2008,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "T:1",
@@ -2157,6 +2157,10 @@
     {
      "id": "T:37",
      "title": "The client's session state machine has no terminal state for one of the server's rejection shapes, so a dead credential produces endless retry churn instead of a verdict"
+    },
+    {
+     "id": "T:38",
+     "title": "A consumer's private reimplementation of the shared credential verify diverges when the credential contract rotates"
     }
    ]
   },
@@ -3276,7 +3280,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "JJ:1",
@@ -3385,6 +3389,10 @@
     {
      "id": "JJ:27",
      "title": "A period-stamped counter row is read without comparing its own period key to the current period, so a quiet period serves the previous active period's numbers as current"
+    },
+    {
+     "id": "JJ:28",
+     "title": "A recovery loop's run-guard requires a state the failure it heals transitions away from"
     }
    ]
   },

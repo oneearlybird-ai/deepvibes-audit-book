@@ -589,3 +589,35 @@ same status IS ambiguous on their probe route (a per-object 403 on a shared endp
 there is a dedicated unambiguous probe, not a broader match; short-lived churn bounded by a
 terminal give-up timer that genuinely fires and routes to sign-in; and rejection shapes that
 cannot reach the client because an edge layer already rewrites them to the recognised status.
+
+## T:38 — A consumer's private reimplementation of the shared credential verify diverges when the credential contract rotates
+
+**Statement.** A service that consumes the platform credential (session cookie, bearer handle,
+signed token) reimplements the parse/verify locally — its own header split, its own HMAC/signature
+check, its own identity-key derivation — instead of calling the platform's one shared verifier.
+The credential contract then evolves centrally (a format segment is added, multi-candidate
+handling is introduced, signing keys become versioned) and every shared-path consumer moves in one
+change while the private copy silently keeps the retired contract. The worst outcome is not a
+clean reject but a PARTIAL pass: the stale verify happens to accept the new credential's signature
+(the new signing payload coincides with what the old code hashes) while deriving a wrong identity
+or lookup key from the extra segment — so the store lookup misses and the service rejects every
+VALID credential as expired/unknown, while genuinely invalid ones are also rejected and nothing
+looks broken in isolation. One route family goes dark for all authenticated users; sibling planes
+verified by the shared path keep working, which misdirects diagnosis toward the client, the
+network, or the user's session itself.
+
+**Detect.** Enumerate every service that touches the raw credential material: header/cookie
+parsing, signature verification, identity-key derivation, session-store lookup. For each,
+prove by import trace that it reaches the ONE shared implementation; any local function invoking
+crypto primitives over credential bytes is a finding even if currently equivalent — equivalence is
+one central change away from ending. Diff each private copy's accepted format against what the
+mint path currently issues, including candidate-multiplicity and key-version handling. The live
+signature of an already-diverged copy: the same client, same cookie jar, same minute — one plane
+answers 200 and another answers 401 for every valid credential; the failing plane's rejects
+predate any client-side change.
+
+**False positives.** A boundary that deliberately verifies a DIFFERENT credential type (an edge
+HMAC guard in front, a service-to-service token) is not a private copy of this contract. Services
+behind a gateway authorizer that only CONSUME the authorizer's context output and re-derive
+nothing are compliant. Test fakes that model the shared reader are expected — the finding is about
+production verify paths.

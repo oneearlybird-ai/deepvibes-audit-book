@@ -478,3 +478,32 @@ that write pattern is what makes the stale read possible.
 makes the key comparison redundant — verify by finding a parent with a quiet period and reading the
 row directly; counters deliberately labelled "last active period" in the interface rather than
 "today"; readers that already floor the value against a period-scoped query of raw records.
+
+## JJ:28 — A recovery loop's run-guard requires a state the failure it heals transitions away from
+
+**Statement.** A self-healing loop (re-auth prober, reconnect scheduler, cache rebuilder, drift
+repairer) is gated on a conjunction like "system in healthy-mode AND failure-flag set" — but the
+failure it exists to heal also flips the system OUT of healthy-mode, either directly in the
+failure handler or via a shared state reducer. The conjunction is then unsatisfiable for exactly
+the failure class the healer was built for: the system parks in the failed state with the remedy
+installed, correct, tested — and unreachable. The shape is easy to introduce because the guard is
+written against the COMMON entry path (failure while healthy) and the failure path's own state
+transition is added later or lives in another function; each piece reads correctly alone. It is
+also easy to mistake for a missing feature during triage, because manually invoking the same
+remedy succeeds instantly.
+
+**Detect.** For every recovery loop, enumerate every state the target failure can leave the
+system in — including transitions performed by the failure handler itself and by shared reducers
+it calls — and prove the healer's guard admits each one. Treat any guard that conjoins a
+healthy-looking precondition (authenticated, connected, ready, mounted) with the failure flag as
+suspect: trace whether the failure path can clear that precondition. The live signature: the
+failed state persists indefinitely with ZERO healer activity observable (no probes on the wire,
+no attempts in logs) while the remedy demonstrably works when triggered by hand; recovery
+correlates with full restarts/reloads rather than with the healer.
+
+**False positives.** A healer deliberately scoped narrow because a DIFFERENT documented remedy
+owns the excluded states (boot-time failures routed to a full re-initialization path) — prove the
+other path exists and actually runs for those states. Guards excluding genuinely terminal states
+where healing is undesired by design (an explicit sign-out, a decommissioned resource) are
+correct, provided the terminal transition is deliberate and the excluded state cannot be entered
+by the failure alone.

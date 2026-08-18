@@ -475,3 +475,40 @@ the point of entry, where the validator's bound is verified to be at or below th
 enforced on every writer; providers that silently truncate rather than reject — still worth noting
 where truncation could collide two distinct inputs onto one key, but not this failure; composed
 values used only for display and never as a lookup filter.
+
+## E:40 — A change-data or event source is enabled and billed but has zero subscribers, so the real-time capability it was provisioned for silently does not exist
+
+**Statement.** A table's change stream, a bucket's event notification, or a topic is turned on —
+it appears in the infrastructure, it is billed, and a reviewer reading the configuration concludes
+the platform propagates changes in real time — while nothing is subscribed to it. The capability
+reads as present at every layer except the one that would deliver it. This is not the same defect
+as a consumer with no producer, which fails loudly the first time someone waits for an event that
+never comes; here the *producer* side works perfectly and writes records nobody reads, so there is
+no error, no dead-letter, no alarm, and no latency graph that looks wrong. The consequence is
+paid by whatever the stream was meant to make immediate: a state change that should have pushed
+now waits for the next poll, and every control built on top of it silently inherits that delay.
+The shape recurs because enabling the source and writing the subscriber are two different changes
+in two different places, and the first one alone leaves a system that looks finished. It is
+especially dangerous for security-relevant state — revocation, entitlement withdrawal, kill
+switches — where the gap between "the authoritative record changed" and "the party holding the
+stale capability found out" is the entire exposure window, and where the enforcement layer being
+genuinely immediate makes the missing notification easy to wave away.
+
+**Detect.** For every enabled change stream, event notification, and topic, enumerate its actual
+subscribers from the live system rather than from the template: list event-source mappings for the
+stream ARN, list the pipes whose source is that ARN, list a topic's confirmed subscriptions, read
+a bucket's notification configuration. An empty result on an enabled source is the finding. Then
+close the loop from the other end: for each capability the product claims happens "immediately" or
+"in real time", name the delivery path and follow it to a running consumer. Where the source exists
+for a security control, measure the actual worst-case discovery delay — usually the client's own
+poll or keepalive interval — and state it, because that number is the exposure, not the
+configuration. Provisioned-but-unread sources also show as a stream with a steady write rate and
+no registered iterator age metric.
+
+**False positives.** Sources deliberately enabled to satisfy a retention, replication, or
+point-in-time-recovery feature that consumes them internally rather than through a subscriber;
+streams enabled ahead of a consumer that is genuinely in flight within the same change set, where
+the ordering is documented and the gap is short; sources whose only consumer is an external system
+subscribing out-of-band, which must still be named and verified rather than assumed; and cases
+where the delay is real but explicitly accepted with a stated bound, which is a documented posture
+and not a defect.

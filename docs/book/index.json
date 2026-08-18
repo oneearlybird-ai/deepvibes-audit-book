@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 843,
+ "rule_count": 846,
  "sections": [
   {
    "id": "A",
@@ -311,7 +311,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "C:1",
@@ -416,6 +416,10 @@
     {
      "id": "C:26",
      "title": "A no-egress posture enforced at only one layer — SG rules over a subnet whose route table still offers a default route — is one edit away from exfiltration"
+    },
+    {
+     "id": "C:27",
+     "title": "A wildcard record to a shared host silently re-creates every dangling name you delete, so the record-by-record remediation verifies as done while the surface is unchanged"
     }
    ]
   },
@@ -545,7 +549,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "E:1",
@@ -702,6 +706,10 @@
     {
      "id": "E:39",
      "title": "The reuse key is composed from unbounded user text, so the provider's field cap fails the existence LOOKUP and the create is never attempted"
+    },
+    {
+     "id": "E:40",
+     "title": "A change-data or event source is enabled and billed but has zero subscribers, so the real-time capability it was provisioned for silently does not exist"
     }
    ]
   },
@@ -2000,7 +2008,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "T:1",
@@ -2141,6 +2149,10 @@
     {
      "id": "T:35",
      "title": "Sliding session renewal grants the full multi-week window on any activity — no distinct idle bound, so one brief visit yields a month-scale live credential"
+    },
+    {
+     "id": "T:36",
+     "title": "The session credential is a single fixed value for the session's whole life, so a stolen copy is arithmetically indistinguishable from the original and its use leaves no trace"
     }
    ]
   },

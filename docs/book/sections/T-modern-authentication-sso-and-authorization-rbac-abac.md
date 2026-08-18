@@ -517,3 +517,40 @@ lastSeenAt whose expiry sits the full window out.
 and a documented risk acceptance; systems whose server-side revocation plus anomaly-triggered kill
 demonstrably compensates (name the trigger); native-app sessions bound to device attestation where
 the cookie-theft model genuinely differs.
+
+## T:36 — The session credential is a single fixed value for the session's whole life, so a stolen copy is arithmetically indistinguishable from the original and its use leaves no trace
+
+**Statement.** The credential presented on every request — a session cookie, an opaque handle, a
+bearer value — is minted once and never changes until the session ends. Renewal extends the
+credential's *lifetime* (a sliding expiry, a re-issued cookie with a fresh Max-Age) while
+re-presenting the identical secret, so nothing about the value distinguishes the tenth request
+from the ten-thousandth, and nothing distinguishes the legitimate holder from anyone who copied
+the value at any point. The defence usually cited in review is that the credential is opaque,
+revocable, and discloses nothing on capture — all true, all irrelevant to replay, because
+possession alone is sufficient by construction. The result is that the dominant real-world theft,
+in which an attacker lifts stored credentials wholesale and replays them later from elsewhere, is
+not merely unblocked but *undetectable*: the server sees one continuous well-formed session. The
+absent control is the one already standard one layer up for refresh tokens — rotate the value on
+ordinary traffic and treat presentation of a superseded value as proof that a copy exists. Its
+absence is easy to miss precisely because the system has a rotation-shaped ritual (the sliding
+renewal) that rotates the expiry and not the secret.
+
+**Detect.** Find the mint site and the renewal site for the session credential and compare the
+value each emits: if the renewal path re-issues a value derived from the same inputs as the mint —
+or literally re-signs the same identifier — the credential is static, whatever the cookie's
+attributes say. Confirm there is no third lifecycle event: grep for a rotate/regenerate function
+and check whether it still has callers, since these are frequently deleted after a concurrency
+incident and never replaced. Then ask the decisive question the code answers directly: when a
+value that was valid earlier is presented now, is there any state the server compares it against?
+If the only check is signature-plus-expiry, replay is unobservable. Where rotation does exist,
+verify the superseded value is actually *recorded* rather than merely replaced — a rotation with
+no memory of what it replaced detects nothing — and that the acceptance window for in-flight
+requests is bounded by a rotation floor rather than an unbounded count of recent values.
+
+**False positives.** Credentials already bound to a key the presenter must prove possession of on
+every request, where replay of the value alone fails; short-lived credentials whose lifetime is
+genuinely comparable to the exposure window rather than measured in days; native or machine
+clients that store the credential and cannot receive a rotated one, where rotation would strand
+them and a possession proof is the correct control instead; and systems where rotation is
+deliberately deferred behind a documented, dated plan with detection shipped first — measuring the
+signal before enforcing on it is the correct order, not an omission.

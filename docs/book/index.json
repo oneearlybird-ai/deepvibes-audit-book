@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 849,
+ "rule_count": 852,
  "sections": [
   {
    "id": "A",
@@ -1939,7 +1939,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "S:1",
@@ -2000,6 +2000,10 @@
     {
      "id": "S:15",
      "title": "One shared external sender identity serves every tenant, so inbound replies cannot be attributed and provider reputation is a shared fate"
+    },
+    {
+     "id": "S:16",
+     "title": "Tenant-scoped storage keys assembled inline instead of through the one shared key builder"
     }
    ]
   },
@@ -2557,7 +2561,7 @@
    "title": "Compliance, Auditing & Data Privacy (GDPR/CCPA/SOC2)",
    "group": "saas-core",
    "file": "sections/Y-compliance-auditing-and-data-privacy-gdpr-ccpa-soc2.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "Y:1",
@@ -2618,6 +2622,10 @@
     {
      "id": "Y:15",
      "title": "Consent evidence exists only inside transient or co-mingled artifacts — no durable per-subject consent record, so send-eligibility is unprovable"
+    },
+    {
+     "id": "Y:16",
+     "title": "Raw contact identifiers embedded in storage keys, which replicate everywhere values are redacted"
     }
    ]
   },
@@ -2910,7 +2918,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "DD:1",
@@ -3011,6 +3019,10 @@
     {
      "id": "DD:25",
      "title": "One concept is persisted in two stores and the editing surface writes the one the runtime read path never consults, so every edit reports success and changes nothing"
+    },
+    {
+     "id": "DD:26",
+     "title": "Backend code composes user-facing web destinations from literal hosts the web plane owns"
     }
    ]
   },

@@ -524,3 +524,24 @@ must be made at the consumer.
 from the authoritative one (verify the refresh path runs and is not itself dead); attribute bags
 read by a different consumer than the one under test — enumerate all consumers before concluding
 nothing reads it; transitional states inside a single change that also deletes the loser.
+
+## DD:26 — Backend code composes user-facing web destinations from literal hosts the web plane owns
+
+**Statement.** Backend code (email/SMS builders, redirect and return-URL composition, payment
+success links, hosted asset references) embeds the web plane's hostnames or route paths as string
+literals. The web topology is owned elsewhere and moves for its own reasons — a dashboard route is
+renamed, a surface migrates between subdomains, a brand domain changes — and every literal keeps
+composing the OLD destination. Nothing errors at build or deploy: the emails still send, the
+redirects still fire, and the drift surfaces only as user-facing 404s, broken images, or links into
+a retired surface, often weeks later and only for the flows that embed the moved piece.
+
+**Detect.** Sweep backend code trees (functions, shared layers, service hosts) for the product's
+web hostnames and for host-expression + route-path compositions. Every hit must resolve through the
+configuration owner (a config document/contract the web plane updates when topology moves) rather
+than a literal; a repo-wide verifier that fails the build on new literals is the durable form. Keep
+API-plane paths the backend itself owns out of scope — they are code, not web topology.
+
+**False positives.** The configuration loader's own bootstrap coordinates; test fixtures and the
+config document itself; asset paths appended to a config-resolved host when the path is a stable
+contract with the web repo (the HOST is the drifting half — flag compositions gluing config hosts
+to web ROUTE literals the config also owns).

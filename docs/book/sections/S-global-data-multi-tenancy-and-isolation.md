@@ -114,3 +114,25 @@ tenant-specific code or link in the body, a per-tenant reply-to address) so the
 shared identity carries no attribution load; genuinely single-tenant products;
 transactional-only one-way channels with no inbound path and a reputation profile
 the platform deliberately owns.
+
+## S:16 — Tenant-scoped storage keys assembled inline instead of through the one shared key builder
+
+**Statement.** A multi-tenant store's key discipline (tenant-prefixed partition keys, standardized
+entity segments) is owned by a shared key-builder module, but individual call sites assemble keys
+with inline template strings. Each inline copy is a private fork of the key contract: it compiles,
+matches today's shape, and silently diverges the day the shared shape evolves (a segment added, an
+identifier swapped, a prefix renamed) — the same divergence class as any private copy of a shared
+contract, but harder to see because a key template reads as data, not logic. Diverged writers
+create rows readers can never find; diverged readers miss rows that exist; either way nothing
+errors — the data is simply invisible, and in tenant-scoped stores an assembled key is also one
+typo away from crossing a tenant boundary.
+
+**Detect.** Grep application code for the store's key sigils (prefix markers, separator patterns)
+in template literals or string concatenation outside the key-builder module itself. Every
+construction site must import the shared builder; a static verifier that errors on inline key
+templates is the durable form. Verify the builder is the same one the isolation/contract layer
+declares — a second "shared" builder is the same defect one level up.
+
+**False positives.** The key-builder module's own internals; migration/backfill tooling that
+deliberately targets a retired shape (must name it); log/diagnostic strings that echo a key's
+shape without constructing one for storage I/O.

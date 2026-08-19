@@ -92,3 +92,26 @@ artifact requirement is satisfied in place — verify the retention config, not 
 low-risk purely transactional flows in jurisdictions where implied consent suffices (name the
 basis); platforms where a dedicated consent-management vendor holds the record and the
 integration stores its receipt ids per subject.
+
+## Y:16 — Raw contact identifiers embedded in storage keys, which replicate everywhere values are redacted
+
+**Statement.** A storage key (partition/sort key, cache key, rate-limit bucket, queue
+deduplication id) embeds a raw contact identifier — phone number, email address — usually because
+the key must be stable per contact (a rate limiter per destination, a dedupe per recipient). Keys
+travel where attribute VALUES never do: structured logs print them, traces and error reports carry
+them, parity/audit tooling enumerates them, stream records and backups replicate them — so every
+value-level PII control (redaction, field encryption, log scrubbing) is bypassed by the key
+itself. The defect often coexists with a correct sibling (an adjacent principal bucket already
+hashed), proving the author knew the posture and the raw variant slipped review.
+
+**Detect.** Enumerate key-construction sites for stores, caches, and limiters; flag any that
+interpolate phone/email/name-shaped inputs without a digest. The stability requirement never needs
+the raw value — a keyed hash or truncated digest of the identifier preserves per-contact
+bucketing. Confirm nothing reads the identifier BACK out of the key (parsing a key to recover a
+phone number is the same defect plus a data-model smell). Check what surfaces enumerate keys:
+verifier output, parity reports, admin tooling.
+
+**False positives.** Stores whose entire purpose is identifier lookup and which are classified,
+access-controlled, and logged accordingly (a contacts table keyed by normalized phone with a
+documented posture); opaque tenant/workspace ids that merely look identifier-shaped; digests
+mistaken for raw values.

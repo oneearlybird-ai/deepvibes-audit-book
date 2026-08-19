@@ -629,3 +629,58 @@ carry; cached elevated grants raise severity.
 run; bootstraps minting deliberately short-TTL credentials (minutes) where accumulation
 self-clears; a missing teardown compensated by a scheduled reaper provably scoped to test
 principals — verify the reaper runs and matches, not that it merely exists.
+
+## NN:30 — Every implementation of a plug-in contract is tested only against its own shape
+
+**Statement.** A registry dispatches N interchangeable implementations — providers, adapters,
+drivers — through a shared set of call sites. Each implementation ships its own test file, which
+constructs it and calls it the way that implementation happens to be written. Nothing drives every
+registration through the REAL call-site shapes, so implementations fork the contract one argument at
+a time: a factory that takes different parameters, a stream that returns a different type, a
+discovery that returns an object where the caller iterates an array. Every suite is green and a
+large fraction of the fleet is broken at the seam. The failure only appears when that implementation
+is actually exercised in production, and it appears as a different error for each one.
+
+**Detect.** Count the registrations and count the tests that invoke them THROUGH the dispatcher; if
+the second number is zero the contract is unenforced regardless of coverage. Write one conformance
+test that iterates the registry and drives every entry through each real call site, then read which
+entries fail — that number is the finding. Check the call sites too: an argument the dispatcher
+never passes is a fork on the caller's side.
+
+**False positives.** Registries with a single implementation; contracts enforced by a type system at
+the dispatch boundary with no dynamic registration.
+
+## NN:31 — A cross-repo gate resolves its reference checkout by relative traversal
+
+**Statement.** A gate in one repository validates against a generated artifact that lives in another
+repository, and it locates that sibling by walking up a fixed number of parent directories. The
+assumption holds only in the layout the author had. In any multi-checkout arrangement — private
+worker clones, nested workspaces, vendored copies — the traversal lands on an arbitrary peer whose
+contents are at an unrelated revision, and the gate grades against it with full confidence. The
+symptom is inverted: correct work fails the gate because the peer is behind, so the pressure is to
+weaken or bypass the control.
+
+**Detect.** Read how the gate resolves the sibling path and ask what else could occupy that
+position. The reference must be chosen by identity — the canonical checkout an explicit sync keeps
+on the mainline, the topmost match, a configured path — not by distance. Confirm the gate still
+emits a loud unverified verdict when no reference is found, rather than silently passing.
+
+**False positives.** Monorepos where the relative position is structurally guaranteed; gates that
+resolve by an explicit configured path already.
+
+## NN:32 — A complete parallel implementation carries a passing suite while no call path reaches it
+
+**Statement.** A second implementation of a subsystem exists in full — its own writers, resolvers,
+helpers — with a comprehensive and green test suite, and nothing in the product invokes it. The
+tests make it look load-bearing: coverage counts it, refactors maintain it, reviewers read its
+assertions as evidence the behavior is exercised. It drifts from the live path it shadows, and the
+next person to touch the area cannot tell which of the two is real. The green suite is certifying
+code the product never runs.
+
+**Detect.** For each module, trace inbound references from an entry point, not from the test file —
+a module whose only importer is its own test is unwired. Compare the two implementations' behavior
+where they overlap and note the drift; then delete the unreachable one in the same change rather
+than documenting it.
+
+**False positives.** Libraries published for external consumers; deliberately staged code behind a
+flag with a dated cutover and an owner.

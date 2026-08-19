@@ -713,3 +713,23 @@ the sound pattern and need no flag.
 observed (verify a past review happened, not that one is scheduled); evaluators whose scope is a
 closed, finished subsystem that genuinely cannot grow; constants that are performance caches of a
 living source refreshed at deploy time — verify the refresh mechanism exists and ran recently.
+
+## G:41 — A ratio detector on a low-volume surface, saturated by one misbehaving client
+
+**Statement.** A detective alarm is expressed as a RATIO — error responses over total requests —
+because the absolute count varies with traffic. On a surface whose normal volume is small, a single
+client stuck in a retry loop supplies both the numerator and most of the denominator, so the ratio
+reports the fleet-wide condition the alarm exists to catch while that condition does not exist. The
+alarm then straddles its threshold and flaps for as long as the client runs — days — and every
+transition notifies. The detector is not merely noisy: it is now incapable of distinguishing one
+broken client from total lockout, which is the only distinction it was built to make.
+
+**Detect.** Take the alarm's own window during a firing and break the responses down by client,
+credential and route. If one identity accounts for the majority, the ratio is measuring that client.
+A detector for a fleet-wide condition needs a fleet-wide signal — distinct affected principals, or
+the ratio computed with per-client contribution capped — and a per-client abuse control to stop one
+loop from dominating. Count state transitions per day as the standing health check on any ratio
+alarm.
+
+**False positives.** High-volume surfaces where no single client can move the ratio; alarms
+deliberately scoped to one client or one route.

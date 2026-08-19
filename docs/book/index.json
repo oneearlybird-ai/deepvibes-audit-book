@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 854,
+ "rule_count": 869,
  "sections": [
   {
    "id": "A",
@@ -879,7 +879,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "G:1",
@@ -1040,6 +1040,10 @@
     {
      "id": "G:40",
      "title": "A compliance evaluator embeds its model of the system as code constants, so the checker drifts from the architecture it judges and errs in both directions at once"
+    },
+    {
+     "id": "G:41",
+     "title": "A ratio detector on a low-volume surface, saturated by one misbehaving client"
     }
    ]
   },
@@ -1578,7 +1582,7 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "N:1",
@@ -1635,6 +1639,10 @@
     {
      "id": "N:14",
      "title": "Decorative ambient media exposed to assistive tech — background video announced as content"
+    },
+    {
+     "id": "N:15",
+     "title": "A static utility paints the property a component plugin's state selector owns, and layer order lets the utility win"
     }
    ]
   },
@@ -2318,7 +2326,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 19,
+   "rule_count": 21,
    "rules": [
     {
      "id": "V:1",
@@ -2395,6 +2403,14 @@
     {
      "id": "V:19",
      "title": "A dispatcher that hits a closed regulatory or quiet-hours window drops the work item instead of holding it, so the obligation silently expires with nothing recorded"
+    },
+    {
+     "id": "V:20",
+     "title": "The idempotency record is claimed at receipt, so a failed attempt makes every redelivery a duplicate"
+    },
+    {
+     "id": "V:21",
+     "title": "A total-result cap used as a page size, so the walk stops early and records a full sync"
     }
    ]
   },
@@ -2922,7 +2938,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "DD:1",
@@ -3027,6 +3043,10 @@
     {
      "id": "DD:26",
      "title": "Backend code composes user-facing web destinations from literal hosts the web plane owns"
+    },
+    {
+     "id": "DD:27",
+     "title": "A mode change governs only future items and strands everything accumulated under the old mode"
     }
    ]
   },
@@ -3096,7 +3116,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 8,
+   "rule_count": 9,
    "rules": [
     {
      "id": "FF:1",
@@ -3129,6 +3149,10 @@
     {
      "id": "FF:8",
      "title": "Transport: Outbound sending configuration leaves TLS optional — silent downgrade to cleartext SMTP"
+    },
+    {
+     "id": "FF:9",
+     "title": "Non-ASCII typography in machine-generated copy, re-encoded by a hop nobody controls"
     }
    ]
   },
@@ -3624,7 +3648,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 29,
+   "rule_count": 32,
    "rules": [
     {
      "id": "NN:1",
@@ -3741,6 +3765,18 @@
     {
      "id": "NN:29",
      "title": "The e2e harness authenticates against the production auth plane and never revokes, so real credentials accumulate in the live credential store"
+    },
+    {
+     "id": "NN:30",
+     "title": "Every implementation of a plug-in contract is tested only against its own shape"
+    },
+    {
+     "id": "NN:31",
+     "title": "A cross-repo gate resolves its reference checkout by relative traversal"
+    },
+    {
+     "id": "NN:32",
+     "title": "A complete parallel implementation carries a passing suite while no call path reaches it"
     }
    ]
   },
@@ -3766,7 +3802,7 @@
    "title": "Third-Party Data Sync & Canonical Mapping",
    "group": "third-party",
    "file": "sections/PP-third-party-data-sync-and-canonical-mapping.md",
-   "rule_count": 7,
+   "rule_count": 13,
    "rules": [
     {
      "id": "PP:1",
@@ -3795,6 +3831,30 @@
     {
      "id": "PP:7",
      "title": "Deletion detection dead-coded by a throwing transport"
+    },
+    {
+     "id": "PP:8",
+     "title": "Connection identity captured by a provider-shaped side path, not the one inbound events carry"
+    },
+    {
+     "id": "PP:9",
+     "title": "The event payload's object id is a composite the retrieval API rejects"
+    },
+    {
+     "id": "PP:10",
+     "title": "A refetch miss is read as deletion with no knowledge split"
+    },
+    {
+     "id": "PP:11",
+     "title": "Inbound mirrored records keep the provider's party reference without resolving the local party"
+    },
+    {
+     "id": "PP:12",
+     "title": "A failed parse of a provider field falls back to a locally generated value"
+    },
+    {
+     "id": "PP:13",
+     "title": "A composite display string is parsed by a splitter that does not mirror its formatter"
     }
    ]
   }

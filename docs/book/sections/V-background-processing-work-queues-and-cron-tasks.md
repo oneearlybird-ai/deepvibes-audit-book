@@ -226,3 +226,38 @@ end with no outcome field set is the defect regardless of the window logic.
 the specified behavior; windows enforced by a downstream provider that itself queues until open
 (verify the provider queues rather than rejects); systems where a separate sweeper demonstrably
 re-enqueues dropped items — verify the sweeper's query actually selects them.
+
+## V:20 — The idempotency record is claimed at receipt, so a failed attempt makes every redelivery a duplicate
+
+**Statement.** A consumer's exactly-once guard inserts the message's idempotency key on RECEIPT and
+treats the insert conflict as "already handled". Nothing distinguishes claimed-but-unfinished from
+completed. When processing then fails, the claim row remains, so the broker's redelivery — the
+mechanism that exists to recover exactly this failure — is discarded as a duplicate. The message is
+lost silently: no retry, no dead-letter, and an empty dead-letter queue that reads as health. The
+window between claim and completion is precisely the window in which failures happen.
+
+**Detect.** Read the guard's insert and its conflict arm together. A correct guard records a
+completion marker (a processed-at stamp, a terminal status) and the conflict arm re-claims rows
+whose marker is unset; only a completed row is a true duplicate. Prove it by failing a message
+mid-processing and redelivering it. In live data, count claim rows with no completion marker older
+than the visibility timeout — every one is a lost message.
+
+**False positives.** Consumers whose processing is genuinely part of the same transaction as the
+claim; at-most-once designs that document dropping as acceptable.
+
+## V:21 — A total-result cap used as a page size, so the walk stops early and records a full sync
+
+**Statement.** A paginated walk passes the source's result-limiting parameter as its page size — but
+that parameter caps the TOTAL result set, not the page (SQL-dialect `LIMIT` in a query language the
+provider evaluates once, a `max_results` the API applies to the whole query). The walk retrieves the
+cap, sees no continuation token, concludes it reached the end, and stamps the sync complete. Every
+record past the cap is invisible, permanently, and the completeness marker guarantees nothing will
+ever go back for them.
+
+**Detect.** For each paged source, read the provider's own reference for what the limiting parameter
+bounds, then test against a data set larger than the cap and assert the walked count. Treat any walk
+that both applies a limit and writes a completeness flag as suspect. In live data, look for syncs
+whose record count equals a round number exactly.
+
+**False positives.** Deliberate sampling or preview reads that do not claim completeness; sources
+whose page parameter is documented as per-page and returns a continuation token.

@@ -545,3 +545,23 @@ API-plane paths the backend itself owns out of scope — they are code, not web 
 config document itself; asset paths appended to a config-resolved host when the path is a stable
 contract with the web repo (the HOST is the drifting half — flag compositions gluing config hosts
 to web ROUTE literals the config also owns).
+
+## DD:27 — A mode change governs only future items and strands everything accumulated under the old mode
+
+**Statement.** A setting selects how incoming work is handled — review-then-accept versus accept
+automatically, manual versus scheduled, staged versus live. Flipping it changes the code path for
+items that arrive AFTER the flip and does nothing about the ones already sitting in the state the
+old mode created. The operator's mental model is a property of the system ("everything is automatic
+now"); the implementation's model is a branch in the intake path. The stranded items are in a
+holding state no path will ever drain, they are invisible on the surfaces that only show current
+behavior, and nobody discovers them until someone counts.
+
+**Detect.** For every mode/flag that routes work into a holding state, ask what the flip does to the
+existing backlog. The correct behavior is that the transition itself runs the backlog through the
+same routine the new mode uses for fresh arrivals — with failures leaving the item in its holding
+state, visible, rather than lost. Query the live store for items in the holding state whose owning
+config no longer selects that mode: every one is stranded.
+
+**False positives.** Modes where retroactive application would be wrong (a retention change that
+must not reach already-exported data); flips that are documented as forward-only with a separate,
+existing drain path.

@@ -55,3 +55,24 @@ config set entirely.
 hosts is a documented availability trade-off; providers or regions that enforce TLS unconditionally
 regardless of configuration (verify against current provider documentation); inbound/receipt-rule
 TLS settings, which gate what senders may do and carry a different availability calculus.
+
+## FF:9 — Non-ASCII typography in machine-generated copy, re-encoded by a hop nobody controls
+
+**Statement.** Templated outbound copy contains typographic characters outside ASCII — em dashes,
+curly quotes, middots, non-breaking spaces. The sender declares the right charset and renders
+correctly; somewhere along the delivery chain a gateway, list processor, archiver or client
+re-encodes the body, and the recipient reads mojibake in the middle of a sentence. The sending side
+is not at fault and cannot be fixed, which is exactly why defending against it fails: the only
+reliable control is to not emit characters the chain can mangle. Note the scope boundary — this
+applies to OUR copy, never to interpolated customer data, which must stay full Unicode so names and
+business names render correctly.
+
+**Detect.** Render every message type and scan the output for codepoints above 0x7F, separating
+template copy from interpolated values. Gate it statically, with the file list DISCOVERED from
+imports of the template module rather than hand-registered, so a sender written later is covered the
+day it exists. Confirm the templates and the transport still declare a Unicode charset for the data
+half.
+
+**False positives.** Deliberately localized copy in a language ASCII cannot express — there the fix
+is transport hardening and encoding tests, not transliteration; internal-only mail with a known
+client.

@@ -101,3 +101,24 @@ element genuinely carries no informational content before flagging.
 **False positives.** Media with speech or informational content (captions genuinely required);
 videos with visible controls; media that IS the page content (product demos, testimonials);
 decorative media already inside an `aria-hidden` ancestor.
+
+## N:15 — A static utility paints the property a component plugin's state selector owns, and layer order lets the utility win
+
+**Statement.** A form-control plugin renders interactive state by setting a property on a state
+selector in the base layer — `:checked { background-color: currentColor }` and the check glyph it
+paints on top. A utility class from a later layer sets the same property unconditionally on that
+element, and layer order gives the utility precedence over the base-layer state rule. The control
+still receives the state, still submits, still fires its handler — only the paint is lost, so the
+checked and unchecked renderings are identical. Because the state, the request and the response are
+all correct, the report arrives as "I turned it on and it shows empty" and the investigation goes to
+the data plane, where nothing is wrong.
+
+**Detect.** For every interactive control carrying a background/border/color utility, resolve the
+cascade against the plugin's state rules in the app's OWN compiled stylesheet — layer order, not
+specificity, decides this and reading the source classes will mislead you. Render the control in
+both states side by side in every theme; a checked control indistinguishable from its opposite is
+the defect. Style state through the plugin's own hooks (accent color, state variants) rather than a
+static utility.
+
+**False positives.** Controls deliberately styled from scratch with `appearance: none` and their own
+state rules; utilities scoped to a state variant rather than applied unconditionally.

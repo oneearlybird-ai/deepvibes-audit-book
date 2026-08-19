@@ -196,3 +196,26 @@ arrives per screen, so one platform or tab is usually already correct while the 
 **False positives.** Surfaces deliberately showing cached last-known-good data behind a staleness
 indicator; fire-and-forget telemetry whose failure has no user consequence — confirm it is metered
 somewhere.
+
+## K:25 — A shared entity's surface renders from a member's perspective-scoped response, going blind when no member participates
+
+**Statement.** A surface that displays a SHARED entity (a pooled wallet, a team quota, a common
+inbox) derives its numbers from a MEMBER-scoped API response that includes the shared entity's
+state only when that member currently participates in it. The shared entity's surface therefore
+has no read of its own: the moment the last member disengages (switches mode, leaves the group,
+disables the link) every response the surface can obtain omits the shared state, and the surface
+renders empty/zero while the entity's real state persists server-side. The defect hides during
+development because test flows always have at least one participating member; it surfaces exactly
+when a user round-trips membership (join then leave) and then looks at the shared surface to find
+their assets.
+
+**Detect.** For every surface that displays a shared/parent entity, trace its data source to the
+API call and confirm the call is scoped to the ENTITY, not to a member's view of it. Suspect any
+derivation of shape `sharedThing = memberResponse.sharedField` where the API conditions
+`sharedField` on the member's participation. Exercise the zero-participant state explicitly: if
+the entity can exist with no members, the surface must still render its true state.
+
+**False positives.** Fields that genuinely mean "the shared resource AS AVAILABLE TO this member"
+(a draw-eligibility figure) rendered on the MEMBER's surface — that scoping is correct; the defect
+is only borrowing that member-scoped figure for the shared entity's own display. Surfaces
+deliberately hidden when no membership exists (prove the hiding is designed, not a null fallback).

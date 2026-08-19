@@ -507,3 +507,26 @@ other path exists and actually runs for those states. Guards excluding genuinely
 where healing is undesired by design (an explicit sign-out, a decommissioned resource) are
 correct, provided the terminal transition is deliberate and the excluded state cannot be entered
 by the failure alone.
+
+## JJ:29 — A reversible-looking association moves assets on join but not on leave
+
+**Statement.** Joining an association (pooling a wallet, merging an account into a group,
+attaching a subscription to a bundle) TRANSFERS assets from the member into the shared side, and
+leaving is implemented as a mere state flip — the assets stay where joining moved them. The pair
+of operations LOOKS symmetric in the UI (connect / disconnect, add / remove), so users
+round-trip it expecting identity, and the asymmetry silently strands their assets on the shared
+side — worst when the shared side's own display is also membership-gated (see K:25), making the
+stranded assets invisible everywhere at once. The asymmetry is often defensible in isolation
+(anti-gaming, accounting simplicity) but undocumented and unconsented: nothing at the point of
+leaving tells the user what stays behind.
+
+**Detect.** For every join/leave, attach/detach, merge/unmerge pair: diff what each direction
+moves. Any asset class moved by one direction and not the other is a finding unless the
+asymmetry is (a) disclosed at the point of the irreversible action and (b) recoverable through
+some other user-reachable path (a transfer feature, an admin action). Test the round-trip as a
+user: join, then immediately leave — every balance the user could see before must be visible
+somewhere after.
+
+**False positives.** Genuinely consumed or non-returnable assets (used quota, elapsed time,
+settled charges); asymmetries explicitly presented and confirmed in the leave flow; asset
+returns deferred by policy with a visible pending state.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 852,
+ "rule_count": 854,
  "sections": [
   {
    "id": "A",
@@ -1307,7 +1307,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "K:1",
@@ -1404,6 +1404,10 @@
     {
      "id": "K:24",
      "title": "Failure with no rendering: failed loads read as empty, failed actions read as success"
+    },
+    {
+     "id": "K:25",
+     "title": "A shared entity's surface renders from a member's perspective-scoped response, going blind when no member participates"
     }
    ]
   },
@@ -3292,7 +3296,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "JJ:1",
@@ -3405,6 +3409,10 @@
     {
      "id": "JJ:28",
      "title": "A recovery loop's run-guard requires a state the failure it heals transitions away from"
+    },
+    {
+     "id": "JJ:29",
+     "title": "A reversible-looking association moves assets on join but not on leave"
     }
    ]
   },

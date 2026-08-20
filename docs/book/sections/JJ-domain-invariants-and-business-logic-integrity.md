@@ -530,3 +530,36 @@ somewhere after.
 **False positives.** Genuinely consumed or non-returnable assets (used quota, elapsed time,
 settled charges); asymmetries explicitly presented and confirmed in the leave flow; asset
 returns deferred by policy with a visible pending state.
+
+## JJ:30 — A validation path requires attributes only the native creation lane stamps, so mirrored records are refused
+
+**Statement.** A pre-write check — availability, capacity, eligibility — resolves the record's
+dependencies from attributes that exist only because the native creation flow wrote them. Records
+that entered through a mirror or import carry the business facts but not those internal
+dependencies, so the check refuses them with a validation error meant for corruption. The user-
+visible effect is that an entire class of legitimate records cannot be acted on, and the error text
+points at data quality rather than at the check's assumption.
+
+**Detect.** For every validation that reads structural attributes, ask which writers stamp them.
+Give externally-sourced records an explicit branch that validates on what they DO carry (duration,
+time, status) and leaves the external system as the validator of record; keep the loud failure for
+natively-created records missing the same attributes, where it really is corruption. Test the action
+against a mirrored record.
+
+**False positives.** Checks whose refusal is the intended product behaviour for external records.
+
+## JJ:31 — No actor/subject distinction, so the platform's own people are minted as customers
+
+**Statement.** An integration mirrors people from an external system into the customer table. The
+external system also holds records for the operators themselves — the account holder, the staff, the
+signup user, seeded demo contacts. Nothing in the mirror asks whether an identity belongs to the
+business's own personnel, so the business appears in its own customer list, receives its own
+campaigns, and can be matched as the caller on its own bookings.
+
+**Detect.** Both creation lanes — direct mirroring and resolution during a related write — must ask
+the workspace's own user directory whether the identity is internal, and skip with a structured log
+when it is. The check should be best-effort with the log as the alarm, so an availability failure in
+the directory does not stop the mirror. Test with an identity present in both directories.
+
+**False positives.** Products where staff are legitimately also customers, provided the dual role is
+explicit rather than accidental.

@@ -208,3 +208,19 @@ override); a genuinely single-agent account where a reconcile-time check asserts
 that agent's attachments; overrides intentionally absent or empty so the baseline surface applies;
 a vendor-documented guarantee that unknown ids are ignored — still record that as an accepted-risk
 posture with the guarantee cited, because it is the vendor's to revoke.
+
+## R:18 — The apply re-derives the vendor's child records and drops the fields only a separate seeding lane writes
+
+**Statement.** Configuration for a hosted agent platform is applied from source: the apply
+re-materializes the vendor's derived child records (per-agent tool records, per-record overrides).
+The vendor rewrites those records bare — the fields that only a separate, manually-run seeding
+script ever wrote come back null on the same record ids. Nothing re-seeds, because seeding was never
+part of the apply. Every subsequent call fails vendor-side, before any request reaches the
+integrator's own servers, so the integrator's telemetry shows nothing at all.
+
+**Detect.** Enumerate every field of a vendor-derived record and name the lane that writes it. Any
+field written by a lane the apply does not run is lost on the next apply. Fold the seeding into the
+reconciler: queue it whenever the apply patches config or creates an agent, treat bare records as
+drift in the check mode, and fail the converge red on any uncovered record.
+
+**False positives.** Vendor records the platform genuinely owns end to end.

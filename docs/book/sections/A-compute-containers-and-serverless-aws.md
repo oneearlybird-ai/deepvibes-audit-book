@@ -352,3 +352,19 @@ event followed by a forced deployment of the same superseded revision.
 **False positives.** Pipelines that always register a fresh revision immediately before deploying —
 the register step is the explicit naming; and platforms whose services genuinely track a mutable
 "latest of family" pointer — verify the platform's actual semantics before assuming either way.
+
+## A:42 — The scaling group's launch template pins a literal image id, so promotion plus a refresh relaunches the old image
+
+**Statement.** A bake pipeline builds a new machine image and a promote step marks it current, but
+the scaling group's launch template carries a LITERAL image id — either written as one, or resolved
+from the promoted pointer at plan time and frozen into the template version at apply time. An instance refresh therefore relaunches the SAME image the group already ran and
+reports Successful — the operator sees a green rollout and believes the new code is live. The real
+rollout step is whatever applies the template with the new id.
+
+**Detect.** Read the launch template's image field: a literal id means the refresh is not a rollout.
+Verify a deployment by reading the running instance's image id and its creation date, never by the
+refresh status. Where a resolvable pointer (parameter, alias) is supported, use it so promote and
+refresh compose.
+
+**False positives.** Deliberately pinned fleets where the template apply IS the documented rollout
+step and the runbook says so.

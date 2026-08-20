@@ -565,3 +565,20 @@ config no longer selects that mode: every one is stranded.
 **False positives.** Modes where retroactive application would be wrong (a retention change that
 must not reach already-exported data); flips that are documented as forward-only with a separate,
 existing drain path.
+
+## DD:28 — A setting scoped to standalone syncs is enforced on a dependency of an explicitly requested write
+
+**Statement.** A per-workspace setting governs whether the system may create records of some type in
+an external system on its own initiative. The write path enforces it everywhere that type appears,
+including where the record is a REQUIRED dependency of an action the user explicitly asked for — the
+customer a booking must be attached to. With the setting off, the requested write is impossible by
+construction: the external system refuses the parent for the missing child, and the user is told the
+write failed with the provider's error, not the setting's name.
+
+**Detect.** For each governed side effect, separate initiative from dependency: the setting should
+govern standalone synchronisation, while a dependency of an explicitly requested operation is part
+of that operation. Where the restriction is genuinely meant to bind, the pre-check must refuse the
+parent action by name rather than letting the provider refuse it.
+
+**False positives.** Compliance-driven settings that legitimately forbid the whole operation, when
+the refusal is surfaced as such.

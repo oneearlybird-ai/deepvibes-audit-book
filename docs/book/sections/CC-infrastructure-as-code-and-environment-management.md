@@ -355,3 +355,36 @@ ENIs — is the cheapest standing detector.
 runbook, and the runbook's absence is itself the finding; compliance-retention environments;
 shared-services environments consumed cross-VPC — verify via peering/TGW/RAM shares BEFORE
 declaring them dead. Checking topology first is exactly what separates demolition from outage.
+
+## CC:22 — Tag values carrying characters the tagging API rejects, so the apply dies partway
+
+**Statement.** A resource is declared with a descriptive tag containing punctuation the provider's
+tagging API does not accept. Validation and plan both pass — neither validates tag value charsets —
+and the apply fails at create time. Because the failure lands mid-apply, sibling resources created
+earlier in the same run survive: the queue's dead-letter partner exists while the queue itself does
+not, and the next apply starts from a half-built state.
+
+**Detect.** Keep tag values inside the provider's documented charset (the conservative intersection
+across providers is alphanumerics, spaces, and + - = . _ : / @). Prefer a lint or a shared tagging
+module over per-resource literals, and inspect what a failed apply DID create before re-running.
+
+**False positives.** Providers documented to accept the character in question.
+
+## CC:23 — An emergency direct-to-production change recorded only in a commit message
+
+**Statement.** A governed estate keeps a register of changes made by direct call rather than through
+the deploy lanes, and that register is what blocks subsequent applies until an owner reviews the
+divergence. An operator fixes live data or live vendor state in the same breath as the code fix and
+describes it in the commit message instead of the register. The commit message is not machine-read
+by anything: the register stays empty, the apply gate stays green, and the next apply runs against a
+world nobody declared had been touched. The repair may well have been correct — the loss is that the
+one control designed to catch an undeclared divergence never sees it.
+
+**Detect.** Grep the window's commit messages for the vocabulary of direct action ("repaired by
+hand", "already run live", "seeded", "stamped directly", "deleted the row") and diff that set against
+the register's entries for the same window. Any live mutation with no entry is the defect, whatever
+its merit. Where the mutated system is a vendor rather than the cloud account, decide explicitly
+whether the register covers it and write that scope down.
+
+**False positives.** Changes made THROUGH a lane the register does not cover by design; rehearsals
+in a non-production account.

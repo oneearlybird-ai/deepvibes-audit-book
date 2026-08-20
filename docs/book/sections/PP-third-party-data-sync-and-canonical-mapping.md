@@ -252,3 +252,170 @@ the structured fields and reserving the composite for display only.
 
 **False positives.** Strictly specified grammars with a shared implementation on both sides;
 display-only strings never parsed back.
+
+## PP:14 — The shared outbound transport omits the media type every provider requires, and every test fake accepts a bare body
+
+**Statement.** A generic writer composes the request body for many providers and adds only
+authorization; declaring the content type is left to each provider adapter, and none of them does
+it. Locally nothing fails: the test doubles read the body they were handed and never inspect
+headers, so the whole suite is green. The first real call to any provider that parses by media type
+is refused at the edge with a generic 4xx, and the body — which is correct — is blamed last.
+
+**Detect.** Read the one place requests are composed and list the headers it always sets. Any
+structured body (JSON, form, XML) with no media type is the defect. Then read the transport fake:
+if it never asserts headers, the suite cannot catch it. Assert the composed header set in the
+writer's own tests, not in each adapter's.
+
+**False positives.** Transports whose SDK sets the header below the seam; providers documented to
+sniff the body.
+
+## PP:15 — The normalizer implements one of the two identity shapes its upstreams emit
+
+**Statement.** Two families of upstream feed one normalizer — a bespoke integration that joins the
+party onto the record, and a mapper fleet that publishes the party beside it under a different key.
+The normalizer reads only the shape the first family produces. Every provider in the other family
+lands records with no party resolved: no phone, no local contact row, no identity key. Nothing
+errors, and the gap is invisible until someone connects one of those providers for real.
+
+**Detect.** Enumerate the shapes the normalizer's inputs can take by reading each producer, not the
+normalizer's own type hints. Drive one realistic payload per producer through the real normalizer
+and assert the resolved identity, rather than trusting a fixture written from the shape the author
+had in mind.
+
+**False positives.** A deliberately single-shape seam with a validating gate that rejects the other
+shape loudly at the boundary.
+
+## PP:16 — Fan-out honours the originating system's object id against every other system
+
+**Statement.** A record synchronised to several external systems carries the external id of
+whichever system it came from. The fan-out passes that id to each target: the second system resolves
+it as one of its own, and either 404s (the write dies) or — worse — matches an unrelated object.
+The hub design is correct; the identity scoping is not. One system's record never reaches the
+others, and the failure reads as a transport error.
+
+**Detect.** At the one chokepoint above the per-provider branches, check that a carried external id
+is honoured only when its origin equals the target. Every other target must resolve its own object
+from what the hub recorded, and create when it has none. Test with a job whose payload carries a
+foreign id and assert the target never requests that id.
+
+**False positives.** Genuinely shared identifier spaces (a single vendor's multi-product ids).
+
+## PP:17 — Change events omit the hub row's own id, so the return path cannot match and mints a duplicate
+
+**Statement.** The system writes an object into an external system and remembers the pairing. When
+the change comes back — the write's own echo, or a later edit made over there — the event carries
+only the external id and the payload. The consumer looks for a local row by the identity it has,
+finds none, and creates a second one. Now two rows track one object and each edit ping-pongs
+between them.
+
+**Detect.** Read the change envelope's fields and confirm the hub id rides along, sourced from the
+pairing the writer stored. Then read the consumer's match order. Prove it with an edit made in the
+external system to an object the fan-out itself created: exactly one local row must exist
+afterwards, with its origin unchanged.
+
+**False positives.** Systems where the external id IS the canonical id by design.
+
+## PP:18 — A single provider-refused field aborts the whole write instead of retrying without it
+
+**Statement.** The write carries several identity fields — phone, email, name. The provider
+validates one of them and refuses the request. The client treats the refusal as fatal for the whole
+operation, so a cosmetically bad phone number costs the entire booking rather than the phone number.
+The blast radius is set by the provider's strictest validator, not by what the operation needs.
+
+**Detect.** For each provider-validated field, ask what the correct outcome is when only that field
+is refused. The write should drop the field, re-derive any key computed from it, and retry with the
+surviving identity — stopping only when nothing searchable is left rather than creating an
+unmatchable record. Test with a payload the provider is documented to reject on one field.
+
+**False positives.** Fields the provider requires; refusals that indicate the whole record is
+malformed.
+
+## PP:19 — Each mapper decides its own field coverage, so an omission is indistinguishable from an absent field
+
+**Statement.** A fleet of provider mappers converts inbound records into one canonical shape. There
+is no declared canonical field set, so each mapper's coverage is whatever its author read that day.
+A field the provider sends and the mapper never reads is silently absent downstream, and no test can
+see it: every mapper is tested only against the shape it already produces. The gap surfaces as
+"the data is in their system but not in ours", provider by provider, forever.
+
+**Detect.** Declare the canonical field set as data — type, direction, ownership — and require every
+mapper to answer for EVERY field: a source path, an explicit derivation, or an explicit null meaning
+the provider does not carry it. Gate on total coverage and unknown keys. Derive each map from the
+mapper's actual code, never from intent.
+
+**False positives.** Genuinely provider-specific extensions carried in a documented extras bag.
+
+## PP:20 — The mirror's merge is add-only, so a value the source cleared never clears locally
+
+**Statement.** Inbound synchronisation merges the provider's record over the existing local row.
+Fields present in the payload are written; fields absent are preserved. That is right for
+locally-owned data and wrong for provider-owned display fields: when the provider clears a value —
+or a bad value is corrected upstream to nothing — the stale local copy survives every subsequent
+sync. A fix applied at the source appears not to work, and the row disagrees with the system of
+record indefinitely.
+
+**Detect.** Classify each mirrored field by owner. For provider-owned fields the merge must set when
+present and REMOVE when absent, with an explicit exception only for a transient lookup failure that
+is distinguishable from a clean absence. Test the clearing case directly: mirror a value, then
+mirror the same record without it.
+
+**False positives.** Sparse provider payloads that legitimately omit unchanged fields (patch
+semantics) — there, absence carries no information and add-only is correct.
+
+## PP:21 — Whitespace-only provider values pass truthiness and render as blanks
+
+**Statement.** An external record answers a display field with a single space rather than null.
+Every guard in the path tests truthiness, so the value flows through the mapper, the store and the
+component, and the surface renders an empty chip that cannot be clicked, searched, or explained.
+Downstream "is it set?" logic is wrong in the same direction: the record looks configured.
+
+**Detect.** Trim at the source of the ingestion and again in the mapper, mapping whitespace-only to
+null. Search the codebase for truthiness guards on external display strings. Test with a record
+whose display field is a single space.
+
+**False positives.** Fields where whitespace is meaningful content (formatted blocks).
+
+## PP:22 — An entire model class of the provider's change stream is unimplemented, so identity that only exists there never arrives
+
+**Statement.** The provider's change stream carries several model types. The consumer implements the
+one the feature was built for and drops the rest, usually behind a comment saying the others are not
+built yet. For reference-style systems the dropped model is exactly where the contact details live:
+the appointment references a person, and the person record — the only carrier of the phone number —
+is never mirrored. Every downstream feature keyed on that identity is silently dead for those
+providers.
+
+**Detect.** List the model types the provider emits and diff against the consumer's switch. For each
+dropped type ask what data exists ONLY on that model. Then trace one live payload from each type
+through to storage.
+
+**False positives.** Model types genuinely irrelevant to the product, dropped with a counted metric
+rather than silence.
+
+## PP:23 — The write path has no op resolution, so every change is sent as a create
+
+**Statement.** The outbound writer branches by provider but not by operation: whatever the change
+was, it calls the provider's create endpoint. A local edit therefore duplicates the object on the
+provider's side rather than moving it, and the duplicate then syncs back as a new record. Because
+the create succeeds, every signal available says the write worked.
+
+**Detect.** For each provider branch, resolve the provider-side object FIRST — from the mapping the
+system stored, or the provider's own records — and choose create/update/cancel from what was found
+plus the change's own intent. Assert in tests that an update-shaped job never reaches the create
+endpoint.
+
+**False positives.** Append-only provider APIs with no update verb.
+
+## PP:24 — The loop breaker keys on the row's permanent origin instead of the change's origin
+
+**Statement.** Bidirectional synchronisation needs an echo breaker: a change that arrived FROM a
+system must not be written back TO it. The breaker is implemented against the row's stored source —
+a permanent attribute naming where the record came from originally. Every later change to that row
+therefore looks like an echo of that system, including edits a user just made locally, and they are
+dropped. The symptom is "changes made here never reach there", with no error anywhere.
+
+**Detect.** Confirm the breaker compares the PER-CHANGE origin (stamped by whichever lane wrote
+this version) against the target, never the row's creation source. Check that every writing lane
+stamps it — including cosmetic patch paths, which must not inherit the mirror's marker. Test a local
+edit to a mirrored row and assert it dispatches.
+
+**False positives.** Single-direction mirrors where no local write exists.

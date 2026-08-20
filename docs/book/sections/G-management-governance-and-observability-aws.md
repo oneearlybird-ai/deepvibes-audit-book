@@ -733,3 +733,36 @@ alarm.
 
 **False positives.** High-volume surfaces where no single client can move the ratio; alarms
 deliberately scoped to one client or one route.
+
+## G:42 — The fail-closed dependency client names the transport status but never the resource requested
+
+**Statement.** A shared client resolves configuration, parameters, or secrets and fails closed on
+any non-success — correct behaviour. But the error it throws carries only the status code: not the
+key requested, not the owning scope, not the operation. When it fires inside an asynchronous
+consumer the work dead-letters with a stack trace that names the helper and nothing else, so the
+dead-lettered item cannot be attributed to a resource, an owner, or a cause without manually reading
+the queue. The fail-closed posture is sound and its diagnosability is zero.
+
+**Detect.** Every fail-closed throw carries the identity of what it was resolving (the key or path —
+never the value) and the caller's own context stamps the log line before the dependency is touched.
+Read a real failure end to end and ask: from this log alone, can I name the record, the owning
+scope, and the resource? If not, the instrumentation is the defect.
+
+**False positives.** Paths where the identifier is itself sensitive — there, log a stable hash.
+
+## G:43 — A vendor-side failure that never reaches our compute produces no metric, so a total outage is invisible
+
+**Statement.** An integration's requests are validated and rejected by the vendor's own platform
+before they are forwarded to the integrator's endpoint. Every alarm the integrator owns is defined
+over its own telemetry — invocations, errors, latency — and all of them stay green, because there is
+nothing to count. The capability can be one hundred percent dead for days and the only detector left
+is a human noticing. Absence of traffic is the signal, and nothing watches for it.
+
+**Detect.** For each externally-triggered capability, define a detector on EXPECTED activity, not on
+errors: a low-volume or no-data alarm on the inbound metric over a window wider than normal quiet
+periods, and a synthetic exercise where volume is naturally sporadic. Reconcile periodically with
+whatever the vendor exposes (call/tool logs) so vendor-side rejections are pulled into our
+telemetry.
+
+**False positives.** Genuinely intermittent capabilities where the quiet window cannot be bounded —
+there, prefer the synthetic probe to a volume alarm.

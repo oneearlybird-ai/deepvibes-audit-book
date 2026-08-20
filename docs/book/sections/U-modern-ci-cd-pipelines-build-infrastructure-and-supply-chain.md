@@ -428,3 +428,18 @@ file committed in history is the scar of a previous undiagnosed hit.
 before flagging); hosts that resolve LFS at build time when the objects exist
 server-side; deliberate pointer-only mirrors; repos whose LFS patterns match no
 tracked file.
+
+## U:34 — The edit script reports success unconditionally, so a replacement that matched nothing looks applied
+
+**Statement.** A helper script rewrites a file — a doc addendum, a config block, a generated section
+— with a search-and-replace, then prints success. It never asserts that the search matched. A
+whitespace drift, a reflowed line, or an earlier edit makes the match fail; the script prints
+success, the caller commits, and the change is simply absent. The commit message describes work the
+tree does not contain, and the omission is discovered whenever someone next reads the file.
+
+**Detect.** Every programmatic edit asserts its match count and exits non-zero on zero matches.
+Where the edit is meant to be idempotent, assert either "applied once" or "already present" — never
+an unconditional success print. After any scripted edit, diff the file rather than trusting the
+script's own report.
+
+**False positives.** Genuinely optional edits that log clearly which branch they took.

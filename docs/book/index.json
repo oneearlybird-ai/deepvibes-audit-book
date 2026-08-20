@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 869,
+ "rule_count": 895,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "A:1",
@@ -174,6 +174,10 @@
     {
      "id": "A:41",
      "title": "Deployment auto-rollback rewrites the service's desired definition, so the natural retry — \"redeploy latest\" — faithfully redeploys the rollback"
+    },
+    {
+     "id": "A:42",
+     "title": "The scaling group's launch template pins a literal image id, so promotion plus a refresh relaunches the old image"
     }
    ]
   },
@@ -718,7 +722,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "F:1",
@@ -871,6 +875,10 @@
     {
      "id": "F:38",
      "title": "The security scanner's own principal is exempted from its scans, so dead privileged grants on the audit tooling outlive every review"
+    },
+    {
+     "id": "F:39",
+     "title": "The resource-family grant is added to one of several sibling shared policies"
     }
    ]
   },
@@ -879,7 +887,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 41,
+   "rule_count": 43,
    "rules": [
     {
      "id": "G:1",
@@ -1044,6 +1052,14 @@
     {
      "id": "G:41",
      "title": "A ratio detector on a low-volume surface, saturated by one misbehaving client"
+    },
+    {
+     "id": "G:42",
+     "title": "The fail-closed dependency client names the transport status but never the resource requested"
+    },
+    {
+     "id": "G:43",
+     "title": "A vendor-side failure that never reaches our compute produces no metric, so a total outage is invisible"
     }
    ]
   },
@@ -1311,7 +1327,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "K:1",
@@ -1412,6 +1428,10 @@
     {
      "id": "K:25",
      "title": "A shared entity's surface renders from a member's perspective-scoped response, going blind when no member participates"
+    },
+    {
+     "id": "K:26",
+     "title": "A per-row action's pending state stored hook-wide"
     }
    ]
   },
@@ -1874,7 +1894,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "R:1",
@@ -1943,6 +1963,10 @@
     {
      "id": "R:17",
      "title": "Per-call tool-id overrides resolved from an account-wide name→id map while the platform mints tool records per agent — the override cites records the agent does not own, silently dropped until a vendor-side validation rollout kills every call at initiation"
+    },
+    {
+     "id": "R:18",
+     "title": "The apply re-derives the vendor's child records and drops the fields only a separate seeding lane writes"
     }
    ]
   },
@@ -2185,7 +2209,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 33,
+   "rule_count": 34,
    "rules": [
     {
      "id": "U:1",
@@ -2318,6 +2342,10 @@
     {
      "id": "U:33",
      "title": "A hook manager's core.hooksPath displaces the git-lfs hooks, so pushes publish pointer files whose objects never upload"
+    },
+    {
+     "id": "U:34",
+     "title": "The edit script reports success unconditionally, so a replacement that matched nothing looks applied"
     }
    ]
   },
@@ -2845,7 +2873,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 21,
+   "rule_count": 23,
    "rules": [
     {
      "id": "CC:1",
@@ -2930,6 +2958,14 @@
     {
      "id": "CC:21",
      "title": "A renamed or relocated workload leaves its origin environment standing — sealed, empty, and billing — because the migration program had no demolition step"
+    },
+    {
+     "id": "CC:22",
+     "title": "Tag values carrying characters the tagging API rejects, so the apply dies partway"
+    },
+    {
+     "id": "CC:23",
+     "title": "An emergency direct-to-production change recorded only in a commit message"
     }
    ]
   },
@@ -2938,7 +2974,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "DD:1",
@@ -3047,6 +3083,10 @@
     {
      "id": "DD:27",
      "title": "A mode change governs only future items and strands everything accumulated under the old mode"
+    },
+    {
+     "id": "DD:28",
+     "title": "A setting scoped to standalone syncs is enforced on a dependency of an explicitly requested write"
     }
    ]
   },
@@ -3251,7 +3291,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "II:1",
@@ -3312,6 +3352,10 @@
     {
      "id": "II:15",
      "title": "Broadcasts: cross-context announcements emitted before the announced multi-step transition commits"
+    },
+    {
+     "id": "II:16",
+     "title": "A version-guarded conditional write applied to rows a second writer creates without the version"
     }
    ]
   },
@@ -3320,7 +3364,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 29,
+   "rule_count": 31,
    "rules": [
     {
      "id": "JJ:1",
@@ -3437,6 +3481,14 @@
     {
      "id": "JJ:29",
      "title": "A reversible-looking association moves assets on join but not on leave"
+    },
+    {
+     "id": "JJ:30",
+     "title": "A validation path requires attributes only the native creation lane stamps, so mirrored records are refused"
+    },
+    {
+     "id": "JJ:31",
+     "title": "No actor/subject distinction, so the platform's own people are minted as customers"
     }
    ]
   },
@@ -3648,7 +3700,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 32,
+   "rule_count": 34,
    "rules": [
     {
      "id": "NN:1",
@@ -3777,6 +3829,14 @@
     {
      "id": "NN:32",
      "title": "A complete parallel implementation carries a passing suite while no call path reaches it"
+    },
+    {
+     "id": "NN:33",
+     "title": "The comment-stripper removes block comments before line comments, so one line comment swallows the file"
+    },
+    {
+     "id": "NN:34",
+     "title": "Coverage judged after de-duplicating records by display name"
     }
    ]
   },
@@ -3802,7 +3862,7 @@
    "title": "Third-Party Data Sync & Canonical Mapping",
    "group": "third-party",
    "file": "sections/PP-third-party-data-sync-and-canonical-mapping.md",
-   "rule_count": 13,
+   "rule_count": 24,
    "rules": [
     {
      "id": "PP:1",
@@ -3855,6 +3915,50 @@
     {
      "id": "PP:13",
      "title": "A composite display string is parsed by a splitter that does not mirror its formatter"
+    },
+    {
+     "id": "PP:14",
+     "title": "The shared outbound transport omits the media type every provider requires, and every test fake accepts a bare body"
+    },
+    {
+     "id": "PP:15",
+     "title": "The normalizer implements one of the two identity shapes its upstreams emit"
+    },
+    {
+     "id": "PP:16",
+     "title": "Fan-out honours the originating system's object id against every other system"
+    },
+    {
+     "id": "PP:17",
+     "title": "Change events omit the hub row's own id, so the return path cannot match and mints a duplicate"
+    },
+    {
+     "id": "PP:18",
+     "title": "A single provider-refused field aborts the whole write instead of retrying without it"
+    },
+    {
+     "id": "PP:19",
+     "title": "Each mapper decides its own field coverage, so an omission is indistinguishable from an absent field"
+    },
+    {
+     "id": "PP:20",
+     "title": "The mirror's merge is add-only, so a value the source cleared never clears locally"
+    },
+    {
+     "id": "PP:21",
+     "title": "Whitespace-only provider values pass truthiness and render as blanks"
+    },
+    {
+     "id": "PP:22",
+     "title": "An entire model class of the provider's change stream is unimplemented, so identity that only exists there never arrives"
+    },
+    {
+     "id": "PP:23",
+     "title": "The write path has no op resolution, so every change is sent as a create"
+    },
+    {
+     "id": "PP:24",
+     "title": "The loop breaker keys on the row's permanent origin instead of the change's origin"
     }
    ]
   }

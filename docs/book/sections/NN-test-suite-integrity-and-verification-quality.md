@@ -684,3 +684,35 @@ than documenting it.
 
 **False positives.** Libraries published for external consumers; deliberately staged code behind a
 flag with a dated cutover and an owner.
+
+## NN:33 — The comment-stripper removes block comments before line comments, so one line comment swallows the file
+
+**Statement.** A static gate strips comments before asserting that a pattern is absent from (or
+present in) source. The stripper runs the block-comment pass first. Any line comment containing the
+block-open sequence — a commented-out glob, a URL, a regex — opens a block the pass then closes
+hundreds of lines later, deleting everything between. The gate now reads a truncated file: absence
+checks pass vacuously and presence checks report a live construct as missing. The gate is green and
+blind, and the failure is invisible to review because the file on disk is correct.
+
+**Detect.** Strip line comments FIRST, then block comments, and pin the order with a test whose
+fixture contains a line comment holding a block-open sequence. Any absence check that reads
+comment-stripped source needs a negative test proving it fails on a planted violation — a gate that
+never goes red on purpose has never been shown to work.
+
+**False positives.** Real tokenizer-based strippers that track string and comment state properly.
+
+## NN:34 — Coverage judged after de-duplicating records by display name
+
+**Statement.** A verifier walks a set of platform records and reports whether each is configured.
+The records are keyed into a map by their human name, so several generations of the same-named
+record collapse into one entry — and the survivor is whichever the listing ordered last. The
+verifier then inspects that single instance, finds it correct, and reports complete coverage while
+the instances actually attached to the running system are unconfigured. The check is not just weak;
+it reliably inspects the wrong object.
+
+**Detect.** Judge coverage per RECORD identity, never per name, and report the count of records
+examined alongside the verdict. Where several generations exist, assert on the ones the live
+attachment points reference. A verifier that cannot say how many objects it checked cannot be
+trusted to have checked yours.
+
+**False positives.** Namespaces where the name is the platform's real primary key.

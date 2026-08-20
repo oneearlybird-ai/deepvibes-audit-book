@@ -228,3 +228,20 @@ that cannot clobber the winning outcome.
 **Detect.** For each cross-context broadcast, locate it relative to the full sequence it announces: any awaited mutations after the emit are windows where observers see intermediate state. Then check whether observers re-sync on anything other than the broadcast — if it is their only trigger, the intermediate adoption is sticky. Special attention to auth flows: login broadcasts fired before scope/tenant re-assertion completes.
 
 **False positives.** Broadcasts carrying the final payload inline (observers do not re-read shared state); observers that debounce/poll the source of truth after the event; sequences whose intermediate state is a valid final state.
+
+## II:16 — A version-guarded conditional write applied to rows a second writer creates without the version
+
+**Statement.** One lane writes rows with an optimistic-concurrency attribute and guards every update
+on it. A second lane — an import, a mirror, a backfill — writes the same table as plain projections
+and never stamps that attribute. The guarded update then binds its condition against an attribute
+that does not exist: many clients strip the undefined value from the expression entirely, and the
+store rejects the condition. Every user action against that whole class of rows fails, usually as an
+opaque 500, while the same action on natively created rows works perfectly.
+
+**Detect.** For each conditionally-guarded write, enumerate EVERY writer that creates rows in that
+table and confirm each stamps the guard attribute — or that the guarded path takes an explicit
+branch for rows without it. Grep for row-creating writes that omit the attribute. Test the guarded
+operation against a row created by each writer, not just the primary one.
+
+**False positives.** Tables where a single writer is structurally guaranteed; guards written to
+tolerate absence explicitly (`attribute_not_exists OR version = :v`).

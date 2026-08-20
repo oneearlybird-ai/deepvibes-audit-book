@@ -571,3 +571,22 @@ the full module, not just the hot path, before calling a grant dead; break-glass
 with an owner and a review date; scanners whose role is deliberately shared with a remediation
 component that does use the privilege — verify the sharing is intentional and documented, then
 flag the sharing itself as its own least-privilege finding.
+
+## F:39 — The resource-family grant is added to one of several sibling shared policies
+
+**Statement.** Several shared "sidecar" policies grant the common runtime reads (config, parameters,
+secrets), one per domain, and consumers attach whichever matches their domain. A new per-resource
+parameter family is added to the domain policy of the team that introduced it. Every other domain's
+policy is untouched, so consumers attached to those fail closed at runtime — and because the read
+goes through a local sidecar extension, the failure surfaces as an opaque transport status rather
+than an access denial. The code, the parameter, and the resource all exist; only the grant does not,
+in a subset of policies nobody diffs.
+
+**Detect.** For each helper that resolves a per-resource pointer, list every function that calls it,
+resolve each one's role to the policies actually attached (inline AND managed), and diff the granted
+resource patterns against what the helper builds. Any consumer whose policy set lacks the pattern is
+dead on that path. Gate it: the set of callers and the set of grants are one contract, and it can be
+checked statically.
+
+**False positives.** Consumers where the call is genuinely unreachable — prove it by call path, not
+by absence of reports.

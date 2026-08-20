@@ -219,3 +219,17 @@ the entity can exist with no members, the surface must still render its true sta
 (a draw-eligibility figure) rendered on the MEMBER's surface — that scoping is correct; the defect
 is only borrowing that member-scoped figure for the shared entity's own display. Surfaces
 deliberately hidden when no membership exists (prove the hiding is designed, not a null fallback).
+
+## K:26 — A per-row action's pending state stored hook-wide
+
+**Statement.** A list renders an action per row and the hook backing it keeps one pending flag. The
+first click puts every row's control into its pending state: the whole list appears to be working,
+several controls look disabled at once, and the user cannot tell which action is actually running.
+If two rows are clicked in sequence the flag also clears on the first completion, releasing controls
+whose work is still in flight.
+
+**Detect.** Key pending state by the row identity the action targets and read it as
+pending === id. In review, any list-level action whose loading state is a bare boolean is the
+defect. Test by rendering two rows and asserting the sibling's control is unaffected.
+
+**False positives.** Genuinely list-wide operations (refresh all, bulk apply).

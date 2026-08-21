@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 895,
+ "rule_count": 897,
  "sections": [
   {
    "id": "A",
@@ -887,7 +887,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "G:1",
@@ -1060,6 +1060,10 @@
     {
      "id": "G:43",
      "title": "A vendor-side failure that never reaches our compute produces no metric, so a total outage is invisible"
+    },
+    {
+     "id": "G:44",
+     "title": "An absolute-count error alarm whose threshold exceeds the surface's own per-period traffic, so total failure cannot reach it"
     }
    ]
   },
@@ -2209,7 +2213,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "U:1",
@@ -2346,6 +2350,10 @@
     {
      "id": "U:34",
      "title": "The edit script reports success unconditionally, so a replacement that matched nothing looks applied"
+    },
+    {
+     "id": "U:35",
+     "title": "IaC adopts part of a console-created resource group and records the rest as skipped, leaving an unmanaged sibling that can never work"
     }
    ]
   },

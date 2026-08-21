@@ -443,3 +443,27 @@ an unconditional success print. After any scripted edit, diff the file rather th
 script's own report.
 
 **False positives.** Genuinely optional edits that log clearly which branch they took.
+
+## U:35 — IaC adopts part of a console-created resource group and records the rest as skipped, leaving an unmanaged sibling that can never work
+
+**Statement.** A resource group is first created through a console convenience flow, which
+provisions several linked objects at once. The infrastructure code is written afterwards and adopts
+only the members the authors consider real, marking the others in a comment as skipped because they
+came from the quick-create path. The skipped objects are not deleted — they stay live, outside the
+state file, invisible to plan and to drift review, and they keep serving traffic. Because the
+supporting grants are written to cover only the adopted members, the unadopted path is live but
+permission-less: it matches requests, attempts its downstream call, is refused, and returns a
+server error to the caller. The comment that documents the omission is the only record that the
+path exists, and prose in a definition file is not a control. Every review reads the managed
+resources and concludes the surface is correct.
+
+**Detect.** Enumerate the live members of each resource group from the provider API and diff that
+set against the IaC state — never against the IaC source, which by construction omits what was
+skipped. Treat any live member absent from state as a finding regardless of comments. For each
+unmanaged member, follow its downstream call and check whether a grant covers it; a path with no
+grant is permanently broken and should be deleted, not adopted. Grep IaC for comments naming a
+resource id as skipped, ignored, or created out of band — each one marks a live object nothing owns.
+
+**False positives.** Resources deliberately owned by a different state file or team, where the
+boundary is declared and the owning module is identifiable; provider-managed children that have no
+independent identity.

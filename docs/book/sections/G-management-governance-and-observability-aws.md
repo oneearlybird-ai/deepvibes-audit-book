@@ -766,3 +766,25 @@ telemetry.
 
 **False positives.** Genuinely intermittent capabilities where the quiet window cannot be bounded —
 there, prefer the synthetic probe to a volume alarm.
+
+## G:44 — An absolute-count error alarm whose threshold exceeds the surface's own per-period traffic, so total failure cannot reach it
+
+**Statement.** A detective alarm counts error responses in a fixed window and fires above an
+absolute threshold. The threshold was chosen to mean "clearly abnormal" on a busy surface, but this
+surface is sparse: its entire per-period request volume is smaller than the threshold. A complete
+outage therefore produces a handful of errors, stays numerically below the trigger, and the alarm
+reports healthy for as long as the failure lasts. Unlike the vanishing-datapoint case, the metric is
+present and correct — it is the comparison that is unreachable. The alarm passes every review that
+checks whether a detector exists, whether it has an action, and whether it has a sane
+treat_missing_data, because the only thing wrong with it is a number no one compared against
+traffic.
+
+**Detect.** For every count-based alarm, pull the watched metric's own volume over the alarm's
+period across a representative week and compare the ceiling to the threshold. If a 100% failure of
+the surface yields fewer events than the threshold, the alarm cannot fire. Prefer a detector whose
+sensitivity scales with volume — a small absolute floor combined with a rate, or an anomaly band —
+and set it from the metric's real distribution, never from a round number. Any alarm that has never
+left OK on a surface with known incidents is a candidate.
+
+**False positives.** Alarms deliberately tuned to catch only mass events, where the low-volume
+failure is covered by a separate detector; alarms on surfaces whose volume is genuinely large.

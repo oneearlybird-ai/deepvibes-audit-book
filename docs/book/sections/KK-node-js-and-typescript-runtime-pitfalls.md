@@ -259,3 +259,34 @@ optional attribute missing, not merely empty.
 string in the same branch that assigns its value (verify the string and the map are built together);
 values legitimately typed as null rather than undefined, which marshal fine; and clients that do not
 strip undefined, where the failure is an earlier and louder marshalling error.
+
+## KK:17 — Miscased request property silently dropped by the SDK serializer — the setting is absent, and a hand-rolled test double asserting the same wrong name verifies the typo
+
+**Statement.** JS SDK clients (AWS SDK v3 included) serialize request objects by picking the model's
+known fields; an unknown property — including a correct field name with wrong casing — is dropped
+without any error. When the dropped property is one whose absence is itself a legal, weaker
+configuration (an encryption key id, a retention setting, an opt-in flag, a limit), the call succeeds
+and the system runs with the weaker default indefinitely. Nothing fails at call time, nothing logs,
+and any test whose double was hand-written restating the author's memory of the field name goes green:
+the stub records what the code sent and the assertion checks the same misspelling — the suite verifies
+the typo, not the contract. The defect surfaces only when a later consumer depends on the setting
+actually being present, at which point the failure is attributed to that consumer, not to the
+months-old create path. In the paid-for instance, `KMSMasterKeyId` (SDK field: `KMSMasterKeyID`) left
+every runtime-provisioned vault bucket's default SSE unpinned for 2.5 months — silently, since writes
+landed on the AWS-managed key — until a bucket-policy deny keyed on the correct per-BP KMS key shipped,
+after which every NEW bucket was born unwritable (its own policy denies the writes its own default
+produces) and the outage was first misdiagnosed as a dead vendor webhook.
+
+**Detect.** For every hand-authored SDK request literal carrying security or correctness load
+(encryption config, retention, policies, limits, versioning), diff each property name against the
+client's shipped TypeScript model (`dist-types/models/*.d.ts`) — a name absent from the model is a
+finding even when every test passes. Prefer making the compiler do this permanently: a typechecked
+call site (`.ts`, or JSDoc `@type` on the command input) turns the whole class into a build error.
+In tests, never restate field names by hand — assert against the SDK model's names, or round-trip the
+request through the real client's serializer. And read the configuration back after provisioning
+(`get-bucket-encryption` and kin) comparing to intent: a create path whose result is never read back
+is unverified by construction.
+
+**False positives.** Clients accepting genuinely open-ended maps (tag maps, metadata bags) where
+arbitrary keys are legal; a property deliberately omitted to accept the documented default, when the
+default is the intended state and a comment says so.

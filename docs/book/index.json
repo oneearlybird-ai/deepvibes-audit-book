@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 897,
+ "rule_count": 898,
  "sections": [
   {
    "id": "A",
@@ -3505,7 +3505,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "KK:1",
@@ -3570,6 +3570,10 @@
     {
      "id": "KK:16",
      "title": "A serializer configured to strip undefined values silently removes a placeholder the query string still references, converting an absent optional field into a hard request-validation error"
+    },
+    {
+     "id": "KK:17",
+     "title": "Miscased request property silently dropped by the SDK serializer — the setting is absent, and a hand-rolled test double asserting the same wrong name verifies the typo"
     }
    ]
   },

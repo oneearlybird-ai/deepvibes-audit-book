@@ -521,3 +521,39 @@ filing. Generated source that the project's own freshness gate regenerates and d
 codegen output with a drift check) is a different, legitimate architecture. Repositories that
 intentionally commit lockfile-adjacent build metadata for reproducibility, where a document names
 the decision.
+
+## U:38 — A content-addressed artifact cache keyed on working-tree bytes, with more than one checkout able to build, so normalization differences make two builders invalidate each other forever
+
+**Statement.** The build skips work by hashing an artifact's source files and comparing that digest
+to one stored beside the published artifact — a sound design, and the usual cure for slow pipelines.
+It becomes a deadlock the moment two different checkouts of the same repository can both run the
+build, because the digest is taken over bytes on disk rather than over content the version-control
+system considers canonical. Line-ending normalization is the common divergence: one checkout
+materialized its files before the repository declared a normalization rule, or under a different
+client-side conversion setting, and version control will not rewrite files whose content it
+considers unchanged — so the stale spelling persists indefinitely while status reports clean. Each
+builder then computes a different digest for the identical commit, re-uploads the artifact, and
+stamps its own digest, which makes the other builder's freshness gate report the artifact stale.
+Neither builder is wrong and neither can win; the gate oscillates for as long as both lanes run.
+The damage is not the wasted uploads — it is that the failure presents as "your artifacts are
+stale", so the operator's instinct is to rebuild, and rebuilding is the thing causing it.
+
+**Detect.** Ask first whether more than one checkout of the repo exists on any machine or image that
+can invoke the build — reference clones, read-only mirrors kept for grepping, per-worker clones, a
+CI cache directory alongside a developer tree. For each, compare the digest the build would compute
+for the same artifact directory at the same commit; any difference is the bug, and the file count
+matching while contents differ points at normalization rather than missing files. Version control
+can name the divergence directly: an eol/attribute listing that reports the index and the working
+tree in different spellings for the same path (`i/lf w/crlf`) is conclusive, and it will coexist
+with a clean status. Confirm the oscillation from the artifact store rather than inferring it —
+list the stored digests across recent versions of one artifact and look for two values alternating.
+Note that a force-overwrite re-checkout is not a reliable repair: some implementations skip files
+that already exist, leaving mtimes untouched and the operator believing the tree was rewritten.
+
+**False positives.** A build whose hash is computed over version-control-canonical content
+(hash-object, archive output, or the commit itself) rather than the working tree is not exposed,
+however many checkouts exist. Digests that differ because the trees genuinely differ — one checkout
+behind, or carrying uncommitted work — are ordinary staleness, not this; establish that both
+checkouts are at the same commit and clean before filing. A single-checkout pipeline can never
+exhibit the oscillation regardless of how the digest is computed, so this stays theoretical until a
+second builder is proven able to run.

@@ -716,3 +716,57 @@ attachment points reference. A verifier that cannot say how many objects it chec
 trusted to have checked yours.
 
 **False positives.** Namespaces where the name is the platform's real primary key.
+
+## NN:35 — The verifier's evidence parser discards every line it cannot parse, so an upstream format change empties the evidence set and the check renders a confident verdict about a world it never observed
+
+**Statement.** A canary, probe, or gate proves something happened by reading a stream of evidence —
+log lines, event records, exported rows — and parsing each item before matching it. The parse is
+wrapped in a swallow: parse failure means skip this item and continue. That is correct for genuinely
+foreign lines and catastrophic for a format change, because a change that affects EVERY item (a
+process manager prefixing each line with a timestamp, a new envelope, a switched serializer) makes
+the parser skip everything and leaves the matcher with an empty set. The verifier then reports the
+absence it was built to detect. Whether that reads as a false failure or a false pass depends only
+on which way the assertion points: an assert-present check goes red and gets debugged as a real
+outage, an assert-absent check goes green and certifies silence as safety. In both directions the
+verdict is about the parser, not the system, and nothing in the output distinguishes "observed
+nothing" from "could not observe".
+
+**Detect.** For every evidence parser in a verifier, ask what happens when NO item parses, and make
+that state distinct from a genuine empty result: count parsed versus skipped items and fail on a
+skip ratio at or near one, whatever the assertion concludes. Feed the parser one real captured line
+from the producer as a fixture, so a producer-side envelope change breaks the fixture rather than
+the verdict. Check the producer's actual output format at the point the verifier reads it (through
+the process manager, the log driver, the exporter) rather than at the point the application writes
+it — the wrapper is where the prefix is added.
+
+**False positives.** Parsers over deliberately mixed streams where non-matching lines are the
+majority by design AND a positive floor is asserted elsewhere; verifiers that already report parsed
+and skipped counts and gate on them.
+
+## NN:36 — The ingestion step deduplicates incoming records against existing ones on a key coarser than the record's identity, so a distinct record is discarded as a duplicate and the run reports a success count
+
+**Statement.** A pipeline folds newly produced records — findings, alerts, tickets, inventory rows —
+into a durable store, and suppresses re-submissions by matching each incoming record against the
+existing ones on a composed key. The key is chosen for the common case (same category, same file,
+same subject) and is coarser than what actually distinguishes two records: two different defects in
+one file under one category, two occurrences at different sites, two events on one entity. Every
+collision after the first is dropped. Nothing errors, and the summary reports how many records
+merged plus a count of duplicates skipped — a shape that reads as housekeeping — so the operator who
+produced ten records and sees eight merged has no reason to look. Two aggravating variants recur:
+the ordering that decides which record survives is incidental (alphabetical file name, listing
+order), so the survivor may be the least important of the set; and records in a terminal state are
+added to the live-match index alongside active ones, letting a record that is already resolved
+suppress a new, unresolved one submitted in the same batch.
+
+**Detect.** State the record's identity explicitly and compare it against the dedupe key field by
+field; any identity component missing from the key is a collision class, so construct the two
+records that collide and confirm the second is dropped. Require the summary to NAME every suppressed
+record and what it matched, never to count them — a count cannot be audited, a list can. Check that
+only records in an active state populate the match index, and that entries added during the current
+run cannot suppress later ones in that same run unless they are active. Where the coarse key is
+genuinely wanted as a near-duplicate hint, keep it as a warning path that still ingests, rather than
+as the skip condition.
+
+**False positives.** Keys that are the record's true primary key by construction (a content hash, a
+supplied idempotency token); pipelines where suppressed records are written to a reject store the
+operator is required to review, and the review step is enforced rather than described.

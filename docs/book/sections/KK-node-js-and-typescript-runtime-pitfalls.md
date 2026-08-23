@@ -290,3 +290,29 @@ is unverified by construction.
 **False positives.** Clients accepting genuinely open-ended maps (tag maps, metadata bags) where
 arbitrary keys are legal; a property deliberately omitted to accept the documented default, when the
 default is the intended state and a comment says so.
+
+## KK:18 — A retirement sweep deletes a shared construction along with the feature it was written for, and the surviving callers read it only inside function bodies, so the module parses clean and the process dies at first call
+
+**Statement.** A feature is retired in one sweep: its helpers, its comparison inputs, and the object
+literal that was originally introduced to serve it are all deleted together. One of those deletions
+is not part of the retired feature — it is shared scaffolding that surviving code paths still read,
+typically a context object assembled once near the top of an entry function and consumed as
+`ctx.something` deep inside callees. Because every surviving reference is a property read inside a
+function body rather than a top-level use, the module still parses, the type checker (in a plain
+ESM/JS project, or wherever the binding was implicitly typed) has nothing to bind against, and any
+gate that stops at parse, lint-on-changed-files, or unit tests that stub the entry point stays
+green. The failure is deferred to the first real invocation and is total for that lane rather than
+partial. It is easy to mistake for an environment problem because the diff that caused it contains
+no edit to the code path that throws.
+
+**Detect.** For any commit that deletes more than it adds in a long entry function, list the
+bindings it removed and grep the post-change tree for each name — a name that still appears only as
+a property root inside callees is the finding. Prefer a gate that actually executes the entry point
+in a dry/plan mode over one that parses it. Where a context object is assembled once and read
+everywhere, construct it in a function that returns it (so its absence is a call-site error) rather
+than as a bare binding in a several-hundred-line scope. After the fact, a `ReferenceError` or an
+`undefined` property read on the first invocation after a retirement commit names the deletion.
+
+**False positives.** Bindings the sweep deleted whose consumers it deleted in the same commit
+(verify by grepping the post-change tree, not the diff); dynamic construction where the binding is
+legitimately assigned on a branch not taken in the failing run.

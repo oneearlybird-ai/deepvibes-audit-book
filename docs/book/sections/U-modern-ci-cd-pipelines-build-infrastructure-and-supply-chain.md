@@ -467,3 +467,28 @@ resource id as skipped, ignored, or created out of band — each one marks a liv
 **False positives.** Resources deliberately owned by a different state file or team, where the
 boundary is declared and the owning module is identifiable; provider-managed children that have no
 independent identity.
+
+## U:36 — The build fetches a remote artifact with a client that treats an HTTP error response as success, so the error body is written to the artifact path and the failure surfaces later as a corrupt archive with its cause gone
+
+**Statement.** A build step downloads a dependency, a layer, or a toolchain archive from a signed
+URL or a registry using a transfer client whose default is to write whatever the server returned and
+exit zero — an expired-signature XML document, a 404 page, a partial body from a dropped connection.
+The bytes land at the artifact path, the step reports success, and the failure appears one or more
+steps later as an unarchive error, a missing-file error, or a module that will not load. By then the
+HTTP status, the URL, and the response body are all gone, so the visible error names the wrong
+layer entirely and the build is debugged as a packaging problem. Retryable transient causes make it
+intermittent, which is what converts a one-line flag into repeated lost build runs. The same defect
+is usually present at several call sites, because the idiom is copied: hardening the one that
+happened to fail leaves its siblings live.
+
+**Detect.** Enumerate every network fetch in the build scripts and require, at each, that the client
+fails on HTTP error status, retries transient failures, and that the result is verified against a
+pinned digest before use. Treat "the later integrity check would have caught it" as a diagnosis
+defect rather than an absolution: the check does stop the bad artifact, but it reports the wrong
+cause, so record it as such and fix the fetch. Sweep by idiom, not by incident — grep for the
+transfer command itself and audit every occurrence, since the copied call sites are the finding.
+
+**False positives.** Fetches immediately followed by a digest or signature verification against a
+pinned value AND whose failure message names the download as a possible cause; steps where a
+partial or error body cannot parse as the expected format and the parser reports the URL and status
+it came from.

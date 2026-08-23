@@ -79,10 +79,25 @@ if (errors.length) {
 const maxId = ledger.reduce((m, f) => Math.max(m, Number((f.id ?? "F-0000").slice(2))), 0);
 let nextNum = maxId + 1;
 const today = new Date().toISOString().slice(0, 10);
-const openKey = (f) => `${f.taxonomy_id}|${f.repo}|${f.evidence?.path}`;
-const openIndex = new Map(ledger.filter((f) => f.status === "open").map((f) => [openKey(f), f.id]));
+// A finding's identity is its rule AND the exact site it was found at. Keying
+// only on the file collapses two genuinely different defects that happen to
+// share a rule and a file — the coarser key reports them as duplicates and
+// discards one, which is a silent loss of a finding, not a deduplication.
+// siteKey is the skip key; fileKey is kept only to WARN about near-duplicates
+// so a real re-verification staged against a moved line is still visible.
+const siteKey = (f) => `${f.taxonomy_id}|${f.repo}|${f.evidence?.path}|${f.evidence?.line}`;
+const fileKey = (f) => `${f.taxonomy_id}|${f.repo}|${f.evidence?.path}`;
+const openFindings = ledger.filter((f) => f.status === "open");
+const openIndex = new Map(openFindings.map((f) => [siteKey(f), f.id]));
+const openByFile = new Map();
+for (const f of openFindings) {
+  if (!openByFile.has(fileKey(f))) openByFile.set(fileKey(f), []);
+  openByFile.get(fileKey(f)).push(f.id);
+}
 
 let merged = 0, skipped = 0;
+const warnings = [];
+const skippedDetail = [];
 for (const run of runs) {
   const runPath = path.join(runsDir, run);
   const logPath = path.join(runPath, "merge-log.json");
@@ -92,12 +107,15 @@ for (const run of runs) {
 
   for (const { file, f } of stagedByRun.get(run)) {
     touchedFiles.add(file);
-    const dupOf = openIndex.get(openKey(f));
+    const dupOf = openIndex.get(siteKey(f));
     if (dupOf) {
       skipped++;
-      log.push({ file, action: "skipped-duplicate-of", id: dupOf, taxonomy_id: f.taxonomy_id, path: f.evidence?.path });
+      skippedDetail.push({ file, dupOf });
+      log.push({ file, action: "skipped-duplicate-of", id: dupOf, taxonomy_id: f.taxonomy_id, path: f.evidence?.path, line: f.evidence?.line });
       continue;
     }
+    const nearby = openByFile.get(fileKey(f));
+    if (nearby?.length) warnings.push(`${file}: merged as NEW, but ${nearby.join(", ")} is already open under ${f.taxonomy_id} in the same file — confirm it is a distinct site, not a re-verification`);
     const id = `F-${String(nextNum++).padStart(4, "0")}`;
     const entry = {
       id,
@@ -106,7 +124,14 @@ for (const run of runs) {
       history: [...(f.history ?? []), { date: today, event: "opened", run }],
     };
     ledger.push(entry);
-    openIndex.set(openKey(entry), id);
+    // Only OPEN entries may shadow a later staged finding. Indexing a closed
+    // entry here would make this run's own retro-records silently swallow the
+    // next staged finding on the same file.
+    if (entry.status === "open") {
+      openIndex.set(siteKey(entry), id);
+      if (!openByFile.has(fileKey(entry))) openByFile.set(fileKey(entry), []);
+      openByFile.get(fileKey(entry)).push(id);
+    }
     merged++;
     log.push({ file, action: "merged", id, taxonomy_id: f.taxonomy_id });
   }
@@ -120,4 +145,8 @@ for (const run of runs) {
 
 fs.writeFileSync(ledgerPath, JSON.stringify(ledger, null, 1) + "\n");
 console.log(`Merged ${merged} finding(s), skipped ${skipped} duplicate(s). Ledger now ${ledger.length} entries (next id F-${String(nextNum).padStart(4, "0")}).`);
+// Name every skipped file. A bare count reads as housekeeping; the file name is
+// what lets the auditor notice that a finding they staged never landed.
+for (const s of skippedDetail) console.log(`  skipped ${s.file} — same rule, file and line as open ${s.dupOf}`);
+for (const w of warnings) console.warn(`  warn: ${w}`);
 console.log(`Now run: node tools/validate-ledger.mjs "${instanceDir}"  (must pass)`);

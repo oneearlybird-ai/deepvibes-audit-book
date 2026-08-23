@@ -388,3 +388,31 @@ whether the register covers it and write that scope down.
 
 **False positives.** Changes made THROUGH a lane the register does not cover by design; rehearsals
 in a non-production account.
+
+## CC:24 — A scope flag narrows the desired world but not the account-wide surfaces the reconciler diffs, so a scoped apply prunes every peer the scope excluded
+
+**Statement.** A declarative reconciler gains a scope flag — reconcile one item, one service, one
+component — so that a proof run or a canary can be applied without touching everything else. The
+flag narrows the DESIRED set it builds. It does not narrow the LIVE surfaces the planner compares
+that set against: a shared registry, a generated index keyed by every managed item, a parameter
+family with one child per item, a catalog document. The planner therefore diffs a one-item desired
+world against an all-item live world, correctly concludes that every other item is drift, and the
+apply deletes them. Nothing in the run looks wrong — the operator asked for one item and the tool
+reported reconciling one item — and the damage lands on items the operator never named and whose
+declarations are perfectly correct. The blast radius is inverted from the operator's intent: the
+narrower the scope, the more the apply destroys. It stays hidden when consumers of the pruned
+surface fail open to a default, because there is no outage to trace back.
+
+**Detect.** For each parameter the planner accepts, classify it as per-item or account-wide, and
+assert in code that no account-wide input reaches the planner while a scope flag is set — the
+account-wide comparison must be disabled, not merely re-derived from the narrowed world (re-deriving
+produces exactly the deletion set). Enumerate every call site of the planner, not one: the
+post-apply converge check is a second call site and is routinely missed when the plan path is
+fixed. Then walk the apply's action vocabulary for deletes/prunes whose target set is "live minus
+desired", and prove each is guarded. After the fact: compare the shared surface's item count
+against the declared item count; a scoped run that ran recently and a count of one is the signature.
+
+**False positives.** Reconcilers whose every surface is genuinely per-item (no shared index to
+prune); scope flags that are plan-only and structurally cannot apply; a narrowed run that is
+DOCUMENTED as authoritative for the shared surface and is always followed by a full run inside the
+same lane — verify the sequencing is enforced by the lane, not by a comment or a habit.

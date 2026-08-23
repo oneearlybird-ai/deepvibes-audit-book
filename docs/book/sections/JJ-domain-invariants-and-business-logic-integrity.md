@@ -563,3 +563,37 @@ the directory does not stop the mirror. Test with an identity present in both di
 
 **False positives.** Products where staff are legitimately also customers, provided the dual role is
 explicit rather than accidental.
+
+## JJ:32 — A normalized numeric crosses a service boundary carrying its scale only by convention, so every consumer renders it in whatever unit that consumer assumed
+
+**Statement.** A producer emits a quantity in a normalized form — a 0–1 fraction, a ratio, minor
+units, basis points, a 0–1 confidence — and the field name states the quantity but not the scale
+(`retentionRate`, `averageScore`, `errorRate`, `amount`). Consumers pick a display unit
+independently: one renders a percent, one renders "x out of ten", one renders a currency. Nothing in
+the transport, the schema, or the generated types carries the factor, so the only thing binding
+producer and consumer is a shared assumption — and the moment a consumer assumes wrong, it renders a
+number that is wrong by a constant multiple. The failure is uniquely durable because the output stays
+*plausible*: a 0–1 fraction rendered as a percent yields values that round to "0%" or "1%", a perfect
+score reads "1.0 / 10", and none of it looks like a crash, a null, or a stack trace. Reviewers,
+screenshots, and demo data all pass. The multiplication is also a one-line change at a leaf render
+site, so it gets re-derived independently on every surface that shows the value — which means the
+same defect ships once per client, at different times, and fixing one surface tells you nothing about
+the others. Type systems do not help: the wire type is `number` on both sides of every boundary, so
+the compiler agrees the contract is satisfied.
+
+**Detect.** For every numeric the API emits whose name denotes a rate, ratio, score, share, or
+amount, read the PRODUCER and write down the emitted range — do not infer it from the field name or
+the client. Then enumerate every consumer render site for that field across every client (web,
+mobile, native, exports, notifications, reports) and check each one applies exactly one conversion
+consistent with that range. Two signatures are confirmed hits: a render site with no factor at all
+where the producer normalizes, and two render sites for the same field carrying different factors.
+Fixture and mock data are part of the trace, not a shortcut — a fixture written at the consumer's
+assumed scale makes the bug invisible in every fixture-driven view and is itself the finding.
+Sanity-check live values: a rate metric whose observed output only ever lands on 0% or 1%, or a score
+that never exceeds a tenth of its stated maximum, is the symptom.
+
+**False positives.** Fields whose scale is pinned in the schema or contract (an enum of units, a
+documented `*_bps`/`*_minor`/`*_pct` suffix, a units sibling field) and honored by every consumer;
+values a consumer deliberately renders normalized because its surface is a fraction-native control
+(a progress bar taking 0–1 by API); a single consumer whose factor differs because it genuinely
+displays a different derived quantity.

@@ -233,3 +233,61 @@ pending === id. In review, any list-level action whose loading state is a bare b
 defect. Test by rendering two rows and asserting the sibling's control is unaffected.
 
 **False positives.** Genuinely list-wide operations (refresh all, bulk apply).
+
+## K:27 — One input object serves both create and update, so the update call ships create-only immutable fields the server rejects outright
+
+**Statement.** A form, drawer, or hook builds a single input object and both branches send it: create
+POSTs it, update forwards it wholesale to the update endpoint. But the two server contracts are not
+the same shape — the create contract accepts fields that fix an entity's identity or kind (a type
+discriminator, an owner, a parent, a locale anchor), and the update contract rejects those same
+fields as immutable-after-create. Every edit of an existing record therefore fails validation at the
+server while every create succeeds, so the feature reads as "works when I add one, silently refuses
+when I change one." The failure compounds when the update is the FIRST call in a chain: any
+subsequent write the handler performs after it — a nested resource save, a schedule, a child
+collection — never runs at all, so the user's most visible edit is the one that appears to do
+nothing. Static typing does not catch it in structurally-typed languages: spreading or passing a
+create-shaped object where an update-shaped parameter is expected satisfies the parameter's required
+members, and excess-property checking is suppressed for anything that is not a fresh object literal —
+so the extra immutable field is invisible to the compiler precisely in the idiom people use.
+
+**Detect.** For every entity with distinct create and update endpoints, diff the two server-side
+accepted-field sets and list the create-only fields. Then find the client's input builder and trace
+which branches send it: any update path forwarding an object built for create is a confirmed hit
+unless it explicitly strips that set. Check the wire type too — a shared `Input` type used by both
+calls, or an update type that merely extends the create type, is the structural form of the bug.
+Corroborate against the server's own rejection: a validator message naming a field as immutable is
+the exact string to grep the client for. Test by editing an existing record end to end, not by
+creating one.
+
+**False positives.** Endpoints that accept and ignore immutable fields idempotently (verify the
+server discards rather than rejects); update paths that send the shared object through an explicit
+allow-list or a generated update type derived by omission; entities where the field is genuinely
+mutable and the rejection came from a different rule.
+
+## K:28 — The view paints a default the store does not hold, and a partial write persists only the edited subset, so saving one field erases everything the user could see
+
+**Statement.** A record can exist with an empty or absent collection — hours, preferences,
+allocations, tags — and the UI renders a friendly default in that case so the surface never looks
+broken. The default lives in the rendering layer only; the store still holds nothing. Then an editor
+that changes ONE member of that collection seeds its write from the STORED value (empty) rather than
+from the value on screen, applies its single change, and persists the result. Everything the user was
+looking at — and reasonably believed was saved — is now explicitly absent, and because the view falls
+back to the same default for *some* shapes but not the newly-written partial one, the surface flips
+from "a full week of hours" to "one day set, the rest off" after an edit the user understood as
+additive. Two separate defaults are the root: a display default and a write default that disagree,
+with no single definition either can be derived from. It survives review because each half is
+individually reasonable — showing a sensible placeholder is good UX, and seeding a write from stored
+state is good practice — and the destruction only appears when they meet on a record that has never
+been written.
+
+**Detect.** For every collection the UI renders with a fallback, ask what the store holds when the
+fallback is showing, then find every writer that persists a subset of that collection and read what
+it seeds from. A writer seeding from the raw stored value while the view seeds from a fallback is the
+confirmed hit. Grep for more than one literal definition of the same default shape — duplicated
+default objects across a display component and a save handler is the structural signature. Test the
+never-written record specifically: load it, change exactly one member, reload, and assert the other
+members survived; a record that already has a complete stored value will pass and prove nothing.
+
+**False positives.** Surfaces where the fallback is visibly marked as unsaved or suggested (ghosted
+text, an explicit "not set" affordance) so the user is not led to believe it is stored; writers that
+send a true partial patch the server merges into stored state rather than replacing the collection.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 907,
+ "rule_count": 914,
  "sections": [
   {
    "id": "A",
@@ -1331,7 +1331,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 28,
+   "rule_count": 34,
    "rules": [
     {
      "id": "K:1",
@@ -1444,6 +1444,30 @@
     {
      "id": "K:28",
      "title": "The view paints a default the store does not hold, and a partial write persists only the edited subset, so saving one field erases everything the user could see"
+    },
+    {
+     "id": "K:29",
+     "title": "Hand-built URLs escape values with a component-scoped allowed-set, so the query’s own delimiters pass through free text and silently mis-filter"
+    },
+    {
+     "id": "K:30",
+     "title": "A staged one-shot handoff token is consumed and destroyed before its target data loads, so cold destinations silently drop the promised action"
+    },
+    {
+     "id": "K:31",
+     "title": "New-item indicators derived from length deltas of a windowed collection mint full-window badges on every reload and never fire at the window cap"
+    },
+    {
+     "id": "K:32",
+     "title": "Post-save whole-document refetch clobbers sibling unsaved drafts and their dirty flags"
+    },
+    {
+     "id": "K:33",
+     "title": "Metric bound by display-label dispatch with a specific-metric catch-all renders a sibling’s number under the wrong title"
+    },
+    {
+     "id": "K:34",
+     "title": "Client-side gates enforced per-affordance, not per-destination — sibling affordances and alternate entries drift out of enrollment"
     }
    ]
   },
@@ -2221,7 +2245,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "U:1",
@@ -2366,6 +2390,10 @@
     {
      "id": "U:36",
      "title": "The build fetches a remote artifact with a client that treats an HTTP error response as success, so the error body is written to the artifact path and the failure surfaces later as a corrupt archive with its cause gone"
+    },
+    {
+     "id": "U:37",
+     "title": "Derived build output tracked by version control — rewritten by every build, exempt from every content gate that rightly excludes the build directory"
     }
    ]
   },

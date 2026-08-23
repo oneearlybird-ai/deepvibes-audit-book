@@ -492,3 +492,32 @@ transfer command itself and audit every occurrence, since the copied call sites 
 pinned value AND whose failure message names the download as a possible cause; steps where a
 partial or error body cannot parse as the expected format and the parser reports the URL and status
 it came from.
+## U:37 — Derived build output tracked by version control — rewritten by every build, exempt from every content gate that rightly excludes the build directory
+
+**Statement.** Derived build output — object files, module caches, build-system task stores,
+generated intermediates, build logs — is tracked by version control because the toolchain's default
+output directory was never added to the ignore rules before the first sweep-style commit captured
+it. From that point the debris is self-sustaining: every local build rewrites tracked paths, so the
+tree reads dirty after ordinary work and the fastest way to a clean status is to commit the churn,
+attributing thousands of derived-file changes to substantive commits. The repository's own content
+gates make it worse rather than better, because scanners and pattern gates rightly exclude the build
+directory — leaving content that IS tracked, cloned, and diffed by every consumer permanently exempt
+from every check the repo runs on tracked content. Reviewers learn to skip any diff touching the
+directory, which is the durable damage; the megabytes are the visible one.
+
+**Detect.** Diff the version-control index against the toolchain's known derived-output locations:
+list tracked files under the build system's default output directories (the in-tree `build/` for
+project-relative builds, package-manager output dirs, log files at the root) and read the ignore
+rules for those exact paths — an ignore file that lists the tool's *alternate* output spelling but
+not the default one is the tell that the rule was written after the debris landed. Check when the
+artifacts entered history and whether any script, CI job, or document references them; zero inbound
+references confirms debris rather than a vendored input. Cross-check the repo's content gates for
+an exclusion of the same directory: tracked-but-unscannable is the combination that elevates this
+above cosmetics.
+
+**False positives.** Deliberately vendored binary inputs (fixtures, golden files, prebuilt
+third-party blobs) that something in the build or test path consumes — trace the consumer before
+filing. Generated source that the project's own freshness gate regenerates and diffs (a committed
+codegen output with a drift check) is a different, legitimate architecture. Repositories that
+intentionally commit lockfile-adjacent build metadata for reproducibility, where a document names
+the decision.

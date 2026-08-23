@@ -291,3 +291,168 @@ members survived; a record that already has a complete stored value will pass an
 **False positives.** Surfaces where the fallback is visibly marked as unsaved or suggested (ghosted
 text, an explicit "not set" affordance) so the user is not led to believe it is stored; writers that
 send a true partial patch the server merges into stored state rather than replacing the collection.
+
+## K:29 — Hand-built URLs escape values with a component-scoped allowed-set, so the query’s own delimiters pass through free text and silently mis-filter
+
+**Statement.** A client assembles request URLs by string interpolation and escapes user-supplied
+values with an allowed-set scoped to the whole URL component rather than to a single value — the
+"query-allowed" character sets of most platform libraries deliberately permit the query component's
+own delimiters ('&', '=', '+', ';'). A free-text value containing one of them then splits into
+phantom parameters, truncates at the delimiter, or decodes to different bytes server-side. Nothing
+rejects the request: the server parses a syntactically valid query, applies a silently different
+filter or search term, and returns plausible results. The defect never surfaces as an error —
+only as wrong results for exactly the inputs that contain the delimiter — so it survives every
+happy-path test. Sites using the platform's structured query builder are correct beside the
+defective interpolation sites, which is what keeps review from noticing.
+
+**Detect.** Inventory every hand-built URL (string concatenation or interpolation into a path with
+'?'). For each interpolated value, ask two questions: is the escaping function scoped to a VALUE
+(escapes '&', '=', '+') or to the whole component (does not)? And can the value carry those
+characters — free-text search boxes, user-authored names/tags/categories, base64 cursors? Any
+component-scoped escape (or no escape) on a user-controlled value is the finding. The repo's own
+structured-builder call sites (URLComponents/URLSearchParams equivalents) prove the correct
+pattern exists and measure the drift.
+
+**False positives.** Values structurally incapable of carrying delimiters (server-minted opaque
+ids with a known safe alphabet, enum raw values, integers); URLs whose interpolated value is
+percent-encoded with a value-scoped set (alphanumerics plus unreserved only); transports that
+carry the parameters in a request body or structured variables instead of the URL.
+
+## K:30 — A staged one-shot handoff token is consumed and destroyed before its target data loads, so cold destinations silently drop the promised action
+
+**Statement.** A cross-surface handoff is implemented as a staged one-shot token (a pending id or
+flag in shared navigation/app state) that the destination surface consumes when it appears. The
+consumer destroys the token unconditionally — clearing it before checking whether the data it
+targets has loaded — and performs its lookup against a collection that is empty until an async
+load completes. On any cold path (destination never yet mounted, cache empty, load in flight)
+the token is consumed and discarded before its target exists: the promised action (open a detail,
+scroll to a row, apply a filter) silently never happens, the user lands on the bare destination,
+and nothing errors or retries. The defect hides in development because the destination is usually
+warm there, and it recurs asymmetrically: one consumer in the codebase often implements the
+correct arrival-gated form while a sibling consumer of the same staged-token pattern does not.
+
+**Detect.** Inventory every staged one-shot handoff field (pending ids/flags in shared state
+consumed by a different surface). For each consumer, answer two questions: is the token cleared
+before or after the target lookup succeeds, and does any observer re-run consumption when the
+target collection changes? A consumer that clears first and has no data-arrival re-trigger is the
+finding whenever the target collection can be empty at appearance (lazy tab creation, on-appear
+loads). Compare sibling consumers of the same pattern — divergence between them is both the tell
+and the proof of the intended contract.
+
+**False positives.** Tokens whose consumer explicitly distinguishes "target absent after load
+completed" and clears only then (a deliberate out-of-window/miss policy); handoffs whose target
+data is structurally present before the destination can appear (seeded synchronously or embedded
+in the token itself); destinations that render an explicit not-found state instead of silence.
+
+## K:31 — New-item indicators derived from length deltas of a windowed collection mint full-window badges on every reload and never fire at the window cap
+
+**Statement.** A "new items" indicator — an unread badge, a dot, a since-you-left counter — is
+maintained by observing the LENGTH of a client-side collection and incrementing by the delta
+whenever it grows. The observed collection, however, is a windowed projection of server data (a
+first page capped at N, an anchored date window) that loads, refreshes, resyncs, and identity or
+scope switches replace wholesale. Length deltas are therefore not item events, and the indicator
+fails in both directions at once: any idle-to-loaded transition — first load after sign-in, a
+scope switch's reset-then-reload passing through zero, a reconnect resync touching a never-visited
+store — mints a badge equal to the full window size, counting historical items as new; while a
+collection already at its window cap absorbs genuinely new items with no length change, so the
+badge never fires again for exactly the tenants with real volume. The defect is invisible in
+development because small fixtures stay under the cap (where increment-per-delta happens to be
+correct) and demos rarely re-run the sign-in or switch path with the observer mounted.
+
+**Detect.** Find observers of collection length (`onChange` of `count`, watchers/selectors on
+`list.length`) that feed "new/unread" state. For each, classify the observed collection: is it
+windowed (fetch limit, date anchor) and is it ever replaced wholesale or reset to empty while the
+observer is mounted (refresh-replace, teardown-then-reload at sign-in or tenant/profile switch,
+reconnect resync)? Walk those paths explicitly: a sequence that passes through zero then loads a
+page mints a full-page badge; a saturated window plus one genuinely new item produces no delta.
+Either outcome confirms. The fix is to derive newness from item identity against a persisted
+high-water mark (newest seen id/timestamp per scope) or from explicit item events, never from
+length.
+
+**False positives.** Collections that are complete and append-only for the observer's lifetime
+(local logs, in-session queues) where length growth genuinely is an item event; indicators
+explicitly presented as totals ("N calls") rather than new-item counts; counters recomputed from
+identity on every render rather than incrementally maintained.
+
+## K:32 — Post-save whole-document refetch clobbers sibling unsaved drafts and their dirty flags
+
+**Statement.** An editor store keeps one editable draft per plane of a larger document (rules,
+toggles, text fields), each with its own dirty flag and save routine, and every save routine ends
+with a whole-document refetch whose repopulation step overwrites ALL drafts from the server and
+resets ALL dirty flags — not just the plane that was saved. Any flow that touches two planes then
+loses the second: a chained multi-plane save ("apply everything in this sheet") saves plane A,
+reloads, finds plane B's dirty flag freshly cleared and its draft reverted, skips plane B's save,
+and reports success; any single-plane save (or unrelated refetch trigger such as re-entering the
+screen or an immediate-save control elsewhere on it) silently destroys drafts in-progress on every
+other plane. The failure is deterministic yet survives testing because each plane saved ALONE
+round-trips correctly — only the combined edit, which is usually the surface's headline flow,
+drops data. A related face: a modal editor over the shared drafts whose Cancel merely dismisses,
+leaving its abandoned edits dirty store-wide to be committed by a later save the user believes is
+unrelated.
+
+**Detect.** In each editor store, find the load/repopulate routine and list what it overwrites and
+which dirty flags it resets; then find every save routine that invokes it and every UI chain that
+saves multiple planes sequentially. A repopulation that resets flags for planes it did not save,
+reachable between steps of a multi-plane chain, is the finding — confirm by tracing the chain's
+second conditional against the flag state after the first save's reload. Also enumerate every
+other refetch trigger (screen appear, immediate-save controls) and ask what happens to unsaved
+sibling drafts. Check the modal Cancel path for a snapshot/revert.
+
+**False positives.** Repopulation that explicitly preserves still-dirty drafts (merge-by-flag);
+chains that collect all dirty planes into one request before any reload; stores whose refetch runs
+only from an explicit user refresh with a dirty-state guard; single-plane editors where no sibling
+draft exists.
+
+## K:33 — Metric bound by display-label dispatch with a specific-metric catch-all renders a sibling’s number under the wrong title
+
+**Statement.** A reusable stat tile / KPI card selects which metric to render by comparing its own
+display label (or another cosmetic discriminator) against string literals, and the conditional's
+catch-all else binds one SPECIFIC sibling metric rather than failing loudly. Every tile the chain
+does not explicitly name — a newly added tile, a renamed label, a tile whose distinguishing
+parameter was dropped in a refactor — silently renders the catch-all's metric under its own label.
+The number is plausible in magnitude, the layout is correct, and the tile's secondary elements
+(sparkline, subtext) often bind the RIGHT metric through a separate typed path, so the defect
+ships as one confidently wrong headline that only a person cross-checking the figure against
+another surface can catch. Renaming a label for copy reasons is enough to move a tile onto the
+wrong branch.
+
+**Detect.** Grep reusable tile/card components for conditionals on their own display strings
+(`title ==`, `label ==`, switch over header text). Any such dispatch whose else/default returns a
+specific metric (rather than an assertion, empty state, or the typed binding) is the finding.
+Cross-check each instantiation site against the branch it actually lands in — especially tiles
+relying on an optional parameter to route them, where no caller passes the parameter. The fix is
+an explicit per-tile metric binding (closure or enum) supplied at the call site, with no
+label-keyed routing.
+
+**False positives.** Dispatch on a dedicated typed enum where every case is explicitly handled and
+new cases fail compilation; catch-alls that render an explicit placeholder/error rather than a
+sibling metric; display strings derived FROM the typed metric binding rather than routing to it.
+
+## K:34 — Client-side gates enforced per-affordance, not per-destination — sibling affordances and alternate entries drift out of enrollment
+
+**Statement.** A client enforces its authorization/visibility model (capability flags, role
+read-only modes, tenant-vertical filtering) by decorating individual affordances — the menu rows
+it filters, the buttons each screen remembers to disable — rather than by gating the destination
+(the navigation state mutation, the action dispatch) once. Enrollment is therefore manual and
+per-surface: every new screen must rediscover the read-only pattern, and every alternate entry
+point to the same destination — keyboard shortcuts, deep links, restored state, programmatic
+navigation — bypasses the filter applied to the menu. The drift is one-directional and silent:
+the ungated surface renders enabled write controls that can only ever draw a server rejection
+(surfaced as a generic request error instead of the platform's read-only language), and the
+ungated entry navigates a user into a screen the filter says they should not see — often with the
+menu showing no selected row, or content belonging to another mode. Because the server still
+enforces the real boundary, nothing security-critical fails, which is exactly why the class
+accumulates unnoticed.
+
+**Detect.** Inventory how the client's gate is expressed: if it is a per-affordance decoration,
+diff the set of gated surfaces against ALL surfaces reachable from the same navigation switch, and
+diff the gated menu against every other writer of the navigation state (shortcut handlers, deep
+link routers, state restoration, notification taps). Any destination render or action dispatch
+reachable without passing the gate is the finding. Prefer the structural fix: apply the gate at
+the destination (navigation-state setter validates; screens derive read-only from a shared
+helper), so enrollment is by construction.
+
+**False positives.** Entry points that genuinely re-validate at the destination (the screen itself
+checks and renders the gated state); affordances deliberately shown-but-disabled as an upsell or
+discovery pattern (must be styled as such, not as a live control); server-driven UI where the
+client renders only what an authorized payload contains.

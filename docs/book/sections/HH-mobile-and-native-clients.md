@@ -54,7 +54,9 @@ consumers too: a value that has been wrong for a while is already embedded in st
 historical aggregates, so the fix carries a data-correction question with it.
 
 **False positives.** Constants naming the shared module or SDK itself rather than the host platform;
-identifiers genuinely owned by one target, in code compiled only into that target.
+identifiers genuinely owned by one target, in code compiled only into that target; and shared-module
+code whose only live callers are on the matching platform (verify by call-site inventory — latent,
+not wrong, until a second platform adopts the shared API and inherits the constant).
 
 ## HH:10 — Debug-only instrumentation guarded at the call site but linked in every configuration, so its private-API symbols ship in the store binary
 

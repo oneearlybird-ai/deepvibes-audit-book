@@ -597,3 +597,33 @@ documented `*_bps`/`*_minor`/`*_pct` suffix, a units sibling field) and honored 
 values a consumer deliberately renders normalized because its surface is a fraction-native control
 (a progress bar taking 0–1 by API); a single consumer whose factor differs because it genuinely
 displays a different derived quantity.
+
+## JJ:33 — An activity rollup counts only rows that have reached a terminal state, so work in flight contributes nothing and the surface reads zero exactly when activity is highest
+
+**Statement.** A counter, dashboard tile, or quota rollup buckets records by a status or outcome
+field, and its bucket map enumerates only the TERMINAL vocabulary — completed, failed, delivered,
+settled. A record still in flight matches no bucket and is silently dropped rather than counted
+somewhere, so the aggregate reports activity that has *finished*, while every consumer reads it as
+activity that has *happened*. The two agree at rest and diverge exactly under load: the first
+transactions of a period, a burst, or any long-running unit of work all sit in flight at once, and
+the surface shows zero while the system is at its busiest. This reads as data loss to whoever is
+watching — the number was non-zero yesterday and is zero now — and the natural next move is to hunt
+for a wipe, a broken writer, or a bad deploy in the layer that renders it, none of which is at
+fault. Two properties make it durable: the aggregate is *truthful* about what it measures, so no
+test asserting correctness of completed counts can fail; and the divergence self-heals as the
+in-flight work terminates, so by the time anyone investigates, the number is right again.
+
+**Detect.** For every rollup that buckets on a status or outcome, list the writer's FULL status
+vocabulary — from the code that stamps it, not from the reader's map — and diff it against the
+bucket map's keys. Any writer-emitted value absent from the map is a silently dropped record; that
+diff is the finding, no traffic needed. Then ask what the surface is named and what its reader
+believes it counts: a tile labelled for activity, volume, or usage that is fed by a
+terminal-only rollup is confirmed. Check the period boundary specifically, since that is where
+in-flight rows dominate the total. When adding in-flight rows to the count, check the reverse hazard
+too: a record that can strand in a non-terminal state forever will inflate the count permanently
+unless the provisional count is bounded by a liveness window.
+
+**False positives.** Rollups whose contract is explicitly completion-only (a billing settlement
+total, a finalized-revenue figure) and whose surface says so; counters where the writer genuinely
+emits terminal states only, verified at the writer; surfaces that render in-flight work separately
+alongside the completed count.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 901,
+ "rule_count": 902,
  "sections": [
   {
    "id": "A",
@@ -3380,7 +3380,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 32,
+   "rule_count": 33,
    "rules": [
     {
      "id": "JJ:1",
@@ -3509,6 +3509,10 @@
     {
      "id": "JJ:32",
      "title": "A normalized numeric crosses a service boundary carrying its scale only by convention, so every consumer renders it in whatever unit that consumer assumed"
+    },
+    {
+     "id": "JJ:33",
+     "title": "An activity rollup counts only rows that have reached a terminal state, so work in flight contributes nothing and the surface reads zero exactly when activity is highest"
     }
    ]
   },

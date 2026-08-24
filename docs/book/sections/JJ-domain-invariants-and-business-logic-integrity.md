@@ -627,3 +627,41 @@ unless the provisional count is bounded by a liveness window.
 total, a finalized-revenue figure) and whose surface says so; counters where the writer genuinely
 emits terminal states only, verified at the writer; surfaces that render in-flight work separately
 alongside the completed count.
+
+## JJ:34 — Two facts written by one reconciliation pass carry identical timestamps, and the strict inequality meant to order them files the commonest real case in the wrong cohort
+
+**Statement.** A classifier decides which of two cohorts a record belongs to by comparing the
+timestamps of two related facts — an unmet request and a subsequent fulfilment, a complaint and its
+resolution, a gap and its substitute — with a strict inequality: the second is treated as resolving
+the first only if it happened strictly later. The comparison is sound when the two facts are
+observed independently over time. It stops being sound when a single reconciliation, ingestion, or
+consolidation pass derives both facts from the same source in one execution, because that pass
+stamps both with the same instant. Equality is then not a rare tie to be broken arbitrarily; it is
+the signature of the single most common real-world shape — the request and its resolution occurring
+within one interaction — and the strict comparison files every one of them in the unresolved cohort.
+The output is not merely a wrong count. It is a confidently inverted segmentation, reported as fact
+to whoever consumes it, and it drives action in the wrong direction: outreach, win-back offers,
+remediation workflows, or escalation aimed at the population that was in fact served, while the
+summary line asserts the opposite. Because both cohorts remain non-empty and the totals still add
+up, nothing in aggregate monitoring looks wrong, and the defect is normally found only by reading a
+single record end to end against its source interaction.
+
+**Detect.** For every ordering comparison between two derived facts, establish whether a single pass
+can write both, and if it can, prove what timestamp each receives by reading real records rather
+than reasoning about the writer — matching timestamps to the millisecond across two fields is the
+finding's fingerprint and is trivially queryable. Then reason about which direction equality should
+resolve to, and state it in the code: where the two facts can only be simultaneous by virtue of
+coming from one interaction, equality means resolved, and a genuinely later request still yields a
+strictly greater timestamp and stays unresolved — so the inclusive comparison is more precise, not
+merely more permissive. Validate against the consuming surface, not the classifier: pull the records
+the classifier placed in the negative cohort and check each against the positive evidence it should
+have matched; one record holding an active fulfilment while summarized as unfulfilled proves the
+defect. Pin both directions in regression, since a naive fix that swaps the operator without
+reasoning about ordering will silently reclassify the genuinely-later case too.
+
+**False positives.** Comparisons between facts from genuinely independent observers with
+independent clocks, where equality is a coincidence and either resolution is defensible. Pipelines
+that deliberately stamp each fact with its source event time rather than processing time, so
+identical values mean identical source events. Classifiers where the inclusive reading has been
+considered and rejected in writing for a documented domain reason. Ties broken by an explicit
+secondary key (sequence number, ingestion order) rather than left to the inequality.

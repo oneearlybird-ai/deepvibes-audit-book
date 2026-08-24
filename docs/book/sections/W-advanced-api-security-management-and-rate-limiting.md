@@ -239,3 +239,46 @@ control that binds the same attacker (a per-source connection limit that is actu
 secrets whose space is large enough that the session-establishment rate is not the binding constraint
 — compute it rather than assuming, and remember that a durable, principal-keyed lockout is still the
 correct shape even when the arithmetic is currently comfortable.
+
+## W:23 — The declared input schema strips the very keys the repair table promises to heal, because validation runs before repair, so an alias with no matching schema field is dead on arrival
+
+**Statement.** A tool or endpoint that accepts input from an imprecise caller — a model, a partner
+integration, a legacy client — is given two layers: a declared input schema that validates and
+coerces, and an alias/repair table that renames the caller's approximate key to the canonical one.
+The two are authored separately and the order of execution decides everything. Where the framework
+validates against the declared schema first, and that schema's object mode discards keys it does not
+declare, every alias whose canonical spelling is declared but whose alternate spelling is not has
+already been deleted by the time the repair table runs. The table promises; the schema decides;
+nothing reconciles them. The defect is worse than inert, because its severity depends on whether the
+canonical field is required: a stripped alias on a required field produces a loud validation failure
+a caller can often recover from, while a stripped alias on an optional field produces a silent wrong
+answer — the handler sees the field as absent, takes its default or resolve-the-most-likely-value
+branch, and returns a confident, well-formed response to a question nobody asked. Repeated attempts
+do not help, because every attempt is stripped identically; the transcript reads like a system
+working correctly while the caller is answered about the wrong subject as many times as they ask.
+The mirror defect is equally real and usually unexamined: an alias declared on a surface whose
+canonical field that surface does not accept, so the repair renames a value into a key nothing reads.
+
+**Detect.** Do not read the alias table alone and do not read the schema alone — the finding lives
+only in their intersection. Enumerate every surface-alias-canonical triple and assert the invariant
+in both directions: every alias is declared as an accepted key on every surface that accepts its
+canonical, and no surface declares an alias whose canonical it does not accept. A one-directional
+check passes the defect in one of its two forms. Establish the framework's actual order empirically —
+validate-then-repair versus repair-then-validate — by sending an aliased key and observing whether
+the handler ever sees it; the framework's documentation is not sufficient, and the order can differ
+between the streaming and non-streaming paths of the same framework. Separately, inventory optional
+fields whose absence triggers an inference branch rather than an error, and treat each as a
+silent-wrong-answer candidate: search production logs for calls that took the inference branch while
+the caller's own transcript shows they supplied the value under another name. Make the invariant a
+gate rather than a one-time sweep, and give the gate's parser a known-good control that fails the run
+if a field it should see stops parsing — a naive flat scan will read nested object properties inside
+array-of-object fields as top-level parameters and report fabricated defects, and a verifier that
+invents defects teaches its readers to skip its output.
+
+**False positives.** Frameworks whose object mode passes unknown keys through rather than stripping
+them, verified by observation. Aliases deliberately scoped to one surface where the canonical is
+genuinely absent elsewhere. Repair layers that run before validation, where the table is
+authoritative and the schema sees only canonical keys. Nested field names that coincide with a
+canonical parameter name but belong to a sub-object — the parser must be depth-aware before any of
+its reports are actionable. Baselined known gaps that are recorded, counted, and tracked rather than
+silently tolerated.

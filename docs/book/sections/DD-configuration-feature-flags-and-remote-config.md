@@ -582,3 +582,38 @@ parent action by name rather than letting the provider refuse it.
 
 **False positives.** Compliance-driven settings that legitimately forbid the whole operation, when
 the refusal is surfaced as such.
+
+## DD:29 — Published remote-config versions carry a human description the publish path never derives from the content, so two different documents claim the same identity and the deployment trail cannot say what shipped
+
+**Statement.** A remote-configuration service stores each published document as an immutable,
+service-numbered version and lets the publisher attach a free-text description. The publish tooling
+sets that description from a constant, a stale variable, or the document's own internal version field
+rather than deriving it from the content actually being uploaded. Successive publishes therefore
+carry identical or wrong descriptions while the service's own version numbers advance, and the
+deployment record — the only human-readable column in the version list — stops distinguishing the
+documents. Nothing breaks at runtime: the newest version is served correctly and the application is
+unaffected. What breaks is every retrospective question. During an incident the natural first move is
+to list the published versions and identify which document introduced a behavior; with duplicate
+descriptions that list cannot answer it, and the investigator must download and diff raw payloads to
+learn what the audit trail was supposed to record. The defect is self-concealing because it is
+invisible from the application's side and visible only in the version listing, which nobody reads
+until something has already gone wrong — and it compounds any environment where remote config can
+ship ahead of the code that consumes it, since reconstructing the config timeline is exactly how that
+class of incident is diagnosed.
+
+**Detect.** List the published versions for every configuration profile and check the description
+column for duplicates, nulls, and values that disagree with the document's own internal version
+field; any two versions sharing a description is the finding. Read the publish script and confirm the
+description is computed from the content being uploaded — a content hash, the document's version
+field read from the payload at publish time, or the source revision — rather than from a literal or a
+variable set earlier in the script. Verify by publishing to a non-production profile and reading back
+the stored description. Extend the check to the deployment records that reference those versions: a
+deployment whose description names a version number different from the one it deployed has the same
+defect at higher blast radius. Where a documented rollback procedure selects a version by
+description, treat this as severity-raising, since the procedure can select the wrong document.
+
+**False positives.** Profiles whose descriptions are deliberately null and whose provenance is
+carried by a separate, verified changelog keyed on the service's version number. Single-document
+profiles that are never rolled back or compared. Systems where the version list is generated from
+the payload at read time rather than from a stored description field, so a stale stored value is
+never consulted.

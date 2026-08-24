@@ -456,3 +456,74 @@ helper), so enrollment is by construction.
 checks and renders the gated state); affordances deliberately shown-but-disabled as an upsell or
 discovery pattern (must be styled as such, not as a live control); server-driven UI where the
 client renders only what an authorized payload contains.
+
+## K:35 — Edit state lives on a provider above the route while the discard handler clears only the unmounting child's mirror, so the discard keeps the edits and the unsaved-changes prompt outlives the edit forever
+
+**Statement.** A tab or route renders a form whose draft values and dirty flag are held not by the
+form component but by a context provider mounted above the tab switcher, so the state survives
+navigation between tabs. A leave-guard watches a mirror of that dirty flag held by the shell and
+prompts on exit. The discard path is then written against the shell's mirror — set the local flag
+false, allow the navigation — and never against the provider that actually owns the values. Two
+defects follow from the one omission and they are usually reported as one. The visible half is a
+phantom prompt: the provider still holds a true dirty flag, so re-entering the tab remounts the form,
+whose mount effect re-broadcasts the stale flag upward, and the guard fires on every subsequent exit
+whether or not anything was edited — one real edit anywhere in the session poisons every later
+navigation, which is what gets reported. The invisible and worse half is that the discarded edits
+were never discarded: they are still in the provider, still bound to the form, and will ride along on
+the next save of an unrelated field on that surface, writing values the user explicitly chose to
+throw away. Because the prompt is annoying and the stale write is silent, the fix usually targets the
+prompt — clearing the mirror harder, suppressing the guard — which removes the symptom and leaves the
+data defect intact and now unsignalled.
+
+**Detect.** For every unsaved-changes guard, identify which component owns the draft values and which
+owns the flag the guard reads; where they are different components, follow the discard handler and
+require that it resets the owner, not the reader. Prefer a discard that re-reads the server's
+representation and rebuilds state from it over one that restores a local snapshot, since a snapshot
+is a second source of truth that drifts from the server exactly as the original state did. Reproduce
+both halves explicitly rather than testing the prompt alone: edit a field, discard, leave and
+re-enter the tab and assert no prompt appears with nothing edited; then, in the same session, edit a
+different field, save, and assert the request body does not contain the discarded value — the second
+assertion is the one that finds the real defect. Check every exit the guard covers, including tab
+switches, route changes, and browser navigation, since these frequently route through different
+handlers and only some of them were updated.
+
+**False positives.** Forms whose state is owned by the same component the guard lives on, where
+unmounting genuinely disposes it. Providers whose values are intentionally retained across
+navigation as a documented draft feature, with an explicit user-visible restore affordance. Guards
+that prompt from a route-level blocker reading the provider directly, with no mirror to drift.
+
+## K:36 — The choice control encodes "none of these" as a sentinel value while the server's contract expresses it as the field's absence, so selecting the default silently fails validation
+
+**Statement.** A server accepts a small set of enumerated values for a setting and expresses the
+"unconstrained" or "natural" case not as a member of that set but as the field being absent from the
+payload — a validation of the shape "if the key is present it must be one of these" leaves absence
+as the only way to say "no constraint." The client renders the setting as a select control and needs
+a visible option for that case, so it invents a sentinel — zero, an empty string, a word like
+"none" or "auto" — and sends it like any other value. The server's validator sees a present key
+holding a non-member and rejects the whole request, so choosing the option that describes the
+default behavior is the one choice that cannot be saved. Two aggravating patterns almost always ride
+along. The client's option list is transcribed by hand from the server's accepted set and drifts
+from it, so a legitimately accepted value is simply missing from the control and unreachable through
+the UI. And because the rejection is a validation error on a composite save, it surfaces as a
+generic failure on an unrelated-looking form rather than as a message about the field the user
+touched, which is why these are usually reported as "saving settings is broken" rather than as an
+option defect.
+
+**Detect.** Take the server's accepted set from the validator in the deployed handler — not from
+documentation, a type, or a client constant — and diff it against the option values the control
+actually emits, in both directions: values the server accepts that the control cannot produce, and
+values the control emits that the server does not accept. For every option representing a default,
+unconstrained, or "no preference" case, trace what the client puts on the wire and confirm the
+server's contract expresses that case the same way; where the contract expresses it as absence, the
+client must delete the key rather than send a stand-in, and the sentinel must exist only inside the
+control's own state. Exercise each option end to end against the real endpoint and assert
+persistence by reading the value back, since a validation rejection on a composite save is easy to
+misattribute. Prefer generating or gate-checking the client's option list against the server's set
+so the two cannot drift again, and check sibling clients on other platforms for the same control —
+the transcription is usually duplicated, and the labels for a shared value should match.
+
+**False positives.** Controls whose option set is fetched from the server at runtime rather than
+transcribed. Sentinels the client strips before sending, verified by inspecting the request body
+rather than the handler. Cases where the server genuinely accepts the sentinel as a member of the
+set. Deliberately narrowed option lists where an accepted value is withheld from this surface by
+product decision, documented as such.

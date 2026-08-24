@@ -770,3 +770,125 @@ as the skip condition.
 **False positives.** Keys that are the record's true primary key by construction (a content hash, a
 supplied idempotency token); pipelines where suppressed records are written to a reject store the
 operator is required to review, and the review step is enforced rather than described.
+
+## NN:37 — A gate treats "the check could not run" and "the check found nothing to object to" as the same empty value, reproducing inside the gate the manufactured-absence it was built to catch
+
+**Statement.** A gate compares the thing being shipped against an external reference — the previously
+published artifact, a baseline store, a registry, the deployed version — and passes when the
+comparison shows no problem. Two very different conditions both yield "no problem": the reference
+legitimately does not exist yet (a first publish, a new key, an empty baseline), and the reference
+could not be consulted at all (the store is unreachable, credentials expired, the endpoint is down,
+a network partition). Where the lookup is written to return one empty value for both — an empty
+string, a null, a swallowed error — the gate cannot distinguish them and takes the pass branch for
+both. The result is a gate that is strongest when nothing is wrong and silently absent exactly when
+infrastructure is degraded, which is when bad artifacts are most likely to be produced. This is the
+same manufactured-absence shape the gate usually exists to catch — a build step that returns success
+while having produced less than it should — reproduced one layer up, inside the checker. The
+diagnostic subtlety that makes it durable is that the obvious separator often does not work:
+point-lookup APIs frequently return byte-identical error text for "this key is missing" and "this
+entire container does not exist," so a stderr or message-string parse is a false premise that passes
+its own review and fails silently in production. The separation has to be structural — an API shape
+where absence is a success with an empty result set and unreachability is a non-zero exit — not
+textual.
+
+**Detect.** For every gate that compares against an external reference, read the lookup helper and
+enumerate the distinct conditions that produce its "nothing to compare" value; if unreachable and
+absent collapse to one value, that is the finding regardless of how well the comparison itself is
+written. Prove the separation empirically with three controls rather than by reading the code: a
+real reference (expect a value), a missing reference in a reachable container (expect the absent
+branch), and an unreachable container or revoked credential (expect the could-not-run branch) —
+and require that the third produces different output from the second. Where the implementation
+separates them by matching error text, treat that as unproven until the two error strings are
+captured side by side; identical text is common and dispositive. Require the could-not-run branch to
+say so in the build output in terms an operator cannot read as a pass; whether it also fails the
+build is a defensible design choice, but invisibility is not. Finally, check the threshold's
+provenance: a comparison constant with no recorded measurement beside it is the sibling defect, since
+nobody can later tell whether it was derived or guessed, and an indefensible constant is the usual
+reason a gate is eventually switched off.
+
+**False positives.** Gates that are explicitly advisory and documented as best-effort, where the
+authoritative check runs elsewhere and is not subject to the same lookup — verify the authoritative
+one actually exists. Lookups against a store colocated with the build such that unreachability is
+already fatal earlier in the run for an unrelated reason. First-run bootstrap paths whose reference
+is guaranteed absent by construction and whose pass is therefore unconditional by design. Checks
+whose reference is a local file whose absence and unreadability are already distinguished by the
+filesystem API.
+
+## NN:38 — Every test double satisfies the authorization layer unconditionally, so an entire class of least-privilege defects is structurally invisible to the whole unit suite and can only be discovered in production
+
+**Statement.** A codebase with a dependency-injection seam replaces its data-store and service
+clients with in-memory doubles for testing. Those doubles implement the *functional* contract — get,
+put, query, the shapes that come back — and none of them implement the *authorization* contract,
+because authorization is enforced by the platform on the real client, not by the interface being
+faked. Every call a handler makes against a double therefore succeeds by construction. The
+consequence is not that a few tests are weak; it is that a whole defect class has no possible
+detection in the unit suite. A handler that reads a table outside its credential profile's fence, a
+worker that writes a key its role does not cover, a code path that assumes an action its
+session-scoped policy never granted — each is green locally, green in CI, and denied at runtime on
+first real invocation. The failure surfaces as a runtime denial, usually a 500 behind whatever
+fail-closed copy the caller renders, on the exact code path the tests exercised most confidently.
+The trap for reviewers is that the suite's coverage of the path is genuinely high, which reads as
+assurance and is why the gap survives review: the tests prove the logic and are silent about the
+permission, and nothing in the report distinguishes the two. Teams usually learn this once per
+profile and leave a comment beside the fix rather than a check, so the second occurrence lands in a
+different handler months later and is diagnosed from scratch.
+
+**Detect.** Ask, for each faked boundary, what the real client enforces that the double does not —
+authorization is the usual answer and is rarely written down. Then close the gap statically rather
+than hoping a test catches it: build a check that extracts every resource-and-action pair the
+handler code actually issues (tracing through shared helpers, since the helper's method is the truth
+and not the call site) and diffs that set against the grants declared in the credential profile or
+role that path runs under, failing on any action issued but not granted. Treat the existence of a
+prior fix-with-a-comment in a profile as a marker that the profile has this shape and that its other
+handlers are unaudited. Where such a static check cannot be built, require at least one integration
+test per profile that runs against real credentials with the real fence in place, and confirm it is
+wired into a lane that actually runs — an unwired verifier never runs, and a permission test that
+executes against doubles is worse than none because it manufactures the assurance it cannot provide.
+Search runtime logs for the credential service's denial wording; a single occurrence proves the
+class is live in this codebase.
+
+**False positives.** Codebases where the real client is exercised against a local emulator that does
+enforce policy evaluation, verified by making an unauthorized call and observing the denial.
+Handlers running under a single broad role with no per-path fence, where the class does not exist —
+though that is usually its own finding. Doubles for boundaries that carry no authorization at all
+(pure computation, formatting, local caches). Paths already covered by an equivalent static
+grant-versus-usage check, provided that check traces call paths rather than grepping for action
+names.
+
+## NN:39 — The committed generated artifact and the source it regenerates from drift in both directions, while the only gate compares supersets and can therefore see just one of them
+
+**Statement.** A contract artifact — an API document, a client schema, a route table — is produced
+by a generator from a separate, human-edited source file, and both the source and the generated
+output are committed. Editors then touch whichever of the pair is closer to hand: a new route is
+added to the generated document without its source block, or a retirement removes the source block
+while the generated document keeps the route. Neither edit fails anything at the time, because the
+generator is not run on every change. The pair now holds two opposite kinds of staleness with
+opposite consequences, and the distinction is what makes this durable: an entry present in the
+generated output but absent from the source will be DELETED the next time anyone regenerates, and an
+entry absent from the output but present in the source will be RESURRECTED. Whichever gate exists
+usually checks only that the deployed or generated surface is a superset of some baseline, which
+catches disappearances and is structurally blind to resurrections — so one of the two shapes passes
+review, passes CI, and lands. The third shape is quieter still: the same entry set on both sides
+with hand-edited content differing inside an entry, which no set-comparison notices at all. The
+failure lands on whoever next runs the generator, typically during unrelated work, and presents as
+their change having deleted or revived routes they never touched.
+
+**Detect.** Do not compare the artifact against a baseline; compare it against itself. Run the REAL
+generator against a copy of the committed source and require the committed artifact to be
+byte-identical to the output, normalizing only line endings — a second reimplementation of the
+generator inside the checker is itself a drift source and must not be written. Diagnose the three
+shapes by name in the failure text, since the remedy differs: entry in output without a source block
+(regeneration would delete it), source block surviving a retirement (regeneration would resurrect
+it), and identical entry sets with differing content (hand-edited integration, authorizer, or CORS
+drift). Wire the check into the earliest lane that fronts every land rather than only the slow
+certification lane, and make it fail closed when its interpreter or toolchain is unavailable — a
+silent skip is the status quo the gate exists to end. Add a parse-collapse floor so that a generator
+run producing implausibly few entries is treated as a failure rather than as a fresh artifact.
+Finally, check for a second, live-drift half: the deployed surface can hold entries neither file
+does, and where the deployment mode never deletes, those require their own shrinking baseline.
+
+**False positives.** Generated artifacts produced deterministically in CI and never committed, where
+the pair cannot drift. Sources whose generator is genuinely run by a pre-commit hook already proven
+to execute on every path. Intentional, documented divergences carried in an explicit exception list
+with a staleness tripwire. Formatting-only differences on a pair where the committed artifact is
+deliberately prettified and the comparison is normalized for it.

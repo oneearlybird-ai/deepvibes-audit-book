@@ -557,3 +557,42 @@ behind, or carrying uncommitted work — are ordinary staleness, not this; estab
 checkouts are at the same commit and clean before filing. A single-checkout pipeline can never
 exhibit the oscillation regardless of how the digest is computed, so this stays theoretical until a
 second builder is proven able to run.
+
+## U:39 — The running service carries no deployed-revision identity, so no live signal can be tied to a commit and every "is the fix in production?" question is answered by inference
+
+**Statement.** A long-lived compute unit — a baked image behind an autoscaling group, a container
+task, a VM — is built from source and deployed, and neither the image nor the running process
+records which source revision it was built from. The image's tags carry a build timestamp, a
+pipeline id, and a component name; the process logs its startup — region, loaded config, registered
+handlers, listening port — and never its own version. The result is that the live system cannot
+answer the single most important question asked of it during an incident: is the change I landed
+actually running? The answer is reconstructed instead by inference from timestamps, comparing when a
+commit landed against when a build started, and that inference is precisely least reliable when it
+matters most, because incident-driven builds and incident-driven commits happen minutes apart. Two
+distinct failures follow. Verification becomes unfalsifiable: a fix is declared live because a build
+ran after it landed, and a fix that missed the build by seconds is reported as deployed. And
+attribution inverts: when a defect appears after a deploy, the set of changes in that deploy is not
+knowable, so bisection has nothing to bisect and rollback has no defined target. The condition is
+easy to miss during normal operation, since nobody asks the question until an incident, and it is
+usually discovered by the first person who tries to confirm a remediation against the live system
+rather than against the repository.
+
+**Detect.** Take the identity question literally and try to answer it from the live system alone,
+with no repository access: read the running unit's image tags and its startup log lines and see
+whether a commit identifier appears in either. If it does not, that is the finding, and the severity
+follows from how the platform verifies remediation — where the practice is to confirm fixes against
+live signals, this defect silently degrades every such confirmation to a guess. Require the build to
+stamp the source revision into the image as a tag and into the artifact itself, and require the
+process to log it once at startup alongside the config versions it loaded, so a single log query ties
+a request to a revision. Check the remote-config half too: a service that logs neither its code
+revision nor the version numbers of the dynamic configuration it fetched cannot reconstruct the
+behavior of a past request at all. Verify the stamp survives the pipeline rather than trusting the
+build definition — read the tag on the image the autoscaling group is actually launching, not the
+one the pipeline claims to have produced.
+
+**False positives.** Immutable-tag deployment schemes where the image reference itself is the
+revision, so identity is carried by the launch configuration and is readable there. Units whose
+source is a single pinned dependency version already recorded elsewhere in the launch path. Platforms
+that inject revision metadata automatically and expose it on a documented endpoint — confirm by
+querying it rather than by citing the platform's documentation. Short-lived functions whose published
+version already maps one-to-one to an artifact under independent revision control.

@@ -261,3 +261,44 @@ whose record count equals a round number exactly.
 
 **False positives.** Deliberate sampling or preview reads that do not claim completeness; sources
 whose page parameter is documented as per-page and returns a continuation token.
+
+## V:22 — The sweep's per-item eligibility test parses a field shape the canonical store stopped emitting, so every item is skipped and the run reports a well-formed, healthy zero-work completion
+
+**Statement.** A periodic sweep decides per item whether work is due by reading one field and
+parsing it — an hours range, a cron string, a window, a threshold expressed as text. The field's
+canonical store later changes shape: what was a rendered display string becomes a structured object
+(or the reverse, or a scalar becomes a map keyed differently). The sweep's parser is consumer-local
+— written against the shape the field had when that consumer was built — and its failure mode is a
+*non-match*, not a throw: coercing a structure to a string yields something the pattern simply does
+not match, an absent key yields undefined, and the item falls through to the not-due branch. Because
+"not due" is the overwhelmingly common and entirely legitimate outcome of any sweep, the run
+completes normally and emits a well-formed summary — `{written: 0, skipped: N}` — that is
+byte-indistinguishable from a healthy tick on a quiet hour. Nothing throws, no error metric moves,
+no alarm has a datapoint to cross, and the downstream table simply never gains rows. The feature is
+dead from the moment of the shape change and stays dead for as long as it takes a human to ask why
+a table is empty; the elapsed time is bounded by curiosity, not by monitoring. The compounding
+factor is that the parser is usually one of several private re-implementations of a normalizer the
+platform already owns, so the same shape change is a latent time bomb in every other consumer that
+grew its own copy.
+
+**Detect.** For every scheduled sweep, name the fields its eligibility test reads and prove the
+shape each one actually holds by reading live records from the canonical store — not the type
+declaration, not a fixture, not the writer's intent. Where the consumer parses rather than consuming
+a shared normalizer, treat that as the finding's seed and enumerate every other consumer of the same
+field; a private parser is never singular. Distinguish the two zero-work outcomes in the sweep's own
+telemetry: a run where every candidate was evaluated and none was due must be recorded differently
+from a run where the eligibility test could not interpret its input, and an item whose field is
+unparseable or absent must emit a distinct warning rather than joining the skip count. The decisive
+query is longitudinal: chart the sweep's written-count against its candidate-count over the period
+since the shape change landed and look for a written-count that is flatly zero while candidates are
+non-zero — a real quiet period varies, a dead parser does not. Fixtures are the trap: assert the
+consumer's tests round-trip the REAL normalizer over records copied from the live store in every
+stored syntax, since a fixture authored beside the parser encodes the parser's own assumption and
+will agree with it forever.
+
+**False positives.** Sweeps over genuinely empty candidate sets, and seasonal or business-hours
+windows where a run of zero-work ticks is expected — confirm by finding at least one tick in the
+window that did write. Newly deployed sweeps whose first eligible item has not yet occurred.
+Consumers that parse a field the canonical store still emits in exactly that shape, verified by
+reading a live record rather than the schema. Skip counts driven by an explicit disable flag on the
+item, which is a decision rather than a parse failure.

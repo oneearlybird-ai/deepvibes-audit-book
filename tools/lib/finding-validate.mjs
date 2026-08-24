@@ -9,7 +9,7 @@ export const METHODS = new Set(["live-source", "live-source+adversarial", "live-
 // "fix-landed": progress milestone on a not-yet-closed finding — the fix is committed/landed
 // but verification or rollout is still pending. Added 2026-08-22: the 2026-08-21 batch needed
 // it twice (F-0819, F-0822) and inventing it ad hoc beat falsifying history to fit the enum.
-export const EVENTS = new Set(["opened", "reverified-open", "fix-landed", "closed-fixed", "closed-not-an-issue", "accepted", "reopened"]);
+export const EVENTS = new Set(["opened", "reverified-open", "note", "fix-landed", "closed-fixed", "closed-not-an-issue", "accepted", "reopened"]);
 
 /**
  * Validate one finding. Pushes human-readable problems into `errors`.

@@ -788,3 +788,84 @@ left OK on a surface with known incidents is a candidate.
 
 **False positives.** Alarms deliberately tuned to catch only mass events, where the low-volume
 failure is covered by a separate detector; alarms on surfaces whose volume is genuinely large.
+
+## G:45 — The checker names one unconditional remedy for a failure it can reach in several states, and for the commonest state that remedy is rejected by the platform, so operators repeat an impossible action instead of finding the cause
+
+**Statement.** A drift or parity checker detects that a resource is out of step and, to be helpful,
+prints the fix: "publish a new version and update the alias," "re-run the apply," "redeploy." The
+remedy string is emitted unconditionally from the single failing branch, because the author had one
+cause in mind when writing it. The resource, however, can be out of step for several distinct
+reasons, and for at least one of them the platform will refuse the named operation outright — a
+mutation blocked by another attribute on the same resource, an update rejected while a dependent
+configuration is in a failed state, an operation forbidden by the very condition that produced the
+drift. An operator following the instruction gets a rejection, assumes a transient, and repeats it;
+the true cause goes unexamined for as long as the loop holds. The damage exceeds the wasted attempts
+in two ways. First, an authoritative-sounding remedy that cannot work teaches operators to distrust
+the checker generally, which is more expensive than a checker that says only "failed." Second, the
+same unconditional framing tends to appear in the human-facing digest or runbook built on top of the
+checker — "just needs an apply" — where it is read as clearance, and acting on it against a resource
+whose drift is load-bearing (an undeclared weight, a hand-applied workaround, a preserved-by-accident
+state) converts a reporting defect into an outage. Lag is not a severity: a resource can be maximally
+out of step and maximally load-bearing at the same time, and a report that conflates the two is
+recommending the outage.
+
+**Detect.** For every checker that prints a remedy, enumerate the distinct states that reach that
+branch and, for each, confirm against the platform's documented semantics — and preferably against a
+live probe — that the named operation is actually permitted in that state. Any state where it is
+refused is the finding. Require the diagnostic to describe the observed state before naming an
+action, and to derive the action from the state rather than from the branch; where the correct
+sequence differs by cause, each cause gets its own sequence. Check the runtime cost of the extra
+facts before assuming the richer diagnosis is expensive — the distinguishing attributes usually ride
+along on a call the checker already makes, and the conditional second lookup runs only for the rare
+failing resource. Then sweep the operator-facing layer built on the checker: any digest, runbook, or
+summary that converts a drift list into a to-do, or that closes with a blanket "once the tree is
+caught up," inherits the defect at higher blast radius and must be corrected in the same change.
+Where detection already exists in one checker, extend it rather than adding a second — and name the
+existing checker's real path in the runbook, because a path that does not resolve reads as absent
+coverage and invites exactly the duplicate the extension was meant to prevent.
+
+**False positives.** Checkers whose failing branch genuinely has one reachable cause, proven by
+enumeration rather than assumed. Remedies phrased as a diagnosis to investigate rather than a command
+to run. Environments where the blocking attribute cannot occur because it is prohibited by policy and
+that policy is enforced, not merely documented. Advisory output clearly marked as a starting point,
+consumed only by engineers with the resource in front of them.
+
+## G:46 — The batch summary's outcome counters omit a branch, so the tallies do not sum to the candidate count and a real drop is reported as indistinguishable from a benign no-op
+
+**Statement.** A periodic job iterates a candidate set and emits one summary line holding a count of
+candidates and a counter per outcome — written, skipped, failed. The per-item worker returns a
+boolean or a status, and the loop increments a counter only on the affirmative branch: `if (wrote)
+written += 1`, with no else. The worker, however, returns its negative value for several materially
+different reasons — the work was already done for this period, a concurrent runner won the write,
+validation rejected the output and dropped it — and every one of them increments nothing. Two
+consequences follow, and the second is the dangerous one. First, the summary's arithmetic silently
+stops closing: `written + skipped + failed` is less than the candidate count, which means the line
+can never be used to prove that every candidate was accounted for, and the summary's whole value as
+a coverage signal is gone. Second, and worse, the benign uncounted case (already done) and the
+harmful uncounted case (output produced, validated, rejected, discarded) are rendered identically —
+which is to say, not rendered at all. The drop is usually logged on its own line by the worker, but
+the summary is what operators read, what dashboards chart, and what a metric filter is built on, so
+a systematic validation failure can run indefinitely while the one line anybody looks at reports a
+steady, healthy-looking zero. Codebases that document the drop as happening "loudly" in a header
+comment while the summary swallows it are the common shape, because the loudness was implemented at
+the worker and never propagated to the tally.
+
+**Detect.** For every batch or sweep summary, assert the arithmetic first: does the sum of the
+outcome counters equal the candidate count, on real production log lines, across several runs? Any
+run where it does not is the finding, and the gap size tells you how many items took an uncounted
+branch. Then read the per-item worker and enumerate every distinct value it can return along with
+the condition producing it; require a counter, distinctly named, for each one — "already present"
+and "rejected by validation" must never share a bucket or share the absence of one. Treat the header
+comment as a claim to verify rather than as evidence: where documentation says a failure is loud,
+follow that path to the summary line and confirm it appears there. Where a metric filter or alarm is
+built on the summary, check which counters it reads, since a counter that exists but is not emitted
+as a metric is only marginally better than one that does not exist. Finally, prefer a summary that
+also states the candidate count and asserts its own closure, so that a future branch added without a
+counter fails visibly rather than quietly widening the gap.
+
+**False positives.** Loops whose worker genuinely has one negative reason, proven by enumeration
+rather than assumed. Summaries whose uncounted branch is a documented, separately-metricked terminal
+state that the operator surface displays alongside the summary. Jobs where the candidate count is
+itself approximate (sampled or streamed) so exact closure is not expected — verify the approximation
+is stated. Debug-level per-item lines that already carry every outcome, where the summary is
+explicitly a convenience rather than the coverage signal.

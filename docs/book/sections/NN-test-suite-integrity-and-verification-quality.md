@@ -892,3 +892,30 @@ the pair cannot drift. Sources whose generator is genuinely run by a pre-commit 
 to execute on every path. Intentional, documented divergences carried in an explicit exception list
 with a staleness tripwire. Formatting-only differences on a pair where the committed artifact is
 deliberately prettified and the comparison is normalized for it.
+
+## NN:40 — The drift gate proves the token exists as text somewhere in the component, not that it is emitted at the site the detector watches
+
+**Statement.** A detector is configured from a hand-kept vocabulary — log-message tokens for a metric
+filter, event names for an alarm, error codes for a routing rule — and a static gate guards it
+against rename drift by asserting each configured token still appears in the component's source. The
+assertion is a substring test over the concatenated source text. That proves the string survives
+SOMEWHERE, not that it survives at the *emitting* site the detector observes: a token that has moved
+into a response body, a comment, a constant table, a test fixture, or a differently-levelled log line
+still satisfies the gate while the filter it configures can no longer match anything. The gate is
+strongest exactly where the drift is cheapest — a refactor that keeps the identifier but changes
+where it is written — so the detector's death and the gate's approval have the same cause.
+
+**Detect.** Read the gate's matcher, not its output: a bare `source.includes(token)` (or an unanchored
+regex over the whole file) is the finding. Then measure the gap: for every configured token, test
+whether its occurrences intersect the emitting construct the detector actually reads (inside a
+`console.*`/logger call for a log-message filter, at the level the filter demands, on the stream the
+filter is attached to). A population of tokens present in source but absent from any emitting site is
+the live evidence — triage it before tightening, because helper-based logging produces legitimate
+members. Prefer a gate that binds to the emission site (or to a single exported vocabulary the
+emitter and the detector both import) over one that scans text.
+
+**False positives.** Codebases that log through a wrapper or a structured-logging helper, where the
+token legitimately appears only as an argument or a map key — the emission is real, the naive
+proximity test just cannot see it. Tokens deliberately registered ahead of the code that will emit
+them, carried in an explicit pending list with a staleness tripwire. Vocabularies shared by several
+emitters where the gate checks the union on purpose.

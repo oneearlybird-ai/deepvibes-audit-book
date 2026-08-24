@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 927,
+ "rule_count": 929,
  "sections": [
   {
    "id": "A",
@@ -722,7 +722,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "F:1",
@@ -879,6 +879,10 @@
     {
      "id": "F:39",
      "title": "The resource-family grant is added to one of several sibling shared policies"
+    },
+    {
+     "id": "F:40",
+     "title": "The encrypted resource's writer is an AWS service the key policy does not name — every service-originated write fails at the KMS layer while the writer's own signal still reads healthy"
     }
    ]
   },
@@ -3808,7 +3812,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "NN:1",
@@ -3965,6 +3969,10 @@
     {
      "id": "NN:39",
      "title": "The committed generated artifact and the source it regenerates from drift in both directions, while the only gate compares supersets and can therefore see just one of them"
+    },
+    {
+     "id": "NN:40",
+     "title": "The drift gate proves the token exists as text somewhere in the component, not that it is emitted at the site the detector watches"
     }
    ]
   },

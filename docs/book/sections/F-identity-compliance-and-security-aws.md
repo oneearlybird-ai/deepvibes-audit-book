@@ -590,3 +590,37 @@ checked statically.
 
 **False positives.** Consumers where the call is genuinely unreachable — prove it by call path, not
 by absence of reports.
+
+## F:40 — The encrypted resource's writer is an AWS service the key policy does not name — every service-originated write fails at the KMS layer while the writer's own signal still reads healthy
+
+**Statement.** A queue, topic, stream, or bucket is encrypted at rest, and the thing that WRITES to
+it is not a principal in the account but an AWS service acting on the account's behalf (a metric
+alarm's action, an event-bus target, a budget notification, a telephony provider's inbound message,
+a log-delivery service). Server-side encryption moves the authorization decision to the key policy,
+where the service principal must be named explicitly — an identity policy in the account cannot
+grant it, because the caller is the service, not the account's role. Two shapes recur. First, the
+resource sits on the provider's own *managed* key, whose policy CANNOT be edited, so no service can
+ever be granted and the cross-service write is permanently impossible; the at-rest checklist reads
+green and the delivery path is dead. Second, a shared customer-managed key is minted to repair one
+lane's writer and then adopted by every resource of a class, but its grant list enumerates only the
+publishers of the lane that motivated it — so resources of a different family that adopted the key
+keep a writer with no grant, and the fix's own blast radius hides them. Both shapes fail silently in
+the same way: the KMS denial is charged to the service, not to the workload, so the alarm still
+transitions, the rule still matches, the number is still received, and only the *delivery* is lost.
+
+**Detect.** Enumerate writers per resource, not per resource TYPE: for every encrypted queue/topic/
+stream, list every alarm action, event-bus target, budget subscriber, provider callback, and log
+destination that names it, and map each to the service principal that will actually make the
+`GenerateDataKey` call. Read the LIVE key policy and demand a statement for each — then confirm the
+managed-vs-customer question, because a managed key means the answer is "it cannot be granted at
+all". The cheapest live proof is the writer's own history rather than any config: alarm action
+history reading "Failed to execute action", a topic with zero `NumberOfMessagesPublished` across
+days while its alarms latch, an inbound channel whose sole subscriber has no invocations. After any
+change that moves a class of resources onto a shared key, re-run the enumeration for every adopting
+resource, not for the class that motivated the change.
+
+**False positives.** Resources whose only writers are account principals whose identity policies do
+carry the key actions. Services that publish through an intermediary the account owns (a function
+that receives and re-publishes) — the grant belongs to that function's role, not to the upstream
+service. Deliberately dark resources kept for a future path, where the absence of a writer is the
+posture and is documented as such.

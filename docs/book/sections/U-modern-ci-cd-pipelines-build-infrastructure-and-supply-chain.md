@@ -596,3 +596,29 @@ source is a single pinned dependency version already recorded elsewhere in the l
 that inject revision metadata automatically and expose it on a documented endpoint — confirm by
 querying it rather than by citing the platform's documentation. Short-lived functions whose published
 version already maps one-to-one to an artifact under independent revision control.
+
+## U:40 — The mutating command takes its target from the working directory and silently discards a named one, so pointing it at the wrong thing succeeds as a clean no-op
+
+**Statement.** A release/land/publish/apply subcommand derives what it acts on from ambient context
+— the current directory, an environment variable, an active profile — and its argument parser drops
+positionals it does not consume. Naming a target that the command cannot honour is therefore not an
+error: the tool acts on the ambient one instead, finds nothing to do there, and prints a success
+line ("nothing to land", "already up to date", "no changes"). The operator reads a green terminal
+and believes the named target shipped. This is the same silent-success family as a swallowed exit
+code, but harder to spot, because the tool did exactly what it documents and the argument that made
+it lie was never echoed. It bites hardest where sibling subcommands DO take positionals (`claim a2
+<repo>`, `release a2 <repo>`), because the inconsistent surface teaches the wrong habit.
+
+**Detect.** Read the dispatcher, not the help text: list which subcommands receive the parsed
+positional array and which are called with flags only. Every mutating command in the second group is
+a candidate. Then test it — run the command with a plausible-but-ignored target from a directory
+where there is nothing to do, and see whether the exit code and the message are distinguishable from
+a real success. The remedy is a hard failure naming the ignored argument, not a warning, and not a
+best-effort resolution of the name (a command that sometimes uses the positional and sometimes the
+ambient target is worse than either).
+
+**False positives.** Subcommands that genuinely document an optional positional (`sync [all]`,
+`status [name]`) — the guard must exempt them by name rather than by shape. Read-only commands,
+where an ignored argument costs a re-run and nothing else. Wrappers that deliberately forward
+unknown arguments to an underlying tool, provided the forwarding is documented and the underlying
+tool rejects what it cannot use.

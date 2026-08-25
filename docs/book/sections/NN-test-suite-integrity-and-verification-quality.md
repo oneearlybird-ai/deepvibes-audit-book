@@ -919,3 +919,29 @@ token legitimately appears only as an argument or a map key — the emission is 
 proximity test just cannot see it. Tokens deliberately registered ahead of the code that will emit
 them, carried in an explicit pending list with a staleness tripwire. Vocabularies shared by several
 emitters where the gate checks the union on purpose.
+
+## NN:41 — A coverage gate's authority-side parser silently degrades unreadable policy data to "unrestricted", so every subject passes while the subject-side metrics look healthy
+
+**Statement.** A verification gate diffs subjects (calls, permissions used, versions, routes)
+against an authority (policies granted, manifests, contracts). The subject side is instrumented —
+counts, floors, known-good controls — but the authority side is parsed with a shape assumption
+(object vs serialized string, list vs map, field name) that the producing API does not actually
+meet. The parser does not throw; it reads "no restrictions found" and the gate's semantics map
+absence of restriction to unlimited allowance. Every subject is now covered by construction. The
+gate's own health metrics stay green — hundreds of subjects analyzed, controls found — because the
+controls assert only that subjects were SEEN and PASSED, which a vacuously-permissive authority
+side satisfies perfectly. This is the dual of the zero-subjects vacuous gate: there, nothing is
+checked; here, everything is checked against nothing.
+
+**Detect.** For any gate that compares usage against grants: find where the authority data is
+parsed and ask what the code does when the shape is wrong — a `?.` chain or type-mismatched field
+access that yields undefined and falls through to a permissive default is the defect. Prove it
+live: hand the gate one subject that must fail (a tamper probe using an authority entry that
+verifiably does not grant it) and require exit-nonzero before trusting any green run. Require the
+gate to carry an authority-side floor (at least N subjects resolved to a BOUNDED authority) and a
+known-good control asserting a specific subject is covered BY A BOUNDED entry, not merely covered.
+
+**False positives.** Authorities where absence-of-policy genuinely means unrestricted BY DESIGN
+(a null session policy meaning role-wide access) — but then the bounded/unbounded split must be
+explicit in the gate's model and the unbounded population must be reported, not silently folded
+into "covered".

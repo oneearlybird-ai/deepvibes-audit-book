@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 934,
+ "rule_count": 935,
  "sections": [
   {
    "id": "A",
@@ -3832,7 +3832,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "NN:1",
@@ -3993,6 +3993,10 @@
     {
      "id": "NN:40",
      "title": "The drift gate proves the token exists as text somewhere in the component, not that it is emitted at the site the detector watches"
+    },
+    {
+     "id": "NN:41",
+     "title": "A coverage gate's authority-side parser silently degrades unreadable policy data to \"unrestricted\", so every subject passes while the subject-side metrics look healthy"
     }
    ]
   },

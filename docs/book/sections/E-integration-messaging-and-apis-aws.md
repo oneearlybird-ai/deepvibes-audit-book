@@ -512,3 +512,22 @@ the ordering is documented and the gap is short; sources whose only consumer is 
 subscribing out-of-band, which must still be named and verified rather than assumed; and cases
 where the delay is real but explicitly accepted with a stated bound, which is a documented posture
 and not a defect.
+
+## E:41 — Step Functions: state machine runs with logging disabled — no execution forensics beyond the console's retention
+
+**Statement.** A production state machine has no loggingConfiguration (or level OFF), so executions
+leave no CloudWatch trail: no Logs Insights forensics across executions, no log-derived metrics or
+alarms (they silently cover nothing), and once the service's own execution-history retention
+expires, no record at all of what a failed workflow did. Sibling state machines in the same estate
+log to KMS-encrypted groups, so operators assume coverage exists and query log groups that were
+never written.
+
+**Detect.** DescribeStateMachine on every live state machine; flag any whose
+loggingConfiguration.destinations is empty or whose level is OFF while siblings log. Cross-check
+alarm and metric-filter definitions for patterns scoped to the missing group — an alarm on a group
+the machine never writes is the compounding half.
+
+**False positives.** Express workflows whose full I/O logging would persist payload secrets the
+estate deliberately keeps out of logs (E:30) — but the deliberate posture must be documented, and
+level ERROR with includeExecutionData=false is almost always still safe; a machine with genuinely
+no failure modes worth forensics does not exist in production.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 930,
+ "rule_count": 932,
  "sections": [
   {
    "id": "A",
@@ -553,7 +553,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "E:1",
@@ -714,6 +714,10 @@
     {
      "id": "E:40",
      "title": "A change-data or event source is enabled and billed but has zero subscribers, so the real-time capability it was provisioned for silently does not exist"
+    },
+    {
+     "id": "E:41",
+     "title": "Step Functions: state machine runs with logging disabled — no execution forensics beyond the console's retention"
     }
    ]
   },
@@ -3066,7 +3070,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "DD:1",
@@ -3183,6 +3187,10 @@
     {
      "id": "DD:29",
      "title": "Published remote-config versions carry a human description the publish path never derives from the content, so two different documents claim the same identity and the deployment trail cannot say what shipped"
+    },
+    {
+     "id": "DD:30",
+     "title": "Runtime service-catalog registry accretes entries for retired targets: fail-closed on add, fail-open on retire"
     }
    ]
   },

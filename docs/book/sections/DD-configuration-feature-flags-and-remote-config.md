@@ -617,3 +617,28 @@ carried by a separate, verified changelog keyed on the service's version number.
 profiles that are never rolled back or compared. Systems where the version list is generated from
 the payload at read time rather than from a stored description field, so a stale stored value is
 never consulted.
+
+## DD:30 — Runtime service-catalog registry accretes entries for retired targets: fail-closed on add, fail-open on retire
+
+**Statement.** A shared configuration document carries a registry of invocable targets (function
+names, service endpoints, queue names) and the resolution accessor deliberately fail-fasts on any
+UNREGISTERED name, so adding a target forces a registry entry. But nothing enforces the reverse
+lifecycle: when a target is retired, its entry stays. The registry becomes append-only in practice —
+the accessor validates ENTRY existence, not TARGET existence — so retired names remain happily
+resolvable and die only at invoke time, in the caller's error path, with the registry's own
+fail-fast guarantee having vouched for them. Every registry-driven consumer inherits the phantoms:
+compliance evaluators iterate targets that do not exist, scaffolding verifiers scan for source
+directories that were deleted, capacity and cost inventories over-count the fleet, and a future
+caller who finds the name in the registry writes a new invocation of a corpse.
+
+**Detect.** Diff the registry's key set against the live fleet inventory (the cloud API's function/
+service list), both directions. Every registered-but-absent name is the finding; confirm retirement
+(no source directory, no IaC declaration, no live resource) rather than rename before flagging.
+Check whether any reconciliation exists — a verifier, a periodic job, a publish-time gate — that
+compares the registry to the live fleet; absence of that mechanism is the structural half of the
+finding even when the current diff is clean.
+
+**False positives.** Entries for targets that are declared in IaC and genuinely pending first
+deploy (name the change that ships them). Registries whose entries are explicitly lifecycle-stamped
+(e.g. `retired_at`) and whose accessor refuses stamped entries — that is the fix pattern, not the
+defect. Names that exist under an alias or qualified variant the inventory listing missed.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 933,
+ "rule_count": 934,
  "sections": [
   {
    "id": "A",
@@ -553,7 +553,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "E:1",
@@ -718,6 +718,10 @@
     {
      "id": "E:41",
      "title": "Step Functions: state machine runs with logging disabled — no execution forensics beyond the console's retention"
+    },
+    {
+     "id": "E:42",
+     "title": "A console bring-up left a directly-reachable alternate hostname on the origin service while the sanctioned path fronts it with CDN/WAF — a live second door with none of the front door's protections"
     }
    ]
   },

@@ -463,6 +463,12 @@ skipped. Treat any live member absent from state as a finding regardless of comm
 unmanaged member, follow its downstream call and check whether a grant covers it; a path with no
 grant is permanently broken and should be deleted, not adopted. Grep IaC for comments naming a
 resource id as skipped, ignored, or created out of band — each one marks a live object nothing owns.
+Plan the remediation knowing quick-create scaffolding is often provider-immutable in place: the
+IaC provider may refuse to import it AND the service may refuse to delete it independently of its
+parent, so the only exit is recreating the parent resource clean (create-before-destroy
+replacement, with every parent-id consumer resolving through one declared indirection so the new
+id propagates); budget for the bring-up's OTHER relics — an alternate ingress hostname (the E:42
+second door), a base-path mapping pinning a child — surfacing mid-replacement as blockers.
 
 **False positives.** Resources deliberately owned by a different state file or team, where the
 boundary is declared and the owning module is identifiable; provider-managed children that have no

@@ -531,3 +531,26 @@ the machine never writes is the compounding half.
 estate deliberately keeps out of logs (E:30) — but the deliberate posture must be documented, and
 level ERROR with includeExecutionData=false is almost always still safe; a machine with genuinely
 no failure modes worth forensics does not exist in production.
+
+## E:42 — A console bring-up left a directly-reachable alternate hostname on the origin service while the sanctioned path fronts it with CDN/WAF — a live second door with none of the front door's protections
+
+**Statement.** When a service is first wired by hand (console quick-create, manual bring-up) and
+later fronted by a CDN/WAF edge, the bring-up's own ingress objects — a gateway custom domain, a
+service alias, a direct endpoint — often survive unadopted. DNS points at the sanctioned front
+door, so traffic review, dashboards and the IaC plan all show one path; but the relic hostname
+still terminates TLS with a valid certificate and forwards to the origin, accepting requests that
+bypass the CDN, the WAF, edge rate limits and any origin-verification header the front door
+injects. The door is invisible precisely because nothing routes through it.
+
+**Detect.** For every service fronted by a CDN/edge layer, enumerate the origin service's OWN
+ingress surfaces (API gateway custom domains and mappings, load-balancer listeners, service
+aliases) and diff against IaC. Any live ingress object absent from IaC is a candidate; confirm by
+checking whether DNS for its hostname points elsewhere (the relic pattern) and whether the origin
+validates a front-door-injected secret (header token, signed request). An origin that validates
+the front door's token downgrades the finding to residue-cleanup; an origin that does not is an
+open bypass.
+
+**False positives.** A deliberately dual-homed service (documented direct path for partners or
+health checks) — the posture must be written down and the direct path must carry its own
+authentication. A gateway domain that exists only as an ACM-validation artifact with no mapping
+to any stage forwards nothing.

@@ -416,3 +416,38 @@ against the declared item count; a scoped run that ran recently and a count of o
 prune); scope flags that are plan-only and structurally cannot apply; a narrowed run that is
 DOCUMENTED as authoritative for the shared surface and is always followed by a full run inside the
 same lane — verify the sequencing is enforced by the lane, not by a comment or a habit.
+
+## CC:25 — A declared replacement for an out-of-band resource does not remove the original, because state can only destroy what it manages — so the estate runs both and the defective original keeps emitting
+
+**Statement.** A resource was created outside IaC (console, one-off script, an earlier
+operating era) and is later found to be wrong. The remediation writes a correct resource in
+code — a new name, a corrected pattern, a sane policy — and the change describes itself as
+*replacing* the old one. It does not. The declarative planner reconciles its own state
+against its own configuration; an object that has never been in state is invisible to it, so
+no plan removes it and no apply destroys it. Both objects are now live: the correct one, and
+the defective one that motivated the work. Where the resource has an outward effect —
+notifications, metrics, routing, quota consumption, billing — the defect the change was
+written to end continues unabated, and the reviewer's evidence that it ended is a code
+comment. The failure is self-concealing in the worst way: the repository, the plan output and
+the code review all agree the problem is fixed, because in the world IaC can see, it is. Only
+the live estate disagrees. Two aggravating shapes are common: the new resource is given a
+near-identical name (so an inventory scan reads one entry as the other and the duplicate is
+never noticed), and the two emit to the same downstream channel (so the defective one's output
+is attributed to the fix).
+
+**Detect.** For every change whose message or comment claims to *replace*, *supersede* or
+*retire* an existing live object, require one of two artifacts in the same change: an import
+of the original into state followed by its removal, or a scripted/API deletion recorded with
+the change. A comment naming the superseded object with no removal step is the defect. Prove
+it live rather than from the diff: list the resource class from the provider API and diff that
+inventory against the IaC-declared set — every live-only member is out-of-band, and any
+out-of-band member the code names as replaced is this finding. For emitting resources, go one
+step further and read the original's output after the replacement shipped: a metric still
+receiving datapoints, an alarm still transitioning, a route still taking requests is proof the
+replacement never replaced anything.
+
+**False positives.** Deliberate overlap windows where the old object is kept live for a stated
+period and the removal is scheduled and tracked; objects the platform itself recreates on a
+schedule (deleting them is not the fix — the creating agent is); resources in an account or
+region the IaC scope legitimately does not cover, where the deletion belongs to another owner
+and is tracked as a handoff rather than forgotten.

@@ -869,3 +869,34 @@ state that the operator surface displays alongside the summary. Jobs where the c
 itself approximate (sampled or streamed) so exact closure is not expected — verify the approximation
 is stated. Debug-level per-item lines that already carry every outcome, where the summary is
 explicitly a convenience rather than the coverage signal.
+
+## G:47 — An alarm on an idle-by-design metric keeps the platform's default missing-data policy, so the metric's normal absence is a distinct third state and every idle boundary crossing is delivered as an alert
+
+**Statement.** Error counters, throttle counters and per-function fault metrics on a low-traffic
+or event-driven workload emit nothing at all for most evaluation periods — not zero, nothing.
+Left at the platform's default missing-data treatment, absence is neither healthy nor breaching
+but a third state, so the detector oscillates between that state and healthy on the boundary
+between an idle window and a busy one. The oscillation has nothing to do with the threshold: the
+metric never breached, and raising or lowering the number changes nothing. It becomes an
+operational defect rather than a cosmetic one when the notification wiring publishes both the
+breach transition and the recovery transition to the same channel, which is the common
+configuration — then each idle boundary is two messages, the channel's volume is dominated by
+detectors that have never once fired on a real fault, and the population of alarms in the
+not-healthy state at any instant is permanently non-empty, so "is anything wrong right now?"
+cannot be answered by looking. Reviews miss it because each alarm is individually defensible and
+the defect is only visible in aggregate transition counts.
+
+**Detect.** Pull state-transition history for every alarm over a multi-day window and rank by
+transition count; for each of the top entries, read the missing-data policy and then the
+underlying metric's datapoint density over the same window. A high transition count against a
+sparse series and a default missing-data policy is this finding — confirm by checking that the
+breach threshold was never actually crossed. Cross-check the notification wiring: recovery
+actions pointing at the same destination as breach actions turns every transition into traffic.
+The remedy is to declare absence explicitly as healthy for counters where zero events genuinely
+means zero faults, leaving the threshold untouched.
+
+**False positives.** Detectors whose PURPOSE is to catch a signal going away (heartbeats,
+liveness, throughput floors), where absence must remain breaching or missing — see the
+disappearance-detector rule; metrics that emit a real zero every period rather than nothing, which
+cannot enter the missing state at all; and alarms whose transitions are genuinely threshold
+crossings, which is a sensitivity question and a different finding.

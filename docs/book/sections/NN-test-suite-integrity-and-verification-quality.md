@@ -945,3 +945,31 @@ known-good control asserting a specific subject is covered BY A BOUNDED entry, n
 (a null session policy meaning role-wide access) — but then the bounded/unbounded split must be
 explicit in the gate's model and the unbounded population must be reported, not silently folded
 into "covered".
+
+## NN:42 — A freshness or deploy-lag monitor derives its subject inventory from source-file presence rather than from each unit's own state anchor, so a unit that owns no state is tracked forever as maximally stale
+
+**Statement.** A monitor answers "how long since each deployable unit was last deployed" by
+walking the tree, treating every directory that contains source of the right kind as a unit, and
+comparing each one's recorded last-deploy timestamp against now. Real trees contain directories
+that look like units but are not: shared module containers instantiated by a parent, libraries
+consumed by other units, scaffolding left by a restructure. These have no state anchor of their
+own — nothing can be deployed *to* them directly, so nothing can ever advance their timestamp.
+The monitor reports them as maximally lagged on every run, permanently. The cost is not the
+wrong number; it is that the monitor now has a finding that no action can clear, so operators
+learn that this check has a standing exception, and the next genuine lag is read as the same
+known-noise entry. Where the monitor gates a lane, the exception is worked around by a
+suppression list, which then has to be maintained against a tree that keeps changing. The tell
+that distinguishes it from a genuinely undeployed unit: the "last deploy" date is not merely old
+but frozen at an era boundary — a restructure, an import, the day the inventory was first built.
+
+**Detect.** For each unit the monitor enumerates, require the presence of the artifact that makes
+it independently deployable — its own state/backend declaration, its own pipeline entry, its own
+release target — and derive the inventory from that artifact rather than from source-file
+presence. Then check the monitor's own output for entries whose lag never decreases across
+consecutive runs: that set is either this defect or a real, unattended unit, and the two are
+distinguished by whether a deploy of that unit is even expressible. Suppression lists are a
+symptom; read each entry and ask why it was added.
+
+**False positives.** Units that genuinely are deployable and genuinely have not been deployed —
+the lag is true and the monitor is right; units deployed through a mechanism the monitor does not
+know about, where the fix is to teach it that mechanism rather than to drop the unit.

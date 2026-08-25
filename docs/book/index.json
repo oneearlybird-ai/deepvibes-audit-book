@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 935,
+ "rule_count": 939,
  "sections": [
   {
    "id": "A",
@@ -899,7 +899,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "G:1",
@@ -1084,6 +1084,10 @@
     {
      "id": "G:46",
      "title": "The batch summary's outcome counters omit a branch, so the tallies do not sum to the candidate count and a real drop is reported as indistinguishable from a benign no-op"
+    },
+    {
+     "id": "G:47",
+     "title": "An alarm on an idle-by-design metric keeps the platform's default missing-data policy, so the metric's normal absence is a distinct third state and every idle boundary crossing is delivered as an alert"
     }
    ]
   },
@@ -2969,7 +2973,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "CC:1",
@@ -3066,6 +3070,10 @@
     {
      "id": "CC:24",
      "title": "A scope flag narrows the desired world but not the account-wide surfaces the reconciler diffs, so a scoped apply prunes every peer the scope excluded"
+    },
+    {
+     "id": "CC:25",
+     "title": "A declared replacement for an out-of-band resource does not remove the original, because state can only destroy what it manages — so the estate runs both and the defective original keeps emitting"
     }
    ]
   },
@@ -3074,7 +3082,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "DD:1",
@@ -3195,6 +3203,10 @@
     {
      "id": "DD:30",
      "title": "Runtime service-catalog registry accretes entries for retired targets: fail-closed on add, fail-open on retire"
+    },
+    {
+     "id": "DD:31",
+     "title": "A runtime that materializes its public interface from remote config on every request and hard-fails on any missing key makes renaming a key undeployable in either order"
     }
    ]
   },
@@ -3832,7 +3844,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "NN:1",
@@ -3997,6 +4009,10 @@
     {
      "id": "NN:41",
      "title": "A coverage gate's authority-side parser silently degrades unreadable policy data to \"unrestricted\", so every subject passes while the subject-side metrics look healthy"
+    },
+    {
+     "id": "NN:42",
+     "title": "A freshness or deploy-lag monitor derives its subject inventory from source-file presence rather than from each unit's own state anchor, so a unit that owns no state is tracked forever as maximally stale"
     }
    ]
   },

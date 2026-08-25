@@ -642,3 +642,33 @@ finding even when the current diff is clean.
 deploy (name the change that ships them). Registries whose entries are explicitly lifecycle-stamped
 (e.g. `retired_at`) and whose accessor refuses stamped entries — that is the fix pattern, not the
 defect. Names that exist under an alias or qualified variant the inventory listing missed.
+
+## DD:31 — A runtime that materializes its public interface from remote config on every request and hard-fails on any missing key makes renaming a key undeployable in either order
+
+**Statement.** A service builds its externally visible surface — tool schemas, field
+descriptions, prompts, form definitions — by reading a remotely published config document, and
+does so per request or per session rather than once at boot. Its accessor is strict: a key the
+document does not carry raises rather than returning a default, which is a deliberate and
+usually correct fail-closed posture. Renaming a key in that document then has no safe ordering.
+Publishing the renamed document first breaks the already-running fleet, which still asks for the
+old key, and remote config is designed to reach that fleet in seconds with no deploy. Shipping
+the code first breaks the new build against the document still live, and any gate that checks
+code and document agree fails the build. The deadlock is invisible until the moment of the
+rename because both halves are individually correct — strict accessor, fast propagation — and it
+is specifically the combination of per-request materialization and strict lookup that removes the
+window a boot-time read would have provided. The usual escape is to declare both keys for one
+release, which works but installs a real dual path in the interface; the escape's own risk is
+that the transitional key has no forcing function to remove it and quietly becomes permanent.
+
+**Detect.** Find every read of the remote document on a request/session path and check what the
+accessor does with an unknown key. Where it throws, the document's key set is a hard contract
+with the running fleet, so ask of any proposed key change: what runs between publish and the last
+old instance retiring? Require that renames land as add-new → migrate readers → drain → remove-old,
+with the removal carrying an explicit condition (a fleet revision floor, a dated gate entry) and
+not a comment. Audit for the residue: transitional keys declared "temporarily" in the document or
+the schema with no gate that fails once the drain condition is met.
+
+**False positives.** Documents read once at boot into an immutable snapshot, where a publish
+cannot affect running instances and the ordering is a normal deploy sequence; accessors that
+return a documented default for unknown keys; key sets versioned as a whole with consumers
+pinned to a version, where old and new documents coexist by design.

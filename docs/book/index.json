@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 932,
+ "rule_count": 933,
  "sections": [
   {
    "id": "A",
@@ -3468,7 +3468,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "JJ:1",
@@ -3605,6 +3605,10 @@
     {
      "id": "JJ:34",
      "title": "Two facts written by one reconciliation pass carry identical timestamps, and the strict inequality meant to order them files the commonest real case in the wrong cohort"
+    },
+    {
+     "id": "JJ:35",
+     "title": "Comparison copy and gates derived from tunable business constants, with no invariant pinning the relationship they assume"
     }
    ]
   },

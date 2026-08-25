@@ -665,3 +665,24 @@ that deliberately stamp each fact with its source event time rather than process
 identical values mean identical source events. Classifiers where the inclusive reading has been
 considered and rejected in writing for a documented domain reason. Ties broken by an explicit
 secondary key (sequence number, ingestion order) rather than left to the inequality.
+
+## JJ:35 — Comparison copy and gates derived from tunable business constants, with no invariant pinning the relationship they assume
+
+**Statement.** Display logic compares two tunable business numbers (a plan's effective unit
+price against a flat rate, a bundle against list price, a tier against its neighbor) and gates
+copy, badges, or emphasis on the comparison ("beats pay-as-you-go", "save 20%"). The constants
+are individually correct and individually maintained, but nothing asserts the RELATIONSHIP the
+gate assumes — so a routine reprice silently flips the comparison: the badge branch goes dead
+(or worse, fires inverted), the page renders arithmetic that undermines the product's own value
+story, and every individual number still audits as correct. The failure is invisible to
+constant-level drift checks precisely because no single value is wrong.
+
+**Detect.** Find comparisons between business constants in display/gating code (rate vs rate,
+derived-per-unit vs flat). For each, evaluate the comparison against the CURRENT constants: a
+branch that is uniformly false (or uniformly true) across all inputs is the finding. Check
+whether any test or verifier pins the intended relationship; absence is the structural half
+even when the branch currently happens to work.
+
+**False positives.** Comparisons meant to be conditional per item where some items genuinely
+sit on each side today. Gates whose both branches render intentionally equivalent output.
+Relationships pinned by a test or verifier that fails on reprice — that is the fix pattern.

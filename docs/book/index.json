@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 939,
+ "rule_count": 942,
  "sections": [
   {
    "id": "A",
@@ -432,7 +432,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "D:1",
@@ -545,6 +545,10 @@
     {
      "id": "D:28",
      "title": "DynamoDB: Offboarding/deletion funneled through one hard-capped transaction over a growing per-tenant item set"
+    },
+    {
+     "id": "D:29",
+     "title": "A stored attribute's TYPE is changed to fix a writer, and rows written before the cutover become poison for readers that were type-correct for the old shape"
     }
    ]
   },
@@ -899,7 +903,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 47,
+   "rule_count": 48,
    "rules": [
     {
      "id": "G:1",
@@ -1088,6 +1092,10 @@
     {
      "id": "G:47",
      "title": "An alarm on an idle-by-design metric keeps the platform's default missing-data policy, so the metric's normal absence is a distinct third state and every idle boundary crossing is delivered as an alert"
+    },
+    {
+     "id": "G:48",
+     "title": "The alarm's metric is never published because the emitting principal is not authorized to publish it, and the emitter catches the authorization error, so the job reports success and the alarm reports health"
     }
    ]
   },
@@ -3844,7 +3852,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "NN:1",
@@ -4013,6 +4021,10 @@
     {
      "id": "NN:42",
      "title": "A freshness or deploy-lag monitor derives its subject inventory from source-file presence rather than from each unit's own state anchor, so a unit that owns no state is tracked forever as maximally stale"
+    },
+    {
+     "id": "NN:43",
+     "title": "A record store has one validated write path and one unvalidated one, and its validator is a manual step no gate runs, so the unvalidated path fills the store with records the validator would reject"
     }
    ]
   },

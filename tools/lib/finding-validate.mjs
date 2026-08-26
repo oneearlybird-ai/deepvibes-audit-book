@@ -5,7 +5,12 @@
 export const SEVERITIES = new Set(["critical", "high", "medium", "low"]);
 export const KINDS = new Set(["BAD", "IMP"]);
 export const STATUSES = new Set(["open", "closed", "accepted", "cant_verify"]);
-export const METHODS = new Set(["live-source", "live-source+adversarial", "live-aws", "cartography", "ledger-db"]);
+export const METHODS = new Set(["live-source", "live-source+adversarial", "live-aws", "live-aws+adversarial", "live-source+live-aws+adversarial", "cartography", "ledger-db"]);
+// "live-aws+adversarial" / "live-source+live-aws+adversarial": added 2026-08-26 for the same
+// reason "fix-landed" was — 48 entries from the 2026-08-25 sweeps stated a method STRONGER than
+// any enum member (traced in source AND confirmed against live AWS AND survived refutation), and
+// downgrading them to "live-aws" to fit the enum would have falsified provenance. RULE 0 is
+// unaffected: every member still requires live verification; no doc-sourced method is admissible.
 // "fix-landed": progress milestone on a not-yet-closed finding — the fix is committed/landed
 // but verification or rollout is still pending. Added 2026-08-22: the 2026-08-21 batch needed
 // it twice (F-0819, F-0822) and inventing it ad hoc beat falsifying history to fit the enum.

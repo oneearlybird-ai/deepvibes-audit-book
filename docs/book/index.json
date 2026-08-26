@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 942,
+ "rule_count": 944,
  "sections": [
   {
    "id": "A",
@@ -3492,7 +3492,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 35,
+   "rule_count": 37,
    "rules": [
     {
      "id": "JJ:1",
@@ -3633,6 +3633,14 @@
     {
      "id": "JJ:35",
      "title": "Comparison copy and gates derived from tunable business constants, with no invariant pinning the relationship they assume"
+    },
+    {
+     "id": "JJ:36",
+     "title": "One shared id list is written in one entity's identifier space and read in another's, and the reader's tolerant skip makes a total mismatch look like an ordinary empty set"
+    },
+    {
+     "id": "JJ:37",
+     "title": "A machine-semantic discriminator derived from a user-editable display name, so naming becomes an invisible schema decision"
     }
    ]
   },

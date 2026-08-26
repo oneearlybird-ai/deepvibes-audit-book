@@ -686,3 +686,61 @@ even when the branch currently happens to work.
 **False positives.** Comparisons meant to be conditional per item where some items genuinely
 sit on each side today. Gates whose both branches render intentionally equivalent output.
 Relationships pinned by a test or verifier that fails on reprice — that is the fix pattern.
+
+## JJ:36 — One shared id list is written in one entity's identifier space and read in another's, and the reader's tolerant skip makes a total mismatch look like an ordinary empty set
+
+**Statement.** A list field bundles ids that more than one subsystem consumes. The writer validates
+every entry against entity A's identifier space and refuses anything else, so every list the API can
+produce holds A ids. A downstream consumer resolves the same entries as entity B — building B's key,
+querying B's table — and because A's ids are minted independently (a uuid factory, a different natural
+key), NO entry can ever resolve. The consumer does not error: a lookup miss inside a resolution loop
+is treated as an ordinary case and skipped, frequently with a comment naming a benign reason for it
+("a deleted member", "an entry of the other kind"). The loop completes, returns empty, and the caller
+takes its fallback path — an escalation ladder's final rung, a default assignee, an unfiltered pool.
+Where that fallback is plausible on its own, the feature looks like it works: the fallback simply runs
+every time, and the tier above it has never once fired. Fixtures are the compounding half — the
+consumer's tests construct rows in B's space, which the writer's validator would reject, so the
+consumer's suite passes on data the system cannot produce.
+
+**Detect.** For each shared id list, name the ONE entity whose identifier space the WRITER validates
+against, then read every consumer and name the entity each one resolves — do not stop at the first
+consumer, since the split is invisible until two are compared. Trace where the ids are minted: an
+independently generated identifier can never collide with another entity's key by accident, so a
+consumer keying a different prefix over it is a total mismatch, not a partial one. Treat every
+`continue`/`skip` on a lookup miss inside a resolution loop as a question — "can this branch ever be
+taken?" — because a tolerant skip over a universal miss is textually identical to a tolerant skip
+over a rare one. Where a consumer's fixtures build entries its own writer would refuse, the fixture is
+the tell. Finally, exercise the feature end to end and assert WHICH tier answered: a fallback that is
+correct in isolation hides the tier above it.
+
+**False positives.** Deliberately heterogeneous lists where each entry carries a discriminator the
+reader switches on and at least one shape resolves. Readers whose tolerance covers a genuine transient
+(a row deleted between write and read) while the common path resolves. Dated migration windows where
+both spaces are accepted by design and the end date is recorded.
+
+## JJ:37 — A machine-semantic discriminator derived from a user-editable display name, so naming becomes an invisible schema decision
+
+**Statement.** A field the system compares, groups, or gates on is not chosen — it is DERIVED from a
+human-facing label by lowercasing, singularizing, slugifying, or similar. The derived value is
+persisted and quietly acquires semantics the label never advertised: type compatibility, eligibility
+to be pooled, whether two collections may be combined. Two things of the same real-world kind that the
+user happened to name differently derive different values and become incompatible, so an operation
+that should union them is refused with a message about types the user never knew existed — and the
+refusal is correct given the data, which is what makes it hard to see as a naming defect. In the other
+direction, editing a label to fix a typo mints a different value and silently re-partitions a set that
+was one. The label is the only affordance the user is offered, so their naming freedom is a schema
+decision they were never told they were making.
+
+**Detect.** For each persisted field whose value is computed from a name, find the derivation function
+and then find every site that COMPARES the derived value — equality tests, homogeneity rules,
+groupings, "must all be the same X" validations. Any of those turns the label into a schema. Test it
+directly: create two records of the same real-world kind under different labels and check whether the
+system treats them as the same type, then rename one and check what moved. Separate the two concerns
+in the fix — identity stays stable and is chosen (defaulted, not guessed), the label stays free and
+re-editable — and confirm the display path still reads the label rather than un-slugifying the
+derived value back into prose.
+
+**False positives.** Slugs used only as URL segments, storage keys, or display anchors with no
+comparison semantics anywhere. Derivations surfaced to the user as an editable field with the derived
+value shown and overridable. Single-vocabulary deployments where exactly one value is ever authored
+and the comparison is structurally trivial.

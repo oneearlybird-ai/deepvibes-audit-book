@@ -744,3 +744,32 @@ derived value back into prose.
 comparison semantics anywhere. Derivations surfaced to the user as an editable field with the derived
 value shown and overridable. Single-vocabulary deployments where exactly one value is ever authored
 and the comparison is structurally trivial.
+
+## JJ:38 — A defensive guard suppresses an output to prevent a collision an existing ordering invariant already prevents, and its only live effect is removing the user's ability to act
+
+**Statement.** A composer assembles a response from several blocks, each of which may contribute both a
+sentence and an accompanying affordance — a link, a button, an action chip. Two blocks could in
+principle contribute an affordance of the same kind, and the author, reasoning about that collision at
+the time of writing, suppresses the affordance on the later block. The collision was already
+impossible: the assembler keeps the first contribution of each kind and the blocks push in a fixed
+order, so the earlier block's affordance was never at risk. The guard therefore never prevents
+anything; it only deletes the affordance in the case where the earlier block contributed nothing, which
+is exactly the case where the later sentence is the only content and most needs its action. The output
+is not wrong — it renders, it reads correctly, and nothing errors — so the defect is only visible by
+noticing what is missing: a statement that names an action with no way to take it. Tests written from
+the guard's own premise pass, because they assert the suppression the author intended rather than the
+outcome the reader needs.
+
+**Detect.** For every conditional that suppresses an optional output "to avoid" a conflict with another
+producer, find the mechanism that would actually resolve the conflict — first-wins, last-wins,
+deduplication by kind, ordering — and check whether it already decides the case. If it does, the guard
+is dead in its intended branch and live in the branch nobody considered. Enumerate the composition's
+real states rather than the one that motivated the guard: with the other producer present, and with it
+absent. Pin both directions in tests — exactly one affordance survives when both blocks contribute, and
+the affordance is present when only one does — because the second assertion is the one the original
+reasoning omits.
+
+**False positives.** Suppressions driven by a real constraint downstream (a hard cap on the number of
+affordances the surface renders, a channel that truncates), where the guard is the enforcement rather
+than a belief about ordering. Cases where the two affordances genuinely lead to different destinations
+and showing the later one would be wrong on its own merits, independent of collision.

@@ -624,3 +624,37 @@ carry the key actions. Services that publish through an intermediary the account
 that receives and re-publishes) — the grant belongs to that function's role, not to the upstream
 service. Deliberately dark resources kept for a future path, where the absence of a writer is the
 posture and is documented as such.
+
+## F:41 — A compliance evaluator's per-resource analysis returns its default-initialised result from the catch block, so a check the control-plane throttled is scored as a clean pass
+
+**Statement.** A continuous-compliance rule evaluates each resource by calling an analysis helper that
+builds a result accumulator up front — every field pre-set to the benign value (`false`, `null`, empty
+array) — then fills it in as the checks run. The helper wraps its API reads in a try/catch, and the
+catch logs a warning and returns that same accumulator. Downstream the evaluator reads the fields as
+facts: a `false` means "the dangerous grant is absent", a `null` means "no mismatch was found". The
+two states the accumulator can be in — "every check ran and found nothing" and "the first API call
+threw before any check ran" — are the same object, so a resource whose analysis was never performed is
+reported COMPLIANT with the same confidence as one that passed. The trigger is usually not an outage
+but rate limiting: a rule that walks hundreds of resources in one evaluation makes hundreds of
+identity-plane calls in a burst and gets throttled partway through, so the population that gets
+skipped is arbitrary and changes run to run. Two signatures follow. The verdict is non-deterministic —
+the same resource flips COMPLIANT/NON_COMPLIANT across runs minutes apart with no change to the
+resource — and the skip is logged at WARN while the verdict is published at the rule's normal level,
+so nothing in the compliance record states that the evidence behind it was never gathered.
+
+**Detect.** For every per-resource analysis helper a compliance or security rule calls, read the catch
+blocks and ask what the caller does with the returned value. A `return result` (or `return {}`, or
+`return defaults`) from a catch, consumed by a caller that branches on the result's fields, is this
+finding — the severity is decided by whether any field's benign default is what a real violation would
+have overwritten. Confirm against the live control: filter the rule's own logs for its caught-error
+marker over several evaluations and count distinct resources, then compare a throttled run's published
+verdict to a clean run's for the same resources; disagreement across runs with no intervening change is
+proof. Require that the incomplete state be representable — an explicit "insufficient data" verdict, or
+a flag carried into the annotation — so the record states its own blind spot rather than silently
+inheriting the accumulator's optimism.
+
+**False positives.** Analysis helpers whose caller re-checks a completion flag before reading the
+fields, and whose partial result is therefore never consumed as a verdict. Errors that are genuinely
+terminal for the resource (the resource no longer exists), where the benign default matches reality.
+Checks whose accumulator defaults are the UNSAFE value, so a swallowed error fails closed and merely
+produces noisy false positives — a different, much cheaper finding.

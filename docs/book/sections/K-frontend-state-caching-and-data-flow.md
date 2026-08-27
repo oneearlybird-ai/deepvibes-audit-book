@@ -527,3 +527,32 @@ transcribed. Sentinels the client strips before sending, verified by inspecting 
 rather than the handler. Cases where the server genuinely accepts the sentinel as a member of the
 set. Deliberately narrowed option lists where an accepted value is withheld from this surface by
 product decision, documented as such.
+
+## K:37 — A component wired to literal empty props as a deliberate sequencing placeholder, with nothing that fails when the real source ships
+
+**Statement.** Work is sequenced so a surface lands before the source that feeds it: the component is
+built and mounted with its data props passed as literal `null`/`[]`/`undefined`, its empty state is
+implemented and correct, and the intention — recorded in the commit and often in a comment — is to
+replace the literals with a real hook once the producer exists. The producer then ships, is deployed,
+and begins writing real records. Nothing changes on the surface, because a literal placeholder has no
+dependency on the thing it is standing in for and therefore cannot notice its arrival. The failure is
+perfectly silent in both directions: the component renders its empty state, which is a designed and
+plausible screen, and the backend's own signals are healthy because the data is being produced and the
+endpoint serving it returns correctly to anyone who asks — nobody asks. The whole feature can be live,
+complete and unused for as long as it takes someone to look at the screen and know that it should be
+showing something. Type checking cannot help: `null` is a legal value of the prop's declared type,
+which is precisely why the placeholder was ergonomic to write.
+
+**Detect.** Grep the surfaces for literal empty values passed as data props, and for each one resolve
+whether the producer it was waiting for now exists — a route, a table, a queue with real records is the
+proof, not the roadmap. In a phased build, make the placeholder a tracked debt at the moment it is
+introduced: a failing-by-default marker, a test asserting the literal is absent, or a lint rule for
+that prop. Add the assertion at the time the real hook lands so the next placeholder cannot outlive its
+dependency the same way — a test that reads the call site's source and rejects the literal is cheap and
+catches reintroduction. Cross-check from the data side: a producer writing records that no read path
+requests is the same finding seen from the back end.
+
+**False positives.** Components deliberately mounted with empty props in a preview, storybook, or
+demonstration surface. Props that are legitimately absent for the current viewer (a permission the user
+lacks, a capability the account has not enabled) and whose empty state is the correct final answer.
+Placeholders inside a feature that is itself gated off and not reachable in production.

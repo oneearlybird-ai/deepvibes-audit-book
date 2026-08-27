@@ -981,3 +981,35 @@ know about, where the fix is to teach it that mechanism rather than to drop the 
 **Detect.** Enumerate every writer of the store, not just the one the documentation describes, and for each ask whether validation is on its path or beside it — a validator invoked as a separate documented command is beside it. Run the validator yourself on the current store before trusting any record in it, and bucket the failures by which writer produced them: failures clustered in recently-mutated records with a common alternative key set identify the unvalidated path precisely. Compare a record's creation-time fields against its mutation-time fields; the same concept expressed two ways within one record (a timestamp under two names, a status expressed both as a field and as an event) is the signature. Check the store's own version history for the last commit where the validator passed, and count how many records were written after it — that count, not the error count, is the real exposure. Finally, treat enum violations and shape divergences differently on repair: a value stronger or more specific than any the enum offers is evidence the schema is too narrow, and rewriting it to fit falsifies the record, while a divergent key set for an existing concept is a genuine drift to normalize.
 
 **False positives.** Stores whose validator genuinely is wired into a gate that ran and passed, where the invalid records predate the gate and are knowingly grandfathered with that decision recorded; append-only stores with exactly one writer, where no second path exists; deliberate schema evolution in which older records are expected to fail the current validator and the validator is versioned to skip them; and staging or scratch copies of the store that are not the authority and were never meant to validate.
+
+## NN:44 — The gate hand-lists the values it expects instead of deriving them from the source of truth, so it is a second store that drifts and can be green while the claim it protects is false
+
+**Statement.** A published surface makes a checkable claim about its own provenance — each entry names
+the change it shipped in, each record cites its origin, each document states the version it was built
+from — and a test is written to protect that claim. Instead of deriving the expectation from the
+authoritative source, the test transcribes it: a literal array of filenames and identifiers, copied by
+hand at the moment it was written. From that moment there are two stores of the same fact and only one
+of them is maintained, so the test's list is stale as soon as the real set changes, which is
+immediately. The failure mode is not that the test breaks — it is that the test verifies a set that
+never existed, passing or failing on names unrelated to the live surface, while the claim it was
+written to protect goes unchecked in production. The tell is transcription itself: placeholder-shaped
+identifiers among the literals, entries whose names match nothing in the tree, a comment describing the
+list as a snapshot of a range. A companion artifact often exists alongside it — a console script that
+proved the original diagnosis and was kept — which cannot fail a build and therefore guards nothing
+after the day it was written.
+
+**Detect.** For any test asserting a set of real artifacts, ask where the expected set comes from: read
+from disk and cross-referenced against the authoritative record is a gate; a literal in the test file
+is a second store. Verify the literals resolve — every name should exist and every identifier should
+match a real one — because a list that has drifted usually contains at least one entry that never
+existed. Rewrite as a derivation: enumerate the artifacts from the tree, load the expectations from the
+one authoritative source, and assert the relation between them. The derived form must import the
+production parser rather than inline a copy of it, or the same drift reappears one level down. Locate
+the authoritative source by a property that identifies it (a marker it must contain), not by a fixed
+relative path, because the same suite runs from more than one working root and a path that resolves in
+only one of them will skip the check silently in the other.
+
+**False positives.** Small, deliberately frozen fixtures that pin a historical format and are supposed
+never to change. Golden files reviewed as part of every change, where the diff IS the review. Lists
+whose whole purpose is to be a hand-curated allowlist with no upstream source to derive from — though
+those still owe a check that every listed entry resolves.

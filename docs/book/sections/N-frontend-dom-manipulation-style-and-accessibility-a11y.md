@@ -122,3 +122,33 @@ static utility.
 
 **False positives.** Controls deliberately styled from scratch with `appearance: none` and their own
 state rules; utilities scoped to a state variant rather than applied unconditionally.
+
+## N:16 — Selected-state styling painted outside the border box inside a scroll container with no padding, so only the first and last children are clipped
+
+**Statement.** A row of controls — tabs, segments, chips — marks the selected one with an effect that
+paints outside the element's own border box: a ring or outline offset from the edge, a drop shadow, a
+transform that scales the element up. The row itself is a horizontally scrollable container so it can
+cope with narrow viewports, and it carries no inline padding because at rest nothing needs the room.
+The moment a control is selected, its outside-the-box paint extends past the container's content edge
+and is clipped by the overflow boundary. Only the first and last children can hit that edge: every
+control in the middle has a neighbour to spill over, so it looks perfect. The result is a defect that
+appears to be about specific tabs rather than about selection — a few pixels shaved off one side of the
+leftmost or rightmost item, present only while that item is selected — which reads as random and is
+almost never reproduced from a bug report on the first attempt. It survives review because each
+ingredient is idiomatic on its own, and it survives visual regression suites whose snapshots are taken
+with the default (usually first) tab selected in a viewport wide enough that no scrolling occurs.
+
+**Detect.** For every scrollable or clipping container, list the children's selected/hover/focus styles
+and flag any that paint or transform outside the border box; the pairing is the finding, before any
+screenshot. Reproduce deterministically by selecting the FIRST and the LAST child in turn, at a viewport
+narrow enough that the container actually scrolls — the middle child is not a control case. Remedies in
+order of durability: keep the state style inside the box (background and text weight rather than ring,
+shadow, or scale), or give the container inline padding at least equal to the outermost paint extent,
+or remove the clipping boundary by letting the row wrap instead of scroll. Check focus rings under the
+same lens — a keyboard focus indicator clipped at the container edge is the accessibility form of this
+defect and is more serious than the aesthetic one.
+
+**False positives.** Containers that clip deliberately as an affordance (a carousel whose partially
+visible edge item signals more content). Effects whose extent is smaller than existing padding, where
+the arithmetic already covers them — verify against the compiled stylesheet rather than the source
+tokens. Rows that never scroll because their content cannot exceed the viewport at any supported size.

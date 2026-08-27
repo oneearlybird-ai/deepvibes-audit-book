@@ -908,3 +908,66 @@ crossings, which is a sensitivity question and a different finding.
 **Detect.** Do not verify a custom-metric alarm by reading the alarm. List the namespace's metrics live and assert that each alarmed metric name is actually PRESENT; an alarmed name missing from the namespace listing is this defect until proven otherwise. Then close the loop from the producer side: for every custom metric the code emits, resolve the emitting function's execution role and simulate the publish action against it — an implicit deny is proof, and it is invisible in the emitter's own source. Read the emitter's logs for a caught publish failure recurring once per scheduled run; an authorization message repeating at the job's exact cadence, under a log level the job's own health alarm does not gate on, is the same finding observed from the other end. Where an alarm treats missing data as not-breaching, treat "never had a datapoint" and "healthy" as indistinguishable and require the datapoint before accepting the alarm as coverage. Comments asserting cadence — "a zero datapoint every run, so OK is a datapoint, not missing data" — are a claim about a publish that may never have succeeded; check it against the series, not the comment.
 
 **False positives.** Metrics genuinely not yet emitted because the emitting feature is unreleased or the schedule has not yet run for the first time, where the alarm is knowingly ahead of its producer; namespaces whose metrics have aged out of the listing window after a long idle period, which is absence of recent data rather than absence of authorization — distinguish by querying the series over a longer window; emitters that publish through an agent or extension under a different principal than the function role, where the role simulation is the wrong subject; and best-effort telemetry that is explicitly documented as non-load-bearing and is not the sole evidence for any alarm.
+
+## G:49 — The noise exclusion is a denylist of the injected layer's literal message strings, so every new error shape the vendor emits silently re-contaminates the signal
+
+**Statement.** A platform has already found and fixed the injected-instrumentation problem — an agent
+or wrapper the application did not write logging its own faults at the application's error level — by
+excluding those records at the filter. The exclusion is written as a list of literal substrings taken
+from the fault messages observed at the time ("export took longer than", the exporter class that was
+failing that week), rendered into the filter pattern as negative match clauses. That list is a denylist
+over a set the vendor owns and extends. The instrumentation layer has many error shapes — transport
+errors, serialisation errors, authentication errors against the collector, each with its own class name
+and message — and only the ones that happened to be firing during the investigation are enumerated.
+The next time the collector fails a different way, the new shape passes straight through the exclusion
+and is counted as an application error again. The regression is silent and looks exactly like the
+original defect, but every artifact says it was fixed: the rule exists, the comment explains the
+mechanism in detail, and a reviewer who checks that the exclusion is present concludes the class is
+handled. Because the enumeration is usually written once in a shared local and rendered for the whole
+fleet, one missing shape re-contaminates every function's error signal at once.
+
+**Detect.** Find the exclusion list and treat its length as the finding: any filter that separates
+first-party from injected records by enumerating the other party's literal strings is unbounded by
+construction. Enumerate the injected layer's actual error surface from its own published source — the
+set of error classes it can throw — and compare against the list; anything absent is live exposure.
+Then prove it from the log plane rather than the config: query the group for records at error level
+that the application's own code cannot have written (a stack frame inside the injected layer's file
+path, an error class the application does not define) and check whether the metric filter matched them.
+Prefer an inclusion test over an exclusion list — match the application's own structured envelope, or
+the presence of its correlation id — so that an unrecognised record is excluded by default instead of
+counted by default.
+
+**False positives.** Exclusions written against a first-party component whose full error vocabulary is
+enumerable and enforced by the same repository's types. Filters that already anchor on a positive
+first-party property and use the substring list only for ranking or dashboards, where a miss costs
+tidiness rather than a false alarm. Layers that emit every fault under one stable prefix the vendor
+documents as its contract, where the enumeration is the vendor's own namespace and not a sample of it.
+
+## G:50 — Alerting is wired for the breach transition only, so the channel reports what broke and never what recovered
+
+**Statement.** Alarms are created with a notification action on the breach transition and no action on
+the return to healthy. Each is defensible alone — the recovery is "not an incident" — but applied as
+the default across a fleet it makes the alert channel structurally unable to answer the question the
+operator actually asks: is this still happening? Every alarm that has ever fired leaves a permanent
+unanswered message, so the channel accumulates breaches with no matching resolutions and the only way
+to learn that something recovered is to leave the channel and query the alarm state directly. The
+second-order harm is worse than the clutter: an operator who fixes a fault sees no confirmation, so a
+successful remediation and a still-broken system produce an identical inbox, and a flapping alarm and
+a latched one are indistinguishable from the notifications alone. It is invisible in review because
+each alarm's definition looks complete, the omission is a field that is absent rather than wrong, and
+the count only becomes legible when the whole fleet is enumerated at once.
+
+**Detect.** Enumerate every alarm in the account and partition by whether a breach action is set and a
+recovery action is not; report the ratio, not examples — this is a fleet-shaped finding and a handful
+of instances reads as intentional. Cross-check against the notification destination itself: a channel
+whose message history contains breach subjects and no recovery subjects over a window in which alarms
+demonstrably returned to healthy is the same finding observed from the receiving end. Where a shared
+module or factory creates alarms, fix it at the definition site so the default carries both, and treat
+any alarm that deliberately omits recovery as owing a stated reason in its description.
+
+**False positives.** One-shot or informational alarms that cannot meaningfully recover (a budget
+threshold crossed for the period, an audit event counter). Destinations that already correlate
+transitions themselves — an incident manager or paging tool consuming the state-change event stream
+directly rather than the notification topic — where the topic is not the operator's channel. Alarms
+whose recovery is deliberately routed to a quieter destination, which is a design and not an omission,
+provided the quieter destination exists.

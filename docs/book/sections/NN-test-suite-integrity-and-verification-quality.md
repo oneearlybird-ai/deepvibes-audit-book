@@ -1013,3 +1013,38 @@ only one of them will skip the check silently in the other.
 never to change. Golden files reviewed as part of every change, where the diff IS the review. Lists
 whose whole purpose is to be a hand-curated allowlist with no upstream source to derive from — though
 those still owe a check that every listed entry resolves.
+
+## NN:45 — The pre-destroy guard authenticates to a different account than the resources it is guarding, so an empty read is recorded as "this held no data"
+
+**Statement.** A guard that inspects live resources before permitting a destructive action must
+authenticate as a principal that can actually see them. When the action's own engine crosses an
+account, project or subscription boundary — an assumed role, a cross-account deploy identity, a
+named credential profile — but the guard builds its clients from the ambient credential chain,
+the guard interrogates a boundary in which the subject does not exist. Part of the damage is
+survivable: lookups that raise on a missing subject make the guard fail loudly and the action
+is refused. The dangerous lookups are the ones that return an EMPTY result, because the guard
+cannot tell an empty subject from an absent one and records the absence as an affirmative
+finding — "this resource held no data, the configuration above is the complete recipe." That
+artifact is byte-for-byte indistinguishable from a real capture of a genuinely empty subject,
+it is filed, counted in the success tally, and the destructive action proceeds under a green
+tick. The backup that was the whole justification for allowing the destroy captured nothing,
+and no one will discover it until a restore is attempted.
+
+**Detect.** For every pre-flight, backup, snapshot or verification step, compare the identity it
+authenticates with against the identity the guarded ACTION uses — read the deploy/plan
+configuration for a role assumption or profile override and check whether the guard honours it
+or ignores it. Then test the empty case directly rather than reasoning about it: point the
+guard at a subject that exists in another account and confirm it refuses, rather than reporting
+a clean empty capture. Open the artifact and count what is inside it, never trust the tally —
+this rule's whole failure mode is a success line printed over a hollow object. Any guard whose
+output can say "nothing was found" must be structurally able to distinguish that from "nowhere
+was looked", and a guard that resolves its target from the action's own plan cannot drift the
+way one taking a hand-passed flag will.
+
+**False positives.** A guard that deliberately runs against a central control-plane account is
+correct on the ambient identity — an artifact registry, an audit bucket, a shared secret store.
+The test is which boundary the SUBJECT lives in, not which one the tooling runs from, and a
+guard that writes its output to a central bucket while reading across the boundary is the right
+shape rather than a violation. A guard whose every lookup provably raises on a missing subject
+self-reports honestly today, but it is one added tolerant lookup away from this failure and is
+worth a note rather than a finding.

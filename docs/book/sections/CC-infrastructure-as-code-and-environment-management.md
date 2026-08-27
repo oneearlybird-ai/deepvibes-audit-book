@@ -451,3 +451,35 @@ period and the removal is scheduled and tracked; objects the platform itself rec
 schedule (deleting them is not the fix — the creating agent is); resources in an account or
 region the IaC scope legitimately does not cover, where the deletion belongs to another owner
 and is tracked as a handoff rather than forgotten.
+
+## CC:26 — Per-instance attributes derived from list POSITION while the instances are keyed by identity, so reordering the input silently reassigns addresses between them
+
+**Statement.** A module keys its resource instances by a stable identity — a zone, a region, a
+name — but derives their per-instance attributes from that identity's *position* in an input
+list. The list's ORDER is now load-bearing, and nothing in the code says so. Adding, removing
+or reordering one entry shifts every later entry down a slot, silently handing instance B the
+attribute instance A held. Where the attribute is cosmetic this is churn. Where it is a
+uniqueness-constrained address — a subnet range, a listener priority, a port, a shard or
+partition id — the reassignment asks the provider to create B on an address A still occupies,
+and because the two instances have no dependency on one another nothing orders the release
+before the claim. The apply dies partway, leaving a half-built topology that converges in
+neither direction: the old shape is gone and the new one cannot be reached. The failure needs
+no edit to the derivation itself, only an edit to the list, which is why it survives review —
+the change that triggers it looks like configuration, not like a rewrite of every address.
+
+**Detect.** Find every `for_each`/`count` whose key is an identity and whose attribute
+expressions index a list positionally — the shape `[for i, x in var.things : f(i)]` consumed
+through a map of `identity => index`. For each derived attribute ask two questions: would this
+instance keep this value if the input list were reordered, and is the value subject to a
+provider-side uniqueness constraint inside its parent scope? Both yes is the finding. Prove it
+by planning a reorder rather than by reading: swap two entries and look for
+create-before-delete pairs on one address. Read the module's own comments last and trust them
+least — a claim that the layout "cannot collide" is common here and is almost always reasoning
+about the tiers not overlapping each other, never about what a reorder does to any one tier.
+
+**False positives.** Position is the correct source when the list genuinely IS the identity and
+the instances are keyed by the same index, so a reorder is already understood as a rebuild —
+count-based modules with no stable per-instance name. Also not a finding where the derived
+value carries no uniqueness constraint and no external consumer pins it, so a reshuffle is
+invisible beyond a diff. A module that documents the ordering requirement AND enforces it
+(a validation that the list is sorted, or a map input instead of a list) has answered the rule.

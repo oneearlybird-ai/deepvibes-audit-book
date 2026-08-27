@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 951,
+ "rule_count": 953,
  "sections": [
   {
    "id": "A",
@@ -3001,7 +3001,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "CC:1",
@@ -3102,6 +3102,10 @@
     {
      "id": "CC:25",
      "title": "A declared replacement for an out-of-band resource does not remove the original, because state can only destroy what it manages — so the estate runs both and the defective original keeps emitting"
+    },
+    {
+     "id": "CC:26",
+     "title": "Per-instance attributes derived from list POSITION while the instances are keyed by identity, so reordering the input silently reassigns addresses between them"
     }
    ]
   },
@@ -3884,7 +3888,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "NN:1",
@@ -4061,6 +4065,10 @@
     {
      "id": "NN:44",
      "title": "The gate hand-lists the values it expects instead of deriving them from the source of truth, so it is a second store that drifts and can be green while the claim it protects is false"
+    },
+    {
+     "id": "NN:45",
+     "title": "The pre-destroy guard authenticates to a different account than the resources it is guarding, so an empty read is recorded as \"this held no data\""
     }
    ]
   },

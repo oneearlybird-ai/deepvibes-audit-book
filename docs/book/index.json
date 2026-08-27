@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 953,
+ "rule_count": 954,
  "sections": [
   {
    "id": "A",
@@ -3114,7 +3114,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "DD:1",
@@ -3239,6 +3239,10 @@
     {
      "id": "DD:31",
      "title": "A runtime that materializes its public interface from remote config on every request and hard-fails on any missing key makes renaming a key undeployable in either order"
+    },
+    {
+     "id": "DD:32",
+     "title": "A per-environment config document also carries the consuming platform's own interpolation syntax, so the IaC template engine cannot parameterize it and the naive escape silently rewrites security-enforcing values"
     }
    ]
   },

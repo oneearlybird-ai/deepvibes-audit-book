@@ -672,3 +672,37 @@ the schema with no gate that fails once the drain condition is met.
 cannot affect running instances and the ordering is a normal deploy sequence; accessors that
 return a documented default for unknown keys; key sets versioned as a whole with consumers
 pinned to a version, where old and new documents coexist by design.
+
+## DD:32 — A per-environment config document also carries the consuming platform's own interpolation syntax, so the IaC template engine cannot parameterize it and the naive escape silently rewrites security-enforcing values
+
+**Statement.** A configuration document has to be parameterized per environment — an account
+id, a region, a queue host differs per deployment — and the obvious mechanism is the IaC
+tool's template function. But the same document also contains `${...}` sequences (or the
+equivalent) belonging to the CONSUMING platform's runtime interpolation: IAM policy variables,
+log-format placeholders, prompt-template slots, shell-expansion markers. The template engine
+claims that syntax first, and there are only two outcomes. Either the render fails on an
+expression it cannot resolve, which is survivable precisely because it is loud; or an author
+escapes the collisions until the render passes, and every occurrence they miss is rewritten or
+emptied. The second is the dangerous one, and it is worst exactly where the embedded syntax is
+what enforces a boundary — a policy variable that scopes a caller to its own partition becomes
+a literal matching nothing, or a prefix matching more than it should. Nothing downstream
+notices: the document is still well-formed, it still passes its schema validator, its version
+still increments, and the widened permission is observable only by attempting the access that
+should have been denied.
+
+**Detect.** Before introducing a template function, grep every document the IaC layer renders,
+or might render, for that engine's own delimiters. For each hit, establish who OWNS the
+sequence — the IaC layer, or the consuming runtime. Anything owned by the runtime is a
+collision. Then read what the collided value does: one that appears in an authorization
+condition, a resource-prefix constraint or a partition key raises this from a build hazard to a
+security finding, and it should be graded on what the broken form would permit rather than on
+whether it currently renders. Prefer a targeted substitution over a general engine for such
+documents — replace only the specific tokens that vary by environment and leave every other
+byte untouched, which makes a missed escape impossible by construction rather than merely
+unlikely. Where an engine is genuinely unavoidable, require a post-render assertion that every
+runtime-owned sequence survived byte-for-byte, because schema validation will not catch it.
+
+**False positives.** Documents with no runtime-owned interpolation, where the template engine is
+simply the correct tool. Sequences the IaC layer legitimately owns and intends to resolve.
+Documents generated wholesale from structured input rather than rendered from a source file — a
+generator emits the runtime syntax as data and never parses it, so the collision cannot arise.

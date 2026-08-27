@@ -706,3 +706,64 @@ runtime-owned sequence survived byte-for-byte, because schema validation will no
 simply the correct tool. Sequences the IaC layer legitimately owns and intends to resolve.
 Documents generated wholesale from structured input rather than rendered from a source file — a
 generator emits the runtime syntax as data and never parses it, so the collision cannot arise.
+
+## DD:33 — Rollback monitors exist and pass, but none observes a consumer of the artifact being deployed
+
+**Statement.** The config deployment pipeline has everything DD:4 asks for — staged rollout, a
+bake window, alarm-driven automatic rollback — and the rollback never fires when it should,
+because the monitored alarms watch planes the config change does not flow through. The
+deployment is judged by signals structurally incapable of seeing its failure: request-error
+rates on services that fail closed at startup rather than serving errors, infrastructure
+liveness that no config value can dent, health checks that never exercise the changed keys. A
+bad push then rolls to 100%, bakes green on healthy-looking alarms measuring the wrong things,
+and completes; the failure surfaces later, attributed to whatever the consumers hit first. The
+defect is invisible in any review that checks whether rollback monitors EXIST, because they do.
+
+**Detect.** For each monitor on the deployment, trace the metric to its emitter and ask: does
+this signal pass through a consumer of the deployed artifact, on the code path the artifact
+configures? If no monitor survives that question, the rollback is decorative. The strongest
+fix is a canary consumer — a scheduled reader that loads the artifact through the same client
+path as the fleet, exercises the load-bearing reads, and emits a heartbeat whose ABSENCE is
+the alarm (missing-data-as-breaching on a schedule-driven metric cannot sit in an
+insufficient-data state, which also keeps it eligible where monitor rules require that).
+Second-strongest: aggregate the consumers' own typed failure signals into a monitored alarm —
+the readers voting directly. Sequencing caution that is itself a finding when violated: a
+breaching-on-missing alarm must not join the monitor pool in the same deployment that creates
+its metric, or it opens in ALARM with an empty metric and rolls back the deployment that
+introduced it.
+
+**False positives.** Deployments whose monitors genuinely sit on consumer paths — an error-rate
+alarm on the service that parses the config at request time is a real consumer signal.
+Artifacts with no runtime consumers (build-time-only config), where deployment health is
+proven by the build instead. Brand-new environments inside the deliberate observation window
+between creating a canary and enrolling it as a monitor.
+
+## DD:34 — A boot-required configuration key that nothing consumes: the fail-fast gate enforces a fiction and blocks its own cleanup
+
+**Statement.** A service validates required configuration at startup — the right discipline —
+but one of the required keys is consumed by no code path: it was wired into the requirement
+list at first build and the consumer never materialised, or was later replaced by a different
+mechanism (platform-injected secrets, a sidecar, an ambient default) without the requirement
+being retired. The key now does harm in three directions at once. Its value can rot
+undetected, because nothing reads it — including rotting into something WRONG that passes
+every presence check, which then poisons any future reader written in good faith against the
+documented key. Its removal from the config store is blocked, because every running instance
+refuses to boot without it — cleanup now requires a deploy-ordered dance across two planes
+(ship the tolerant consumer first, then remove the key). And its presence in the document
+actively misleads: reviewers and tooling treat a required key as load-bearing, so audits chase
+its correctness while the real mechanism lives somewhere else entirely.
+
+**Detect.** For every key in a startup requirement list, find the consumer: the read site that
+uses the VALUE, not the check that asserts its presence. A key whose only reference is the
+requirement list itself is this finding. Corroborate by tracing how the capability the key
+implies is actually delivered — if the credentials, endpoint or toggle it names reach the
+process by another route (injected environment, orchestrator secrets, a sidecar), the key is a
+fossil of a design that changed. When fixing, order the planes explicitly: the consumer drops
+the requirement and ships FIRST; the key leaves the store only after the tolerant version is
+verified running, or every instance restart in between fails at boot.
+
+**False positives.** Keys read indirectly (spread into a client config object, passed to a
+library that consumes them) — trace through before declaring them dead. Keys deliberately
+required as coordination flags whose PRESENCE is the signal, where that contract is
+documented. Keys consumed only on rare paths (disaster recovery, migrations) — rare is not
+never; check the cold paths before deleting.

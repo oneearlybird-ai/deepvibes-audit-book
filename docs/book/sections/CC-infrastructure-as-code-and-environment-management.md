@@ -483,3 +483,32 @@ count-based modules with no stable per-instance name. Also not a finding where t
 value carries no uniqueness constraint and no external consumer pins it, so a reshuffle is
 invisible beyond a diff. A module that documents the ordering requirement AND enforces it
 (a validation that the list is sorted, or a map input instead of a list) has answered the rule.
+
+## CC:27 — The attachment races the capability enablement it requires, because the dependency flows through an identifier the graph cannot trace
+
+**Statement.** One resource in the plan enables a capability (a policy type on an organization
+root, a feature flag on an account, a service registration), and sibling resources in the same
+plan require that capability to already be enabled. The real-world dependency exists, but the
+IaC graph does not see it: the dependent resources reference the TARGET (a root id, an account
+id) through a data source or a local, not through the enabling resource, so the engine finds
+no edge and applies them in parallel. The enablement and the attachments then race; some or
+all attachments fail with the service's not-enabled error; and — the treacherous half — the
+apply is now PARTIALLY converged, so the failure never reproduces: every re-apply succeeds,
+because the enablement landed the first time. The defect ships anyway, and fires again only on
+the next fresh environment — a new region, a new organization, a rebuilt stack — where it
+presents as a mysterious one-time failure someone re-applies past without recording.
+
+**Detect.** For every resource pair where one enables and others consume, check how the
+consumers name their target: an explicit reference to the enabling resource creates the edge;
+a data source, hardcoded id, or local does not. The incident signature is an apply that fails
+with a not-enabled or precondition error and then succeeds on bare re-run with no code change
+— treat every such "it worked the second time" as this finding until the graph edge is shown.
+The fix is a stated dependency on the enabling resource, with a comment carrying the race it
+prevents, because a stated dependency with no visible data flow is exactly what a later
+cleanup deletes as noise.
+
+**False positives.** Enablements that are genuinely account-global and pre-existing (enabled
+before the stack existed, managed elsewhere) — there the dependency belongs to bootstrap
+documentation, not the graph. Engines or providers that serialise these operations
+internally. Eventual-consistency failures that persist across immediate re-applies are a
+different defect (propagation delay), not this race.

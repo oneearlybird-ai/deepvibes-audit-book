@@ -628,3 +628,33 @@ ambient target is worse than either).
 where an ignored argument costs a re-run and nothing else. Wrappers that deliberately forward
 unknown arguments to an underlying tool, provided the forwarding is documented and the underlying
 tool rejects what it cannot use.
+
+## U:41 — The cross-architecture build lane depends on host emulation state that nothing pins or probes, and layer caching masks its loss until the first fresh foreign-arch step
+
+**Statement.** A build lane that targets a foreign architecture (arm64 images built on x86, or
+the reverse) executes its RUN steps through the host's binary-format emulation handlers — state
+that lives in the host kernel or the container runtime's VM, is installed once, and is silently
+lost on runtime updates, VM restarts, or daemon resets. Nothing in the lane declares this
+dependency, so nothing checks it. Worse, layer caching hides the loss: every previously-built
+RUN layer replays from cache without executing anything, so the lane keeps succeeding for as
+long as nothing changes — and the first change that adds or invalidates a foreign-arch RUN step
+fails with a bare, misdirecting error (an exit code with no message, or a tool-specific failure
+that reads as a network or package problem) at the exact moment someone is trying to ship
+something else. The diagnosis cost lands on whoever happens to make the first fresh change, who
+has no reason to suspect the host.
+
+**Detect.** Ask what executes foreign-arch instructions during the build and where that
+capability comes from; if the answer is "the emulation the runtime happens to have," the lane
+carries this defect whether or not it has fired yet. Test it directly: run a trivial
+foreign-arch container (a bare `true` in a minimal base image) outside the layer cache — an
+exec-format error is the loss, observed. Then check the lane's preflight: a lane that verifies
+the registry login and the tool's presence but not the emulation is checking everything except
+the thing that fails silently. In the incident record, the signature is a foreign-arch RUN step
+failing with a contentless code (often 255) while every cached stage of the same build reports
+success.
+
+**False positives.** Lanes that build on native-arch runners for each target (no emulation in
+the path). Lanes whose runner image pins and installs the emulation handlers as part of its own
+provisioning — the dependency is declared and converged there, which is the fix. A genuine
+network or repository failure inside a foreign-arch step is distinguished by reproducing under
+native arch too; this rule's failure reproduces only cross-arch and only outside the cache.

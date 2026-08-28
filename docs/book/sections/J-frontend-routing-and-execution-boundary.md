@@ -139,3 +139,37 @@ absolute cross-origin target, or a split of the helper. Treat route-string carri
 **False positives.** Helpers provably compiled into exactly one app; paths whose losing
 origin serves a sanctioned redirect to the successor surface — verify the redirect live,
 not from a comment.
+
+## J:17 — A shared cross-app forward list is evaluated ahead of local routing, so any app owning a route of the same name serves the forward instead and its own page can never render
+
+**Statement.** Multi-app codebases that serve several shells from one origin family keep a
+single list of path prefixes to forward to a marketing/public origin, and each shell's edge
+middleware tests that list near the top of the request path — typically before the session
+gate, since forwarded paths are public by definition. The list is authored once, against the
+public origin's route tree, and shared verbatim. When any shell later grows a route whose
+first segment collides with a forwarded prefix, precedence decides: the forward wins, so the
+local page never renders on any request, and a signed-in user who clicks its own navigation is
+ejected off the authenticated origin onto a public page. Both halves are invisible to the usual
+gates — the route file exists, compiles, type-checks and unit-tests fine; the middleware is
+correct in isolation; nothing in either artifact mentions the other. The navigation entry
+pointing at the dead route is the only visible symptom, and it looks like a working link. The
+shared list is what makes it durable: forking it per app is rejected as duplication, so the
+collision survives review as the safe centralized option.
+
+**Detect.** For every app with edge/middleware forwarding, enumerate its own route directories
+and intersect the first path segments with the forward list's prefixes — the intersection must
+be empty or explicitly declared as locally owned. Order matters as much as membership: read the
+middleware top to bottom and record which check returns first for a colliding path, since a
+forward placed after the auth gate fails differently (or not at all). Verify live rather than
+by reading: request the colliding path on the authenticated origin and compare its status and
+Location against a known-local sibling path — a forward to the public origin where the sibling
+returns the session gate is the finding. Check the parity in both directions: a declared
+locally-owned path with no matching route neither forwards nor renders, which is the same bug
+wearing the opposite sign.
+
+**False positives.** Apps that genuinely have no local route at the colliding prefix, where
+forwarding is the intended behavior. Collisions on paths the app deliberately delegates to the
+public origin (pricing, legal, docs) even though a stub route exists for metadata or redirect
+purposes — confirm the stub is not the real page. Frameworks whose route resolution runs before
+middleware, where the local page wins and the forward is dead configuration rather than a live
+shadow; establish the platform's actual order, do not assume it.

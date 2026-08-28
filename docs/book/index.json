@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 958,
+ "rule_count": 962,
  "sections": [
   {
    "id": "A",
@@ -907,7 +907,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 50,
+   "rule_count": 51,
    "rules": [
     {
      "id": "G:1",
@@ -1108,6 +1108,10 @@
     {
      "id": "G:50",
      "title": "Alerting is wired for the breach transition only, so the channel reports what broke and never what recovered"
+    },
+    {
+     "id": "G:51",
+     "title": "A designed retry signal and a genuine fault leave through the same catch at the same log severity, so the detective alarm keyed on that severity fires on normal operation"
     }
    ]
   },
@@ -1302,7 +1306,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "J:1",
@@ -1367,6 +1371,10 @@
     {
      "id": "J:16",
      "title": "Shared route helpers return app-local paths unconditionally in a multi-app codebase, so an app split turns every consumer on the losing origin into a dead end"
+    },
+    {
+     "id": "J:17",
+     "title": "A shared cross-app forward list is evaluated ahead of local routing, so any app owning a route of the same name serves the forward instead and its own page can never render"
     }
    ]
   },
@@ -2305,7 +2313,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 41,
+   "rule_count": 43,
    "rules": [
     {
      "id": "U:1",
@@ -2470,6 +2478,14 @@
     {
      "id": "U:41",
      "title": "The cross-architecture build lane depends on host emulation state that nothing pins or probes, and layer caching masks its loss until the first fresh foreign-arch step"
+    },
+    {
+     "id": "U:42",
+     "title": "The vulnerability acceptance rests on a fact about a third party (\"no fixed build exists\"), and nothing re-probes that fact, so the acceptance outlives its premise"
+    },
+    {
+     "id": "U:43",
+     "title": "The gate that admits a new component runs in a faster tier than the gate that requires it be monitored, so every new component ships uncovered and the coverage gate is red by the time anyone reads it"
     }
    ]
   },

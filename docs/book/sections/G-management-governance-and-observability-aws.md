@@ -971,3 +971,38 @@ transitions themselves — an incident manager or paging tool consuming the stat
 directly rather than the notification topic — where the topic is not the operator's channel. Alarms
 whose recovery is deliberately routed to a quieter destination, which is a design and not an omission,
 provided the quieter destination exists.
+
+## G:51 — A designed retry signal and a genuine fault leave through the same catch at the same log severity, so the detective alarm keyed on that severity fires on normal operation
+
+**Statement.** A queue consumer implements at-least-once delivery by throwing on a condition it
+expects and intends to retry — a sibling record not yet written, a resource not yet converged —
+and bounds the retry by delivery count. The throw travels to the handler's outer catch, which
+exists for infrastructure and model failures and logs at error severity before reporting the
+item for redelivery. Both paths are now indistinguishable to everything downstream. A
+fleet-wide detective alarm counting error-severity emissions therefore fires on the system
+working exactly as designed, and resolves a few minutes later when the redelivery succeeds,
+producing a page with nothing to do. The surrounding code usually proves the intent was
+otherwise: the same function's other non-events are logged at warning severity, and only the
+catch-all is error. The nuisance is the visible harm; the suppression is the real one, because
+alarms notify on state transition — while the expected condition holds the alarm in breach, a
+genuine fault arriving in that window pages nobody, and the recurring benign page teaches
+operators to read the alarm's name as noise before it ever carries a real one.
+
+**Detect.** For each alarm keyed on a log severity or a caught-error metric, walk backwards to
+every emission site the filter matches and classify each by whether the condition is expected
+and self-healing. Any throw the code itself creates for control flow — recognizable by a
+purpose-named error, a delivery-count or attempt bound around it, and a comment describing the
+retry — that lands in a catch shared with genuine failures is the finding. Compare severities
+within the one function: where sibling non-events use warning and only the shared catch uses
+error, the intended classification is already documented in the file. Confirm against the alarm
+history rather than the code alone — a breach that resolves on its own within roughly one
+redelivery interval, repeatedly, with no operator action recorded, is this pattern. Check
+whether the retry is bounded and what happens at the bound: the exhausted case is a real fault
+and must keep the loud severity.
+
+**False positives.** Retries whose exhaustion is the only signal, where the per-attempt log is
+already at a quieter severity and the alarm keys on the dead-letter surface. Conditions that
+look expected but are not bounded — an unbounded retry on a condition that never clears is a
+genuine fault wearing a retry's clothes. Systems where the error-severity emission is
+deliberately the intended trigger and the alarm is tuned to a rate that normal retry volume
+cannot reach; verify that the tuning exists rather than inferring it from the absence of pages.

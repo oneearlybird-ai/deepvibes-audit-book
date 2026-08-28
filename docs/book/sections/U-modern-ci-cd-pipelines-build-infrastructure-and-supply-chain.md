@@ -658,3 +658,73 @@ the path). Lanes whose runner image pins and installs the emulation handlers as 
 provisioning — the dependency is declared and converged there, which is the fix. A genuine
 network or repository failure inside a foreign-arch step is distinguished by reproducing under
 native arch too; this rule's failure reproduces only cross-arch and only outside the cache.
+
+## U:42 — The vulnerability acceptance rests on a fact about a third party ("no fixed build exists"), and nothing re-probes that fact, so the acceptance outlives its premise
+
+**Statement.** A scanner backlog is triaged and a large block is accepted rather than fixed,
+on a premise that is true when written and entirely outside the team's control: the vulnerable
+component is a vendor-published binary and the vendor has shipped no fixed build yet. The
+acceptance is recorded honestly — the pinned version, the evidence that the next version does
+not exist, often an explicit re-check date. Every one of those is prose. The pin itself stays a
+literal in the deployment code, the scanner keeps re-importing the same findings as ACTIVE, and
+the vendor publishes the fixed build on its own schedule with no notification to anyone. From
+that moment the estate carries a known-fixed vulnerability with an internal document explaining
+why it is acceptable, and the document reads as current because nothing about it changed. The
+re-check date, being a sentence rather than a job, passes unobserved; the scanner cannot raise
+the alarm because the findings were already accepted; and the reviewer who does eventually look
+reads the acceptance rather than re-probing the registry. The window is unbounded and is
+measured in whatever gap separates the vendor's release from a human's curiosity.
+
+**Detect.** Treat every acceptance whose justification is a claim about an upstream artifact as
+a scheduled probe that was never written, and check the claim live: enumerate the versions
+published after the pinned one directly from the registry (a newer version that returns access-
+denied is unpublished; one that returns metadata is published), and where a newer build exists,
+prove whether it actually fixes the finding — fetch the artifact and read the toolchain or
+package version out of the binary rather than trusting release notes. Cross-check the pin's
+literal against every file that carries it; these values are usually copied across many
+deployment units, so the fix count is the grep count. Compare the acceptance's own re-check date
+against today for every accepted finding in the ledger, and treat any elapsed date with no
+recorded probe as an expired acceptance, not a current one. Where the same acceptance covers
+several components, re-probe each separately — vendors ship independently, and the half that
+has been fixed hides inside the aggregate count of the half that has not.
+
+**False positives.** Acceptances whose premise is internal and stable (a documented dev-stage
+posture, a compensating control) rather than a fact about a third party. Components where the
+newer upstream build demonstrably does not address the finding — verified from the artifact, not
+assumed. Pins deliberately held back for a named compatibility reason with its own review, where
+the vulnerability is separately mitigated; the finding is the absence of the probe, so an
+acceptance that names a mechanical re-check (a scheduled job, a gate that fails on a superseded
+pin) satisfies this rule even while the pin stays.
+
+## U:43 — The gate that admits a new component runs in a faster tier than the gate that requires it be monitored, so every new component ships uncovered and the coverage gate is red by the time anyone reads it
+
+**Statement.** A mature repository splits its checks into tiers by cost: a cheap hygiene tier on
+commit, a medium tier on push, and a full verifier suite reserved for the certify or release lane.
+The rule that every deployed component must appear in the monitoring inventory — or in an
+exemption map naming the reason it needs none — lives in the full suite, because enumerating the
+fleet is expensive. The component itself ships through the push tier. The two facts compose into a
+guarantee: any component can reach production monitored by nothing, and the gate that would have
+said so does not run until someone chooses to certify. Because the certify lane is the expensive
+one, it is also the one that accumulates debt, so the window is not the minutes between landing
+and the next gate but however long the backlog is. Worse, the redness is cumulative and
+anonymous: the next person to run the suite inherits a failure list they must first attribute
+before they can act, which is friction that argues for postponing the run again. The
+inventory-or-exemption rule is usually well written — it is the tier placement, not the rule, that
+fails, so reviewing the rule finds nothing wrong.
+
+**Detect.** For each gate tier, list what it runs, then ask of every rule in the slow tier whether
+the condition it protects can be introduced by a change that only has to pass a faster tier. Any
+rule about fleet membership, inventory enrollment, or coverage parity is a candidate by
+construction. Establish the actual lag rather than the intended one: find the last run of the slow
+tier (a sentinel file, a cached verdict, a CI record) and count the components introduced since.
+Run the slow suite on a clean checkout of trunk and attribute every failure to the commit that
+introduced it — a failure older than a day, in a rule about coverage, is this finding. Check
+whether the fast tier could cheaply carry a narrowed form of the same rule (the new-component
+case only, rather than the whole fleet), because the usual fix is a cheap incremental check in the
+fast tier rather than moving the expensive one.
+
+**False positives.** Repositories where the slow tier genuinely runs on every landing (verify the
+wiring, do not credit a name). Coverage rules whose subject cannot be introduced without also
+touching a file the fast tier already checks — the coupling is the enforcement. Components in a
+documented pre-production state with an owner and a date, where uncovered is the intended posture
+for now; silent uncovered shipping is the finding, declared staging is not.

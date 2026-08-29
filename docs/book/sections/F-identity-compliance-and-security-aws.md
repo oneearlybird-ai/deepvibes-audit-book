@@ -658,3 +658,37 @@ fields, and whose partial result is therefore never consumed as a verdict. Error
 terminal for the resource (the resource no longer exists), where the benign default matches reality.
 Checks whose accumulator defaults are the UNSAFE value, so a swallowed error fails closed and merely
 produces noisy false positives — a different, much cheaper finding.
+
+## F:42 — A service acting under its own service-linked role calls the key management service directly, so a via-service-conditioned key policy never admits it — and its cross-account grant only counts when the workload's own account issues it
+
+**Statement.** Key policies are commonly written with a condition pinning the calling service, on
+the reasonable belief that a managed service touching the key always arrives through the service
+the resource belongs to. Orchestration services break that belief twice. First, when such a
+service acts on the caller's behalf under its own service-linked role — expanding a pool,
+re-encrypting a volume for a new member, replicating an image — it calls the key management API
+in its own right, not through the resource's service, so the via-service condition does not match
+and the operation is refused. Second, the refusal is reported as a state problem with the key
+rather than an authorization problem: the caller receives an invalid-key-state error and the
+operator inspects a key that is demonstrably enabled, so the diagnosis runs in exactly the wrong
+direction and can burn hours. The cross-account form adds a third trap that looks like the
+opposite of how permissions normally work: a grant naming a service-linked role only takes effect
+when it is issued from the account whose workload will act, because the role is realised
+per-account. A grant with byte-identical grantee and operations, issued from the key's own
+account, is accepted, listed, and completely inert — so the evidence that the grant exists is not
+evidence that it works.
+
+**Detect.** For every key with a via-service-conditioned statement, list which principals actually
+call it, not which resources use it: any orchestration service acting under a service-linked role
+belongs in the second list and not the first. Read the failure text literally — an invalid-key-state
+error on a key that is enabled means authorization, and the caller identity in the service's own
+error message is the fastest route to the missing principal. Where a grant is the chosen mechanism,
+verify it by the account it was issued from as well as by the principal it names, and prove it by
+observing the operation succeed rather than by listing the grant. Assert the operations the launch
+path needs explicitly, including grant creation, since these services routinely create derived
+grants of their own.
+
+**False positives.** Keys whose only consumers really do arrive through the pinned service —
+verify by listing callers, not by reading the resource type. Setups where the orchestration
+service's access is already carried by a separate unconditioned statement. Genuine key-state
+failures: confirm the key is enabled and not pending deletion before reading the error as
+authorization.

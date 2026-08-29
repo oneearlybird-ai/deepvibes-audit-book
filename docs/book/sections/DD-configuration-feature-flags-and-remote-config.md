@@ -767,3 +767,38 @@ library that consumes them) — trace through before declaring them dead. Keys d
 required as coordination flags whose PRESENCE is the signal, where that contract is
 documented. Keys consumed only on rare paths (disaster recovery, migrations) — rare is not
 never; check the cold paths before deleting.
+
+## DD:35 — The deployment gate names its rollback monitors as strings across a state boundary, so when the monitored plane relocates the gate keeps a list of alarms that are latched or absent — and the list still validates
+
+**Statement.** A staged-rollout mechanism is guarded by a list of monitors: while a new
+configuration bakes, any listed alarm entering a firing state rolls the deployment back. The list
+is necessarily a list of names or identifiers, because the monitors are declared in other stacks
+owned by other teams, and every such reference is a string the deployment platform accepts
+without proving anything about the far end. That is tolerable while everything lives in one
+place. It becomes a trap the moment the monitored workload relocates: the monitors move with it,
+and the gate — which nobody edited, because nobody was editing the workload — is left naming
+alarms that either no longer exist in this environment or, worse, still exist and are now latched
+in a permanently firing state because the resources they watch departed. Both outcomes are
+silent. Nothing re-validates the list; the platform's own configuration screen shows five
+identifiers exactly as authored. The failure is discovered by whoever next tries to ship
+configuration and finds their deployment rolled back on a monitor that describes a plane which is
+not in this account, or — the mirror image — ships successfully behind a guard that is
+structurally incapable of firing. The whole point of the gate is to be trustworthy at the moment
+of change, and this is the one failure mode that makes it untrustworthy precisely then.
+
+**Detect.** Read the gate's monitor list from the live deployment platform, not from the code
+that authored it, and resolve every identifier against the monitors that actually exist in that
+account: any that does not resolve is the finding. For those that do resolve, read state and
+state age — a guard monitor that has been firing for longer than a deployment bake window can
+never permit a deployment, and one whose metric has published no datapoints since the workload
+left can never block one. Do this as a standing check rather than at incident time, and re-run it
+as a required step of any workload relocation: the list of gates that reference a moving plane is
+computable before the move from a name search across stacks. Where the platform offers no
+referential integrity, the compensating control is a verifier that fails the build when a gate
+names a monitor absent from its own environment.
+
+**False positives.** Deliberately cross-account or cross-environment monitor references, where
+the platform genuinely supports them and the reference is intentional — verify support rather
+than assuming the string is a mistake. Gates whose monitor list is intentionally empty or
+advisory, where rollback is manual. Monitors that are absent because the guarded feature is not
+deployed in this environment at all, making the whole gate inert by design.

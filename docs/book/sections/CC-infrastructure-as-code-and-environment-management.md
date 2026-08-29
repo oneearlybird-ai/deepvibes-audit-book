@@ -512,3 +512,105 @@ before the stack existed, managed elsewhere) — there the dependency belongs to
 documentation, not the graph. Engines or providers that serialise these operations
 internally. Eventual-consistency failures that persist across immediate re-applies are a
 different defect (propagation delay), not this race.
+
+## CC:28 — A stack is moved to another account by swapping the provider's credentials, which abandons the origin account's live fleet instead of destroying it — and what is abandoned is still wired to its triggers
+
+**Statement.** Relocating a workload between accounts is often done in the cheapest way the
+engine allows: change the provider block's assumed role (and the state key) and re-apply. The
+engine happily builds the whole stack in the destination, because to it every resource is simply
+absent there. Nothing in that operation touches the origin: the live resources remain, and the
+state that described them is no longer consulted by any configuration. This is the orphan family,
+but with two properties that make it far worse than removed-from-code orphans. First, review sees
+nothing — no resource block was deleted, no state surgery was run, and the configuration still
+describes each resource correctly, merely somewhere else; a diff-based reviewer and a plan both
+read clean. Second, and decisively, the abandoned copies are not inert leftovers: schedules,
+event rules, stream mappings, and queue subscriptions in the origin are still armed and still
+fire. Their targets are now in the half-moved state that a partial migration produces — some
+deleted, some surviving with their data plane gone — so every firing either fails (filling a
+dead-letter queue and latching an alarm nothing will ever clear) or, far worse, succeeds
+against stale data and writes a second, divergent truth in the account everyone has stopped
+looking at. A per-domain migration makes this near-certain, because triggers and their targets
+are routinely declared in different stacks and therefore move on different days.
+
+**Detect.** Never take the destination's health as evidence about the origin. In the origin
+account, enumerate the trigger plane directly — scheduled rules, event-bus rules, stream and
+queue event-source mappings, cron entries — and for each one resolve its target and ask whether
+that target still exists and whether its data plane does. A rule pointing at a deleted function
+shows up as failed-invocation metrics; a rule pointing at a surviving function whose table left
+shows up only in that function's own error log and its dead-letter queue, which is why depth-one
+dead-letter queues and alarms stuck in a firing state for many hours are the highest-yield entry
+point. Cross-check both accounts side by side for the same logical name: two live copies of one
+scheduled job is the split-brain case. In the repository, list which stack declares each trigger
+versus its target, and treat every pair that crosses a stack boundary as a migration-ordering
+hazard before the move rather than after.
+
+**False positives.** A deliberate cutover window in which the origin is knowingly kept warm and
+armed for rollback — legitimate, but it must be time-boxed in writing and the dead-letter noise
+it produces must be acknowledged, not discovered. Triggers whose targets are genuinely
+account-local by design (the origin's own housekeeping). Rules already disabled as part of the
+teardown: check the enabled state before filing, since a disabled rule is evidence the demolition
+step exists and merely has not finished.
+
+## CC:29 — The fresh environment lacks the service-created account plumbing the mature one accumulated over years, and the role that trips over it is deliberately unable to create it
+
+**Statement.** Long-lived accounts silently accumulate identity and enablement objects that no
+one ever wrote down: roles a service created for itself the first time a feature was used,
+regional enablements, default resources materialised on first call. They are not in the
+infrastructure code because nothing ever declared them — they were born as a side effect years
+earlier, often before the code existed. Replicating the environment therefore reproduces
+everything that was written and none of what was assumed, and the gap surfaces only when the
+first operation that needs the missing object runs. The failure lands far from its cause: the
+error names an internal service principal rather than any resource in the plan, and it is raised
+by whichever workload happens to be first — frequently a runtime provisioning path rather than
+the deployment itself, so it presents as a product outage in the new environment rather than as a
+deployment defect. The trap closes because the least-privilege design is working as intended: the
+runtime role that hits the missing object is deliberately not allowed to create identity objects,
+so the system cannot self-heal, and the environment that does work offers no clue, since there
+the object has existed for years.
+
+**Detect.** Do not diff code against code — diff the destination account's service-created
+identity and enablement inventory against the origin's, and treat every object present only in
+the origin as an undeclared prerequisite until proven irrelevant. Prefer the runtime path over
+the deployment path when exercising a new environment: run the product operations that create
+resources on demand, not only the infrastructure apply, because the apply's principal is usually
+privileged enough to birth the missing object implicitly and thereby hide the gap from everyone
+who comes after. When an error names a service principal rather than a resource, read it as a
+missing-prerequisite signal, not a permissions bug in the caller. Every prerequisite found this
+way is declared explicitly in the new environment's substrate, with a comment saying why —
+otherwise the next environment relearns it at the same cost.
+
+**False positives.** Objects the destination genuinely does not need because the corresponding
+feature is not deployed there. Enablements that are organisation-wide and inherited rather than
+per-account. Objects the deployment principal creates implicitly on every apply, where the
+implicit creation is documented and the runtime never depends on being able to create it itself.
+
+## CC:30 — The portability rule that derives every identifier from the environment has a blind spot for provider-randomized names, and the blind spot fails by keeping the SOURCE value
+
+**Statement.** A mature multi-environment setup replaces hardcoded identifiers with derivation:
+account, region, and resource names are computed from the target environment, so one document
+serves every environment. The rule holds for everything the platform names deterministically —
+and breaks for the one class it cannot, the endpoints and hostnames a provider generates with a
+random per-account suffix. There is no formula from the target environment to those strings, so
+whatever value the document already carries survives the stamping untouched. The failure is
+uniquely quiet: the stamper reports success and every other field in the document is correctly
+retargeted, so the artifact passes review and validation. Only at runtime does a consumer in the
+new environment open a connection to the old environment's data store — and if the source has
+since been demolished, the symptom is a name-resolution failure inside a component that has
+nothing to do with configuration, arriving at whoever is on call rather than whoever ran the
+publish.
+
+**Detect.** Enumerate every value in the environment-stamped artifact and classify it: derived,
+literal-and-environment-neutral, or literal-and-environment-specific. The third bucket must be
+empty. The reliable tell is a value the derivation code does not mention: read the stamper and
+list which keys it writes, then diff that list against the keys whose content differs between two
+environments. Any key that differs but is not written is carried source data. Grep published
+artifacts for the source environment's account number, random suffixes, and hostnames — the
+suffix, not the service name, is the discriminating token. Then close the loop in the tool: the
+stamper resolves such values from the destination's live resources and fails closed when it
+cannot, so a destination without that data plane cannot publish an artifact claiming one.
+
+**False positives.** Deliberate shared-services references, where one environment is genuinely
+meant to consume another's resource — legitimate, but it must be an explicit, commented seam
+rather than a value that happens to have survived. Values that merely look random but are
+stable platform identifiers. Documents published per environment from separate sources, where
+no stamping step exists to have a blind spot.

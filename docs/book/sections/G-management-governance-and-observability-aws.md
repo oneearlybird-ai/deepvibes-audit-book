@@ -1006,3 +1006,35 @@ look expected but are not bounded — an unbounded retry on a condition that nev
 genuine fault wearing a retry's clothes. Systems where the error-severity emission is
 deliberately the intended trigger and the alarm is tuned to a rate that normal retry volume
 cannot reach; verify that the tuning exists rather than inferring it from the absence of pages.
+
+## G:52 — The monitor stays in the environment the workload left, so it latches on a resource that no longer exists while the live twin's silence looks identical to health
+
+**Statement.** Monitors are declared beside the resource they watch, so when a workload is
+relocated the monitor is rebuilt in the destination and the original is left running in the
+origin. Its metric source is gone, and which way it fails is decided by a detail nobody chose:
+a threshold on a healthy-count metric evaluates the absence as zero and latches into a permanent
+firing state, while a threshold on an error-count metric evaluates it as nothing and sits
+permanently green. Both outcomes destroy the signal. The latched one is the more expensive,
+because the fix that responders reach for is to stop believing that alarm name — and the alarm
+name is shared with the destination's real monitor, so the habit that quiets the dead one also
+quiets the live one. Meanwhile the permanently-green variety is indistinguishable from a healthy
+service, which is precisely the state a decommissioned monitor should never be able to claim. The
+underlying error is that a monitor is treated as a property of the resource rather than as an
+assertion about a running system, so nothing checks that the thing being asserted about still
+exists.
+
+**Detect.** Take the inventory of firing and long-quiet monitors in every account and join it to
+the inventory of the resources they name. Any monitor whose dimension resource is absent from
+that account is the finding, regardless of which state it is stuck in. Sort firing monitors by
+how long they have held that state: anything firing continuously for longer than the incident it
+would represent could plausibly last is either a dead monitor or an unhandled incident, and both
+demand an answer. For the permanently-green half, do not read state — read datapoint recency,
+since a monitor with no datapoints in the evaluation window is making no assertion at all. When
+the same monitor name exists in two accounts, name them distinctly or delete one; identical names
+across a migration boundary are what convert a stale alarm into distrust of a live one.
+
+**False positives.** Monitors deliberately retained over a cutover window while the origin can
+still take traffic. Monitors on metrics that are legitimately sparse, where missing data is
+correctly configured as not-breaching and the absence of datapoints is the expected steady state —
+verify the missing-data treatment was chosen rather than defaulted. Composite monitors whose
+children carry the real assertions.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 962,
+ "rule_count": 968,
  "sections": [
   {
    "id": "A",
@@ -734,7 +734,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "F:1",
@@ -899,6 +899,10 @@
     {
      "id": "F:41",
      "title": "A compliance evaluator's per-resource analysis returns its default-initialised result from the catch block, so a check the control-plane throttled is scored as a clean pass"
+    },
+    {
+     "id": "F:42",
+     "title": "A service acting under its own service-linked role calls the key management service directly, so a via-service-conditioned key policy never admits it — and its cross-account grant only counts when the workload's own account issues it"
     }
    ]
   },
@@ -907,7 +911,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "G:1",
@@ -1112,6 +1116,10 @@
     {
      "id": "G:51",
      "title": "A designed retry signal and a genuine fault leave through the same catch at the same log severity, so the detective alarm keyed on that severity fires on normal operation"
+    },
+    {
+     "id": "G:52",
+     "title": "The monitor stays in the environment the workload left, so it latches on a resource that no longer exists while the live twin's silence looks identical to health"
     }
    ]
   },
@@ -3021,7 +3029,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 27,
+   "rule_count": 30,
    "rules": [
     {
      "id": "CC:1",
@@ -3130,6 +3138,18 @@
     {
      "id": "CC:27",
      "title": "The attachment races the capability enablement it requires, because the dependency flows through an identifier the graph cannot trace"
+    },
+    {
+     "id": "CC:28",
+     "title": "A stack is moved to another account by swapping the provider's credentials, which abandons the origin account's live fleet instead of destroying it — and what is abandoned is still wired to its triggers"
+    },
+    {
+     "id": "CC:29",
+     "title": "The fresh environment lacks the service-created account plumbing the mature one accumulated over years, and the role that trips over it is deliberately unable to create it"
+    },
+    {
+     "id": "CC:30",
+     "title": "The portability rule that derives every identifier from the environment has a blind spot for provider-randomized names, and the blind spot fails by keeping the SOURCE value"
     }
    ]
   },
@@ -3138,7 +3158,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "DD:1",
@@ -3275,6 +3295,10 @@
     {
      "id": "DD:34",
      "title": "A boot-required configuration key that nothing consumes: the fail-fast gate enforces a fiction and blocks its own cleanup"
+    },
+    {
+     "id": "DD:35",
+     "title": "The deployment gate names its rollback monitors as strings across a state boundary, so when the monitored plane relocates the gate keeps a list of alarms that are latched or absent — and the list still validates"
     }
    ]
   },

@@ -1038,3 +1038,118 @@ still take traffic. Monitors on metrics that are legitimately sparse, where miss
 correctly configured as not-breaching and the absence of datapoints is the expected steady state —
 verify the missing-data treatment was chosen rather than defaulted. Composite monitors whose
 children carry the real assertions.
+
+## G:53 — The alarm names a sibling monitoring construct inside a metric-math expression, by a string the template builds itself, and the not-breaching treatment renders the mismatch as health
+
+**Statement.** Some monitors do not watch a service metric directly; they watch the output of
+another monitoring construct — a log-analysis rule, a synthetic canary, a published custom
+metric — pulled in through a metric-math function that takes the construct's NAME as a quoted
+string argument. That string is the only link between the two objects, and it is usually not a
+reference to the construct's resource: it is composed in the template from a prefix plus an
+interpolated identifier, in a naming convention someone intended the other side to follow. If the
+construct's declared name does not match the composed string, nothing anywhere objects. The
+provider does not resolve metric-math arguments at plan time, so the apply succeeds; the
+dependency graph sees no edge between the two resources, so ordering and drift detection have
+nothing to say; and the alarm object exists afterwards with correct-looking math. The runtime
+result is a query for a construct that does not exist, which returns no data rather than an
+error. Whether that reads as broken depends entirely on the missing-data treatment, and the
+treatment chosen for this class is almost always not-breaching — correctly, because the healthy
+steady state genuinely produces no datapoints. So the alarm reports OK from birth and never
+leaves it. Every check that would normally catch a dead monitor now confirms it: it exists, it is
+attached to a notification channel, its state is the good one, and it has never flapped. The
+detector is counted as coverage for exactly the failure it can no longer see, and because this
+shape is chosen for cardinality and log-derived signals — the ones written to catch total,
+silent, everything-is-refused outages that emit no ordinary error metric — the coverage that is
+fictional is the coverage of last resort.
+
+**Detect.** Enumerate every alarm whose definition contains a metric-math expression, and extract
+each quoted name it passes to a function rather than each dimension it sets. Resolve every one of
+those names against the live inventory of the construct type it refers to — log-analysis rules,
+canaries, custom metric namespaces — and treat an unresolvable name as the finding regardless of
+alarm state. Do not screen by state: unlike a dimension pointing at a deleted resource, this
+defect presents as OK, so state-based and never-fired-since-creation sweeps skip it. Datapoint
+recency is the runtime tell — an alarm evaluating a math expression that has produced zero
+datapoints for its whole lifetime is making no assertion. In the IaC, a composed name string
+where a resource attribute reference was available is the static tell; compare the composition
+against the referenced resource's own name attribute in whichever file declares it, which is
+frequently a different stack or component from the alarm.
+
+**False positives.** Constructs deliberately provisioned outside the IaC whose names are stable
+and verified live. Expressions whose named argument is a metric or namespace rather than a
+resource. Alarms on genuinely sparse signals where zero datapoints is the correct steady state —
+distinguish by resolving the NAME, never by reasoning about the data volume, since both cases
+look identical from the metric alone.
+
+## G:54 — The compliance evaluator accumulates verdicts for a whole population and publishes once at the end, so one member's unguarded dependency read discards every verdict in the batch
+
+**Statement.** A scheduled compliance rule enumerates a population, evaluates each member into an
+accumulator, and submits the accumulated verdicts to the compliance service in a single call
+after the loop. Individual checks inside a member's evaluation are usually defended — a read that
+may legitimately be absent is wrapped and converted into a recorded issue — but at least one
+dependency read is not, typically one considered infrastructural rather than a check: a lookup
+against a shared table, a registry, or a peer service that the author reasoned must exist. When
+that read throws, the exception escapes the member's evaluation, escapes the loop, and aborts the
+invocation before the submit call is reached. Nothing is published — not the failing member's
+verdict, and not the verdicts of every member already evaluated successfully. The compliance
+service does not interpret an absent submission as a problem: it keeps each resource's last
+recorded verdict indefinitely, so the dashboard continues to show the population as it was on the
+last run that completed, in the good state, with no marker that the evidence is stale. The rule's
+failure is therefore visible only in its own invocation telemetry — an error metric, a
+retry-exhaustion record on a dead-letter queue — which is a different surface from the compliance
+report it exists to produce, watched by different people. The batch shape is what converts a
+one-member fault into total silence: the same defect in a per-member submit would have cost one
+verdict.
+
+**Detect.** For every evaluator that builds a list and submits after the loop, list the awaited
+calls on the per-member path and classify each as guarded or unguarded; any unguarded call to a
+dependency outside the resource under evaluation is the finding. The asymmetry is the quickest
+tell — a function whose optional reads are wrapped and whose one mandatory read is not was
+reasoned about member by member and never as a batch. Confirm at runtime: compare the timestamp
+of the rule's most recent published evaluation against its invocation schedule. A verdict older
+than several evaluation intervals on a rule whose function is being invoked is this defect, and
+it is the only signal that separates it from a rule that is genuinely evaluating and finding
+nothing. The correct shape is a per-member catch that publishes an explicit
+could-not-evaluate verdict, so that failing to check is never recorded as having checked.
+
+**False positives.** Evaluators whose submit call is itself inside the loop, where a member's
+failure costs only that member. Rules that deliberately abort a run on a dependency failure AND
+publish a not-evaluable verdict for the whole population before exiting. Populations of one,
+where batch and per-member are the same thing.
+
+## G:55 — The workload was rebuilt in a new account and its alerting fan-in was not, so the alarms there name notification targets that do not exist and the account is deaf while every alarm looks correctly wired
+
+**Statement.** Alarms are declared beside the workload they watch and address their notification
+target by a composed ARN — account, region, topic name — so the same code produces correct-looking
+alarms in whatever account it is applied to. The fan-in itself is not part of any workload: the
+topics, their subscriptions, and the delivery integration behind them live in a shared or platform
+stack, declared once, and that stack is usually the last thing anyone relocates because nothing in
+the workload's own plan depends on it. Applying the workloads into a new account therefore creates
+the alarms and none of their destinations. The cloud provider does not validate an alarm's action
+ARN at creation, and a publish to a nonexistent topic at fire time fails silently: no error is
+surfaced on the alarm, no failure metric is emitted, and the alarm's own state machine transitions
+exactly as designed. Every property an operator or a coverage review checks — the alarm exists, its
+threshold is right, it has an action, it has transitioned recently — is true. The second form is
+quieter still: a target that does exist with zero confirmed subscriptions, which is a valid,
+successful publish to nobody. Both usually appear together, because the same relocation that left
+the topics behind also left the subscriptions behind. The result is an account carrying a full
+complement of alarms and no path from any of them to a human, and its severity scales with the
+move: the newly-populated account is typically the one now holding the data plane and the
+customer-facing surface, so the alerting that went dark is the alerting that matters most, and the
+first evidence anyone gets is an incident found by other means.
+
+**Detect.** Do not audit alarms in the account they were written for; audit them in the account
+they now run in. Enumerate every alarm's action ARNs, reduce to the distinct set of targets, and
+resolve each one live in THAT account — a not-found is the finding, and count the alarms behind it
+rather than reporting the target once, because the number is the argument. For every target that
+does resolve, read its confirmed-subscription count; zero is the second form of the same finding.
+Then prove the path end to end rather than by configuration: take an alarm that actually
+transitioned in the recent past and look for its delivery at the far end — the mailbox, the
+channel, the event feed — and treat a transition with no corresponding delivery as confirmation.
+Cross-check the origin account for the topics of the same names, which is where they will be, and
+which also explains why the alerting looks healthy to anyone testing from there.
+
+**False positives.** Deliberate cross-account alerting, where the alarm's action ARN names the
+ORIGIN account's topic and that topic's policy permits publishing from the new account — verify the
+policy rather than the ARN's shape. Accounts in a staging phase where the alerting stack is a
+named, pending step. Alarms whose only action is an autoscaling or systems-manager action rather
+than a notification, which have no human destination by design.

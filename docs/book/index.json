@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 968,
+ "rule_count": 974,
  "sections": [
   {
    "id": "A",
@@ -911,7 +911,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 52,
+   "rule_count": 55,
    "rules": [
     {
      "id": "G:1",
@@ -1120,6 +1120,18 @@
     {
      "id": "G:52",
      "title": "The monitor stays in the environment the workload left, so it latches on a resource that no longer exists while the live twin's silence looks identical to health"
+    },
+    {
+     "id": "G:53",
+     "title": "The alarm names a sibling monitoring construct inside a metric-math expression, by a string the template builds itself, and the not-breaching treatment renders the mismatch as health"
+    },
+    {
+     "id": "G:54",
+     "title": "The compliance evaluator accumulates verdicts for a whole population and publishes once at the end, so one member's unguarded dependency read discards every verdict in the batch"
+    },
+    {
+     "id": "G:55",
+     "title": "The workload was rebuilt in a new account and its alerting fan-in was not, so the alarms there name notification targets that do not exist and the account is deaf while every alarm looks correctly wired"
     }
    ]
   },
@@ -3029,7 +3041,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 30,
+   "rule_count": 32,
    "rules": [
     {
      "id": "CC:1",
@@ -3150,6 +3162,14 @@
     {
      "id": "CC:30",
      "title": "The portability rule that derives every identifier from the environment has a blind spot for provider-randomized names, and the blind spot fails by keeping the SOURCE value"
+    },
+    {
+     "id": "CC:31",
+     "title": "The consumers were relocated to the new account and the account-static artifact they resolve by name at runtime was not, because it lives in a stack the relocation never touched"
+    },
+    {
+     "id": "CC:32",
+     "title": "Ownership is handed between stacks as strip-then-adopt, and the two halves run under different preconditions, so a blocked adopt leaves the live fleet in no state at all while both plans read clean"
     }
    ]
   },
@@ -3948,7 +3968,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 45,
+   "rule_count": 46,
    "rules": [
     {
      "id": "NN:1",
@@ -4129,6 +4149,10 @@
     {
      "id": "NN:45",
      "title": "The pre-destroy guard authenticates to a different account than the resources it is guarding, so an empty read is recorded as \"this held no data\""
+    },
+    {
+     "id": "NN:46",
+     "title": "The gate asserts about the system by opening a hard-coded file path, so a relocation that changes no behaviour flips the gate to a verdict about a file"
     }
    ]
   },

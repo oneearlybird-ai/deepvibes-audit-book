@@ -1048,3 +1048,39 @@ guard that writes its output to a central bucket while reading across the bounda
 shape rather than a violation. A guard whose every lookup provably raises on a missing subject
 self-reports honestly today, but it is one added tolerant lookup away from this failure and is
 worth a note rather than a finding.
+
+## NN:46 — The gate asserts about the system by opening a hard-coded file path, so a relocation that changes no behaviour flips the gate to a verdict about a file
+
+**Statement.** A verifier enforces an invariant that is real and worth enforcing — a grant appears
+in exactly one policy, two artifacts agree, a handler declares its queue — and it reaches the
+evidence by opening a specific file at a specific path and reading its contents. The path is an
+implementation detail of where the code happens to live today, not part of the invariant, but it
+is the only thing the gate actually depends on. A refactor that relocates the declaration to
+another file, another module, or another component preserves every behaviour the invariant is
+about and breaks the gate outright. Which way it breaks is decided by the gate's own defaults and
+neither way is safe. If it errors on the missing path it goes RED on the trunk for a reason that
+has nothing to do with correctness, and because it is a shared gate it now blocks everyone's
+work, so the pressure is to disable or except it — the invariant is retired by an accident of
+file layout. If instead it reads an emptied or absent file as no matching content, it goes green
+without observing anything, and the invariant is retired even more quietly. The refactor's author
+is not warned in either case: nothing links the moved file to the verifier that reads it, the
+verifier lives in a different directory from the code, and a search for references to the moved
+symbol does not find a string in a script. The defect concentrates in exactly the periods when
+invariants matter most — large structural migrations, when many declarations move at once and
+several gates fail together, which is also when a broken gate is most likely to be written off as
+migration noise.
+
+**Detect.** Grep every verifier and gate for literal source paths and for directory walks pinned
+below a specific component, and for each one ask what it does when the path yields nothing:
+distinguish "throws", "returns empty and passes", and "returns empty and fails". Any gate that can
+pass on empty evidence is the more dangerous half and should be made to fail closed on an empty
+read. Then check the pinning itself: the invariant almost always concerns a SYMBOL — a role, a
+grant, a queue name — so the gate should search the repository for that symbol's definition sites
+and assert on all of them, which makes relocation a non-event and duplication detectable. Confirm
+against history: a gate that has been edited only to update paths, never to change its assertion,
+is one whose subject has moved repeatedly under it.
+
+**False positives.** Gates whose subject genuinely is a specific file — a lockfile, a generated
+artifact, a committed schema — where the path IS the identity. Gates that resolve a path from a
+manifest or a build graph rather than hard-coding it. Verifiers scoped to a directory by design
+where an empty directory is a legitimate, asserted state.

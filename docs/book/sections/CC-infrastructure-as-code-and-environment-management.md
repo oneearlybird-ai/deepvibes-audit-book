@@ -614,3 +614,82 @@ meant to consume another's resource — legitimate, but it must be an explicit, 
 rather than a value that happens to have survived. Values that merely look random but are
 stable platform identifiers. Documents published per environment from separate sources, where
 no stamping step exists to have a blind spot.
+
+## CC:31 — The consumers were relocated to the new account and the account-static artifact they resolve by name at runtime was not, because it lives in a stack the relocation never touched
+
+**Statement.** A workload is split across stacks along ownership lines, and one of those stacks
+holds artifacts deliberately declared once per account rather than once per workload — a shared
+managed policy, a permission boundary, a key alias, a parameter the runtime reads by a fixed
+path. Consumers in the other stacks do not reference those artifacts through the graph; they
+resolve them at runtime by composing a name or an identifier from the account they find
+themselves in. That indirection is what makes the shared declaration work at all, and it is also
+what hides the coupling: nothing in any plan, state file, or dependency graph records that the
+consumer stacks require the shared stack's output. When the workload is then relocated account by
+account, the relocation follows the consumer stacks — they are the ones that obviously belong to
+the moving domain — and the shared stack is left targeting the origin, often correctly, since
+other things still depend on it there. The destination account now runs the consumers with the
+artifact absent. Every plan is clean, in both accounts. The failure appears only when a runtime
+path actually composes the name and calls with it, and it surfaces as a rejection from the
+identity or configuration plane naming an object rather than a permission, so it reads as a
+transient platform error rather than a missing deployment. Because the shape is per-request, the
+blast radius is whichever product operation happens to use that artifact — commonly a
+privileged, low-frequency lane whose users are the ones least able to route around it. The repair
+compounds the defect: the object is created by hand in the destination to end the outage, which
+works, is invisible to every plan afterwards, and leaves the destination's next rebuild carrying
+the identical gap with the evidence of the first one erased.
+
+**Detect.** List every artifact the runtime resolves by a composed name or path rather than by an
+injected reference — session-policy names, boundary names, key aliases, parameter paths — and for
+each, find the stack that declares it and compare that stack's target account against the target
+of every stack whose code composes the name. Any consumer whose target differs from its
+declarer's is the finding, whether or not it has failed yet. Confirm live in the destination
+account: the object either does not exist, or exists and carries none of the tagging the
+declaring stack applies to everything it manages, which identifies it as a hand-repair rather
+than as coverage. Treat an untagged copy as a second finding, not as the fix.
+
+**False positives.** Genuine shared-services designs where the destination is intended to consume
+the origin's artifact cross-account, which requires the artifact's identifier to be composed from
+the ORIGIN's account rather than from the caller's, and a resource policy permitting it — verify
+both. Artifacts the destination provisions under its own stack with the same name by design.
+Objects absent because the destination is mid-build and the declaring stack's apply is a pending,
+named step in the migration plan.
+
+## CC:32 — Ownership is handed between stacks as strip-then-adopt, and the two halves run under different preconditions, so a blocked adopt leaves the live fleet in no state at all while both plans read clean
+
+**Statement.** Decomposing a large stack into smaller ones is done by moving live resources
+between states rather than by rebuilding them: the resource blocks are copied into the new stack
+and imported there, and the same blocks are deleted from the donor and dropped from its state.
+The operation is inherently two-phase, and the two phases are not symmetric. Removing from the
+donor is cheap — it is a code deletion plus a state edit, and it can be committed by anyone at
+any time. Adopting into the new stack is an APPLY, and applies sit behind whatever preconditions
+the platform imposes: a clean tree, a passing gate, an unblocked deploy window, credentials for
+the destination. So a lane that can commit but cannot apply — one whose own working state closes
+the gate it must pass, or that is deliberately running plan-only — completes the cheap half of
+every handoff and none of the expensive half. The resources are then owned by nothing. This is
+not the ordinary orphan: an orphan is at least still described by code someone deleted, and its
+absence shows up as a diff. Here the code exists, correctly, in the new stack, and the new
+stack's plan proposes to CREATE the resources — which reads as expected work rather than as an
+alarm — while the donor's plan proposes nothing at all, because from its point of view the
+resources were correctly removed. Every artifact of review is green. The exposure is unbounded in
+time and grows with the campaign: each subsequent handoff adds to the unmanaged population, and
+nothing accumulates a count, because no single stack can see more than its own share. The damage
+is not to the running system, which is untouched, but to the ability to change it — the estate can
+no longer be rebuilt, and the first apply that does run against a partly-adopted stack is
+evaluating a destroy plan nobody has the state to interpret.
+
+**Detect.** Do not audit this stack by stack; it is only visible from above. Take the live
+inventory of the resource types under migration and subtract the union of every state file's
+managed addresses — the remainder is the unmanaged population, and it should be empty at every
+moment, not merely at the end. Cheaper proxy while a campaign is running: for each declared
+component, assert that its state exists and is non-empty, and treat "component code committed,
+component state absent" as the finding on its own. In the process, look for a lane whose commits
+describe verification rather than application — plan-only, verified, decoupled — with no
+corresponding apply record; that phrasing is the reliable tell that a handoff completed halfway.
+The structural fix is ordering: adopt into the destination first and strip the donor only after
+the destination's state is populated, so the failure mode of an interrupted handoff is two owners
+rather than none.
+
+**False positives.** Handoffs deliberately staged across a maintenance window with the gap
+recorded and time-boxed. Components whose state is genuinely empty because they declare only
+data sources or outputs. Resources intentionally unmanaged under a documented posture, which must
+be enumerated somewhere rather than inferred from their absence.

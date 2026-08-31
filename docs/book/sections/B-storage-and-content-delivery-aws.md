@@ -147,3 +147,39 @@ override is a documented noise-reduction decision rather than a weakened control
 **Detect.** On the credential path that constructs the signing client, compare `getSignedUrl`'s `expiresIn` against the `AssumeRole` `DurationSeconds` minus the client-cache reuse window. Flag any advertised expiry exceeding the minimum remaining session lifetime at signing time.
 
 **False positives.** Signing with long-horizon credentials (instance/execution-role provider chains that auto-refresh BEFORE signing, noting the URL still pins the snapshot used at signing); clients that fetch a fresh URL immediately before each use and treat the advertised expiry as an upper bound — verify the actual client contract before accepting this.
+
+## B:31 — A hardening control added to the object store rejects the managed delivery service's writes, and that service's own error channel is unwritable, so the records pipeline stops with no signal on any surface
+
+**Statement.** Managed delivery services (streaming buffers, log exporters, replication agents)
+write to an object store with a fixed request shape they do not let you change. Object-store
+hardening controls are chosen independently, usually against a compliance checklist, and two of
+them are quietly incompatible with that fixed shape: a default retention rule on a locked bucket
+makes the store require an integrity header on every write, and a bucket policy that denies
+writes lacking an explicit server-side-encryption request header denies the writer that relies on
+the bucket's own default encryption instead of naming it. Neither control fails at apply time;
+both fail at write time, once, per record, forever. What makes it a silent outage rather than a
+loud one is the second half: the delivery service reports its own failures into a log destination
+it must be granted permission to write, and that grant is easy to omit because nothing exercises
+it until the first failure — so the error stream is not merely empty, it has never been created.
+The producer keeps accepting records and its ingestion metric stays healthy; the delivery metric
+sits at zero; the destination stays empty; the error output prefix is never written; and if the
+only alarms are on the producer, every dashboard reads normal while the archive that a retention
+obligation depends on receives nothing.
+
+**Detect.** Never treat ingestion as delivery. For every managed writer, chart the delivered-record
+count and the freshness-of-oldest-undelivered-record metric side by side with the ingestion count
+over the same window; a nonzero ingestion with a flat zero delivery and a monotonically climbing
+freshness value is the signature, and freshness alone tells you the exact moment it began. Then
+list the destination's objects and compare the newest key's timestamp against the change history
+of the destination's controls — a delivery chain that stops on the same day a lock rule, bucket
+policy or key policy changed is that change. Read the writer's role for permission to create and
+write its error stream, and check whether that log destination has any streams at all: a
+configured-but-never-created error stream means no failure has ever been recordable. Every such
+pipeline needs a freshness or delivery-failure alarm; a pipeline whose only alarm is on the
+producer cannot detect this class at all.
+
+**False positives.** A genuinely idle source — confirm with the ingestion metric before filing,
+since zero delivered out of zero received is correct. Buffering intervals: a delivery gap shorter
+than the configured buffer window is not a failure. First-run latency immediately after a stream
+is created or repointed. A destination that is deliberately write-once-then-migrated, where the
+empty state is the intended end of life rather than a break.

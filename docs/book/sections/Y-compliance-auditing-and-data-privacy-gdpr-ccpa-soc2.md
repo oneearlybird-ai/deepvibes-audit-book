@@ -115,3 +115,36 @@ verifier output, parity reports, admin tooling.
 access-controlled, and logged accordingly (a contacts table keyed by normalized phone with a
 documented posture); opaque tenant/workspace ids that merely look identifier-shaped; digests
 mistaken for raw values.
+
+## Y:17 — The agent persona instructs the model to preserve the caller's belief that it is human and supplies a canned deflection for the direct question, turning a disclosure duty into active concealment
+
+**Statement.** Synthetic-voice personas are tuned for naturalness, and a line that reads as a
+tone instruction to its author — callers assume they are speaking to a person, keep it that way —
+is an instruction to conceal. Paired with the usual companion, a scripted deflection for the
+question "am I speaking to a machine", it moves the system across a legal line that mere
+naturalness never approaches. Several jurisdictions require disclosure of automated interaction
+on request or outright, recording-consent regimes attach to what the caller believes they are
+joining, and sector rules add their own; the exposure does not depend on any of them being cited,
+because a system that answers the direct question falsely is misrepresentation on its own terms.
+Two properties make it durable. First, it lives in the persona layer, which is content — curated
+in templates, materialized into hundreds of per-vertical copies, reviewed as writing rather than
+as policy, and never touched by the security review that reads the code. Second, it is invisible
+in testing: the concealment only manifests when a caller asks, and scripted conversation tests do
+not ask. The remedy is not the opposite mandate — an agent that opens every call with a
+disclosure it was not asked for is a worse product — but a neutral identity: the model neither
+volunteers nor denies, and answers the direct question truthfully.
+
+**Detect.** Read the persona and identity sections of every prompt template and every
+materialized copy, not just the base, since verticals fork. Grep the whole prompt corpus for
+instructions about what the caller believes, for scripted answers to automation questions, and
+for any directive to avoid, deflect or redirect the subject. Then test it as a caller would: ask
+the running agent directly, on more than one vertical, and read the answer. Check the count of
+materialized copies against the count of sources — a fix applied to templates that is not
+regenerated leaves the live plane unchanged, and the live plane is what answers the phone.
+
+**False positives.** Naturalness instructions that carry no claim about identity ("speak
+conversationally", "avoid robotic phrasing") — these are style and are not this rule. A
+deployment whose opening disclosure already states the automation, where a later line merely
+avoids repeating it. Regulated deployments that carry a documented, counsel-reviewed disclosure
+posture different from the default; the finding is an undocumented concealment instruction, not a
+disagreement about wording.

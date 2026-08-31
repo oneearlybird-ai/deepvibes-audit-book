@@ -693,3 +693,38 @@ rather than none.
 recorded and time-boxed. Components whose state is genuinely empty because they declare only
 data sources or outputs. Resources intentionally unmanaged under a documented posture, which must
 be enumerated somewhere rather than inferred from their absence.
+
+## CC:33 — The relocation builds an empty record store in the destination while the accumulated corpus stays in the abandoned origin, so the retention control the design claims applies exists only where there are no records
+
+**Statement.** When a stack is relocated between accounts by repointing its provider, every
+resource whose name is derived from the caller's account gets a NEW name in the destination, and
+the engine creates it there from nothing. For compute that is harmless — a function rebuilt empty
+is a function. For a record store it inverts the design's central claim. The destination gets a
+correctly configured, fully hardened, entirely empty store; the origin keeps every record ever
+written, now owned by no state file, excluded from every plan, and frozen at whatever
+configuration it happened to have. That configuration is routinely weaker than the declaration
+suggests, because the controls a compliance archive depends on are the ones that cannot be
+retrofitted or that were added to the declaration after the store was first created: a lock
+enabled at creation but never given a default retention rule protects nothing, and a transport or
+encryption policy the origin never received cannot be inferred from reading the code, which now
+describes only the destination. The result is the worst possible split for an auditor: the
+records exist under weak controls in an account nobody manages, and the strong controls exist in
+an account with no records — while a reviewer reading the configuration, or a compliance scanner
+pointed at the managed account, sees a fully compliant archive.
+
+**Detect.** For every relocation, enumerate the origin account's data plane separately from its
+trigger plane — buckets, tables, streams, archives — and for each, compare object or item counts
+on both sides. A destination store with zero records and an origin store with the entire history
+is this finding, whatever the code says. Then read the origin store's LIVE controls one at a
+time against the declaration that supposedly built it: policy present, public-access and
+ownership settings present, encryption algorithm and key, lock mode and default retention rule,
+lifecycle. Check retention at the OBJECT level, not the bucket level — a store with locking
+merely enabled and no default rule yields objects with no retention mode at all, which is
+indistinguishable from an unlocked store at the only moment it matters. Treat any store whose
+name embeds the account id as a guaranteed instance of this class before the move, not after.
+
+**False positives.** A deliberate two-phase cutover where the corpus copy is a scheduled follow-up
+step — legitimate only if it is written down with a date, and the origin's controls are verified
+to still hold in the interim. Stores that are genuinely per-account by design and were never meant
+to travel. A destination that is empty because the source has produced nothing since the cutover,
+which is a different finding about the delivery path, not about custody.

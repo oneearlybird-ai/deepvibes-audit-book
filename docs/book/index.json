@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 974,
+ "rule_count": 980,
  "sections": [
   {
    "id": "A",
@@ -186,7 +186,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "B:1",
@@ -307,6 +307,10 @@
     {
      "id": "B:30",
      "title": "S3: Presigned URLs advertising an expiry beyond the signing credentials' remaining lifetime"
+    },
+    {
+     "id": "B:31",
+     "title": "A hardening control added to the object store rejects the managed delivery service's writes, and that service's own error channel is unwritable, so the records pipeline stops with no signal on any surface"
     }
    ]
   },
@@ -1217,7 +1221,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "I:1",
@@ -1318,6 +1322,10 @@
     {
      "id": "I:25",
      "title": "The client synthesizes the series the API never returned, so interpolation between two real endpoints is rendered as measurement"
+    },
+    {
+     "id": "I:26",
+     "title": "The enter-animation wrapper ships its children at zero opacity in the server markup and only client script raises them, so any failure of that script leaves complete, correct HTML permanently invisible"
     }
    ]
   },
@@ -2018,7 +2026,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "R:1",
@@ -2091,6 +2099,10 @@
     {
      "id": "R:18",
      "title": "The apply re-derives the vendor's child records and drops the fields only a separate seeding lane writes"
+    },
+    {
+     "id": "R:19",
+     "title": "A published agent procedure references a runtime-substituted variable that no code path supplies, so the model is handed the raw placeholder and reasons about the business from a token"
     }
    ]
   },
@@ -2777,7 +2789,7 @@
    "title": "Compliance, Auditing & Data Privacy (GDPR/CCPA/SOC2)",
    "group": "saas-core",
    "file": "sections/Y-compliance-auditing-and-data-privacy-gdpr-ccpa-soc2.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "Y:1",
@@ -2842,6 +2854,10 @@
     {
      "id": "Y:16",
      "title": "Raw contact identifiers embedded in storage keys, which replicate everywhere values are redacted"
+    },
+    {
+     "id": "Y:17",
+     "title": "The agent persona instructs the model to preserve the caller's belief that it is human and supplies a canned deflection for the direct question, turning a disclosure duty into active concealment"
     }
    ]
   },
@@ -2984,7 +3000,7 @@
    "title": "Modern Frontend Monorepo & Build Tooling (Turborepo, Nx, Vite, esbuild)",
    "group": "saas-core",
    "file": "sections/BB-modern-frontend-monorepo-and-build-tooling-turborepo-nx-vite-esbuild.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "BB:1",
@@ -3033,6 +3049,10 @@
     {
      "id": "BB:12",
      "title": "A second CSS-framework compilation entry for the same surface ships duplicate utility sheets whose order and divergent source scans silently invert responsive semantics"
+    },
+    {
+     "id": "BB:13",
+     "title": "A runtime filesystem walk that ascends toward the root makes the deploy bundler's static file tracer include every ancestor directory, so the artifact exceeds the platform's size limit and the deploy is rejected"
     }
    ]
   },
@@ -3041,7 +3061,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 32,
+   "rule_count": 33,
    "rules": [
     {
      "id": "CC:1",
@@ -3170,6 +3190,10 @@
     {
      "id": "CC:32",
      "title": "Ownership is handed between stacks as strip-then-adopt, and the two halves run under different preconditions, so a blocked adopt leaves the live fleet in no state at all while both plans read clean"
+    },
+    {
+     "id": "CC:33",
+     "title": "The relocation builds an empty record store in the destination while the accumulated corpus stays in the abandoned origin, so the retention control the design claims applies exists only where there are no records"
     }
    ]
   },

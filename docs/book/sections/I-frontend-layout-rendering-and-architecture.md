@@ -199,3 +199,37 @@ are still the plotted values and the interpolation is only the stroke geometry; 
 projections or forecasts rendered in a distinct style with the projection stated in the interface;
 placeholder or skeleton series shown while loading, provided they are visually marked as such and
 never carry readable values; sparklines documented as illustrative and carrying no axis or readout.
+
+## I:26 — The enter-animation wrapper ships its children at zero opacity in the server markup and only client script raises them, so any failure of that script leaves complete, correct HTML permanently invisible
+
+**Statement.** Scroll-reveal primitives are usually built by rendering a wrapper with an inline
+starting style — most often `opacity: 0` — and letting an animation library raise it when the
+element enters the viewport. Written that way the wrapper is fail-closed against a failure mode
+nobody tests: the initial style is in the server-rendered HTML, so the content is invisible from
+first paint, and the ONLY thing that ever makes it visible is client script. Every way that
+script can fail to run against this element — a hydration mismatch on the subtree, a bundle that
+does not load, an exception in an unrelated component earlier in the tree, a trigger whose
+positions were computed before late-loading content changed the page height, a nested wrapper, a
+non-default scroll container the library was never told about, scripting disabled — produces the
+same outcome: a page that is structurally complete, semantically correct, indexable, and blank to
+the reader. It is invisible to the tests that would catch it, too, since server-side rendering
+assertions and DOM queries find the content present, and the reduced-motion path (which sets
+opacity to 1 immediately) is often the only one exercised in automation. Because the primitive is
+adopted once and then used everywhere, a single component holds the entire content surface
+hostage to one script.
+
+**Detect.** Find every animation primitive that sets a hiding style — zero opacity, a transform
+offscreen, zero scale, `visibility: hidden` — as an INLINE style or a default class on the
+element it renders, rather than inside a media query or a `js-enabled` scope. For each, ask what
+raises it and enumerate the ways that can not happen; then count usages, because the blast radius
+is the count. The correct shape is that the hidden state is applied by the script that will also
+remove it, or gated behind a class the script adds, so the no-script path renders visible content.
+A `<noscript>` fallback or a CSS rule that restores full opacity when the animation runtime has
+not marked the document ready is the minimum. Verify by disabling JavaScript and loading the page,
+and separately by throwing inside one component and confirming the rest of the page still reads.
+
+**False positives.** Wrappers whose hidden state is applied from within the script's own effect
+(the markup ships visible and is hidden only once the animator is known to be running) — that is
+the correct pattern, not this one. Decorative-only elements whose absence costs nothing. Surfaces
+behind an authenticated shell that already hard-requires script to render at all, where this adds
+no new failure mode.

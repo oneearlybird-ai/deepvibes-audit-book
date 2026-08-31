@@ -95,3 +95,35 @@ source/content entries).
 co-load, each with its own single entry. Non-emitting supplements (reference-mode imports
 that exist only to resolve composition directives) — verify by inspecting their built chunk
 for utility definitions, not by reading the source.
+
+## BB:13 — A runtime filesystem walk that ascends toward the root makes the deploy bundler's static file tracer include every ancestor directory, so the artifact exceeds the platform's size limit and the deploy is rejected
+
+**Statement.** Code that must find a data directory at runtime is often made "robust" by walking
+upward from the process working directory until a candidate path exists. That is a correct
+runtime algorithm and a catastrophic build-time one, because the deployment bundler does not run
+the code — it traces it statically. A tracer that sees filesystem calls composed from a variable
+which is reassigned to its own parent directory cannot bound the search, so it resolves the walk
+conservatively and pulls ancestor directories into the artifact. In a monorepo the first ancestor
+is the repository root, which means every other application, every fixture directory, and often
+the installed dependency tree of the whole workspace are copied into a function bundle that
+should have contained one folder of content files. The failure lands at deploy time as a size
+limit rejection, with no line number and nothing in the application logs, and it is attributed to
+whatever else changed that day rather than to a defensive path helper. It is also a
+self-inflicted regression in the most literal sense: the walk is usually added to FIX a
+directory-resolution bug, so the repair and the outage arrive in the same commit and the outage
+is discovered by the deploy that was meant to ship the repair.
+
+**Detect.** Grep for loops that reassign a path variable to its own parent — the ascend idiom —
+and for any filesystem existence or read call whose argument is built from a variable rather than
+from a literal joined to a single known root. Every such site is a tracer hazard; the fix is to
+enumerate a FIXED, short list of candidate paths (each a literal joined to the working directory)
+and stop, so the tracer sees a bounded set. Compare artifact sizes across builds, not just build
+success: a bundle that grows by an order of magnitude in one commit is this, whether or not it
+crossed the limit yet. When a platform rejects a deploy for size, diff the traced file list rather
+than reasoning about the diff's apparent subject.
+
+**False positives.** Walks in code that never enters a deployed bundle — build scripts, generators,
+test helpers, CLI tools — where the tracer is not involved. Walks bounded by an explicit depth
+limit or by a sentinel the tracer can resolve. A bundle that is large for an unrelated and
+already-known reason; confirm by tracing the file list, since the size symptom is shared by many
+causes.

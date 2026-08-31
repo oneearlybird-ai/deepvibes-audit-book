@@ -224,3 +224,35 @@ reconciler: queue it whenever the apply patches config or creates an agent, trea
 drift in the check mode, and fail the converge red on any uncovered record.
 
 **False positives.** Vendor records the platform genuinely owns end to end.
+
+## R:19 — A published agent procedure references a runtime-substituted variable that no code path supplies, so the model is handed the raw placeholder and reasons about the business from a token
+
+**Statement.** Conversational-agent platforms let the procedure and prompt text reference
+variables that the caller supplies when the session is initiated. The text and the supplier are
+authored on different surfaces — the text usually in a vendor dashboard or a declarations file
+curated by a non-engineer, the supplier in the session-initiation code — and nothing on either
+surface validates the other. So a curation pass that adds a conditional step guarded by a
+variable ships a guard the runtime never populates, and the platform substitutes an empty string
+or leaves the literal token in place. The model then reads a condition it cannot evaluate and
+resolves it the way models resolve underdetermined instructions: consistently, confidently, and
+arbitrarily — usually by taking the branch, since the sentence describing it is present and the
+negation is not. The result is an agent offering a capability the account has not enabled, or
+asserting a fact derived from a token, with no error anywhere: the session initiates
+successfully, the transcript looks normal, and the only evidence is that the agent's behavior
+does not match the account's configuration. The same seam produces a subtler variant when a
+variable IS supplied but by a layer that cannot know the right value — a connector that mints the
+current date in UTC serves an account several hours away the wrong day for part of every day.
+
+**Detect.** Treat the union of variable references across every published procedure, prompt and
+tool description as a contract, and diff it against the set of keys the initiation code actually
+sends, on EVERY initiation path — inbound, outbound, canary, test harness. A reference with no
+supplier and a supplier with no reference are both findings; the first is this one. Pin the
+contract in a test that reads the real procedure text rather than a copy. For every supplied
+variable, ask which layer computes it and whether that layer holds the context the value depends
+on: anything time-, locale-, or account-relative computed in a shared connector rather than in
+the account-aware handler is wrong even when it is populated.
+
+**False positives.** Variables the platform itself injects (session or call identifiers) which
+appear unsupplied in application code but are supplied by the vendor. Procedures held in a draft
+or unpublished state. A variable that is deliberately optional and whose absent form is handled
+explicitly in the surrounding sentence — read the text before filing.

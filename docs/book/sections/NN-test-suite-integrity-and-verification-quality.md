@@ -1084,3 +1084,69 @@ is one whose subject has moved repeatedly under it.
 artifact, a committed schema — where the path IS the identity. Gates that resolve a path from a
 manifest or a build graph rather than hard-coding it. Verifiers scoped to a directory by design
 where an empty directory is a legitimate, asserted state.
+
+## NN:47 — A multi-block test command prints one summary per block, so the first block's totals are read as the run's verdict and a later block's failure is invisible
+
+**Statement.** One command runs several independent test blocks in sequence — different runners,
+different directories, different languages — and each block prints its own pass/fail totals as it
+finishes. The output therefore contains several verdicts, none of them the run's verdict, and the
+one a human sees first is the earliest and usually the largest. A reader scrolls to a confident
+"N/N passed", stops, and records the run as green while a later block was red. The command's own
+exit status is the only honest signal in the output, and it is the one thing not printed. The
+mechanism is reinforced by ordering: blocks are conventionally listed largest-first or
+oldest-first, so the block with the most impressive totals is the one that anchors the reading,
+and the smallest, newest, most-likely-to-break block prints last where the terminal has already
+scrolled. It compounds with any per-block failure that is total rather than partial — an unresolved
+import, a missing binary, a broken fixture path — because such a block emits a short error rather
+than a long list of failures, making its output look less like a result than the successful block
+above it. In a gate context the pipeline still fails correctly on the exit code, so the defect is
+not that bad work ships; it is that a human investigating a suspected breakage concludes the suite
+is healthy and looks elsewhere, sometimes for days.
+
+**Detect.** Read the composite command definition and count how many independent runner invocations
+it contains and how many summaries a full run prints; more than one summary is the precondition.
+Then verify the composition actually propagates failure: a sequence chained so that later blocks run
+regardless must still exit non-zero if any block failed, and a chain that stops at the first failure
+must be distinguished from one that masks it. Run the command with a deliberate failure injected
+into the LAST block and confirm two things — that the exit code is non-zero, and that a reader
+scrolling from the top would see the failure. Require the command to print one final aggregate line
+naming every block and its result; a run whose only aggregate is the shell's exit status is a run
+whose result is not in its output. Check the surrounding documentation and runbooks for instructions
+that tell a reader to look at "the summary", singular.
+
+**False positives.** Composite commands whose blocks are explicitly advisory and excluded from the
+gate. Runners that already emit a single aggregate footer covering every block. Interactive watch
+modes, where per-block output is the point and no one is reading a transcript for a verdict.
+
+## NN:48 — The gate's pattern is narrower than the written rule it enforces, so work authored to the documented form is rejected as non-compliant
+
+**Statement.** A rule is stated in prose — in a policy document, a contract, the gate's own help
+text — and separately implemented as a pattern in the checker. The two are written at different
+times by different hands, and the pattern is derived from the examples in front of the author rather
+than from the rule's text, so it accepts a subset of what the rule permits. Every form the rule
+allows but the pattern omits is now rejected, and rejected with the gate's authority: the message
+says the work violates the rule, when in fact the work matches the rule and the gate does not. This
+inverts the usual failure of a control. A gate that passes bad work is discovered by the damage; a
+gate that fails good work is discovered by an author who is certain they are right, and whose
+options are to argue with a red pipeline or to rewrite correct work into whatever shape the pattern
+happens to accept. The second is faster, so the pattern silently becomes the real rule and the
+written one decays into aspiration. The class concentrates where a rule admits several equivalent
+forms — a citation, an identifier, a path, a reference — because that is precisely where an
+example-derived pattern under-covers, and it fires hardest on the first large body of work written
+from the documentation rather than by copying existing code.
+
+**Detect.** Put the rule's prose and the checker's pattern side by side and enumerate the forms the
+prose admits; for each one, construct a minimal input and run the checker on it. Any admitted form
+the checker rejects is the finding, and the count of rejections in the first bulk run is its blast
+radius — a gate that fails many items at once on its first real exercise is far more likely to be
+wrong than the work is. Read the failures rather than the total: identical messages across items
+written by different authors indicate the pattern, not the authors. Check the direction of past
+edits — a pattern that has only ever been widened, one form at a time, in response to blocked work,
+was never derived from the rule and will keep failing. Prefer implementations that resolve against
+the real thing (does the referenced file exist, does the identifier resolve) over ones that assert
+the shape of the reference.
+
+**False positives.** Gates deliberately stricter than the prose as a documented house convention,
+where the narrowing is stated where authors read it. Rules whose prose is a summary and whose
+normative form is the pattern, explicitly. Rejections that trace to one author's mistake rather
+than to a form the prose admits.

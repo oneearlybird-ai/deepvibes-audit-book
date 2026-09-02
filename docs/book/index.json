@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 980,
+ "rule_count": 987,
  "sections": [
   {
    "id": "A",
@@ -2345,7 +2345,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "U:1",
@@ -2518,6 +2518,10 @@
     {
      "id": "U:43",
      "title": "The gate that admits a new component runs in a faster tier than the gate that requires it be monitored, so every new component ships uncovered and the coverage gate is red by the time anyone reads it"
+    },
+    {
+     "id": "U:44",
+     "title": "The secret scanner's two blind spots are authored inside the repository it guards: a report that reproduces the credential it found, and an allowlist entry that waives every line matching a shape"
     }
    ]
   },
@@ -3457,7 +3461,7 @@
    "title": "Cost Management & FinOps",
    "group": "platform-delivery",
    "file": "sections/GG-cost-management-and-finops.md",
-   "rule_count": 8,
+   "rule_count": 9,
    "rules": [
     {
      "id": "GG:1",
@@ -3490,6 +3494,10 @@
     {
      "id": "GG:8",
      "title": "Recurring-cost external resources minted for never-funded accounts with no reclamation path"
+    },
+    {
+     "id": "GG:9",
+     "title": "The provider's billing standing is an undeclared dependency of provisioning, and nothing in the platform watches it"
     }
    ]
   },
@@ -3781,7 +3789,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "KK:1",
@@ -3854,6 +3862,10 @@
     {
      "id": "KK:18",
      "title": "A retirement sweep deletes a shared construction along with the feature it was written for, and the surviving callers read it only inside function bodies, so the module parses clean and the process dies at first call"
+    },
+    {
+     "id": "KK:19",
+     "title": "A dependency declared by relative filesystem path is left dangling by a directory move, and the installer links it to a missing target without failing"
     }
    ]
   },
@@ -3992,7 +4004,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 46,
+   "rule_count": 48,
    "rules": [
     {
      "id": "NN:1",
@@ -4177,6 +4189,14 @@
     {
      "id": "NN:46",
      "title": "The gate asserts about the system by opening a hard-coded file path, so a relocation that changes no behaviour flips the gate to a verdict about a file"
+    },
+    {
+     "id": "NN:47",
+     "title": "A multi-block test command prints one summary per block, so the first block's totals are read as the run's verdict and a later block's failure is invisible"
+    },
+    {
+     "id": "NN:48",
+     "title": "The gate's pattern is narrower than the written rule it enforces, so work authored to the documented form is rejected as non-compliant"
     }
    ]
   },
@@ -4185,7 +4205,7 @@
    "title": "Documentation & Comment Truthfulness",
    "group": "cross-cutting",
    "file": "sections/OO-documentation-and-comment-truthfulness.md",
-   "rule_count": 2,
+   "rule_count": 4,
    "rules": [
     {
      "id": "OO:1",
@@ -4194,6 +4214,14 @@
     {
      "id": "OO:2",
      "title": "A fail-open branch justified in-comment by a compensating control that does not cover the same risk"
+    },
+    {
+     "id": "OO:3",
+     "title": "A durable record cites the change identifier it saw before the delivery step that rewrites it, so the citation resolves to nothing"
+    },
+    {
+     "id": "OO:4",
+     "title": "A change lands with no statement of intent — its message carries only metadata — so the sole record of why it happened is the diff"
     }
    ]
   },

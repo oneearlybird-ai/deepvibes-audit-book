@@ -316,3 +316,37 @@ than as a bare binding in a several-hundred-line scope. After the fact, a `Refer
 **False positives.** Bindings the sweep deleted whose consumers it deleted in the same commit
 (verify by grepping the post-change tree, not the diff); dynamic construction where the binding is
 legitimately assigned on a branch not taken in the failing run.
+
+## KK:19 — A dependency declared by relative filesystem path is left dangling by a directory move, and the installer links it to a missing target without failing
+
+**Statement.** A package inside a repository depends on a sibling package by relative filesystem
+path rather than by registry name. The path is written relative to where the depending package sits
+at the moment it is authored, so its correctness is a fact about directory depth, not about either
+package. Any structural move — a component pushed one level deeper, a tree flattened, a workspace
+re-rooted — invalidates the path while changing nothing else, and the move's author has no reason
+to look inside a manifest for a `../..` count. The installer is the second half of the mechanism:
+asked to install a local path, it materializes the link and reports success whether or not the
+target exists, leaving a link that resolves to nothing. Nothing fails at install, nothing fails at
+lint or typecheck if those do not resolve runtime imports, and the lockfile is rewritten around the
+broken path so it looks freshly maintained. The failure surfaces only when something actually
+imports the dependency, and then it takes out the whole importing unit at once — every module in
+that package dies on the same unresolved-module error, which reads as one catastrophic breakage
+rather than a one-character path defect. Because the units most likely to import a shared local
+package are test suites and workers, the class typically destroys a verification surface rather
+than a serving one, so it can survive indefinitely with no user-visible symptom.
+
+**Detect.** Enumerate every manifest in the repository and extract every dependency whose specifier
+is a filesystem path rather than a version range, then resolve each one from its own manifest's
+directory and assert the target exists — this is a whole-repository sweep, not a per-package check,
+because a single move usually breaks several at once and finding one is not evidence the rest are
+sound. Treat the installed link itself as evidence: read the link's target and confirm it resolves,
+rather than trusting that install succeeded. Then check whether anything would have caught it —
+require at least one import of each locally-pathed dependency to be exercised by a gate that runs
+on every change, and confirm that gate's failure is visible (see the multi-block runner class).
+After any structural move, diff the set of path-specifier depths before and after; a move that
+changes depth and touches no manifest is the signature.
+
+**False positives.** Path specifiers pointing at a genuinely optional target that the consuming code
+guards for absence. Manifests in a template or scaffold directory that are never installed. Package
+managers whose workspace protocol resolves by declared workspace name rather than by literal path —
+those are name-resolved and immune to depth changes, and should not be counted with them.

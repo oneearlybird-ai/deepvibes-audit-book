@@ -728,3 +728,37 @@ wiring, do not credit a name). Coverage rules whose subject cannot be introduced
 touching a file the fast tier already checks — the coupling is the enforcement. Components in a
 documented pre-production state with an owner and a date, where uncovered is the intended posture
 for now; silent uncovered shipping is the finding, declared staging is not.
+
+## U:44 — The secret scanner's two blind spots are authored inside the repository it guards: a report that reproduces the credential it found, and an allowlist entry that waives every line matching a shape
+
+**Statement.** A repository arms a pre-commit or pre-push secret scanner, and two artifacts that
+defeat it live in the same tree and are edited by the same people. The first is the output of
+security work itself — an audit report, a scan export, a triage file — which quotes the offending
+line verbatim in a comment or snippet field so a reader can see what was found. Committing that
+report re-introduces the credential into history under a filename that reads as remediation, and it
+frequently arrives inside an unrelated change, because the report is a by-product someone added to
+the working tree and swept up by a broad staging command. The second is the scanner's own allowlist.
+An allowlist written for placeholder tokens in fixtures is naturally expressed as a shape — a prefix
+family, a dummy-looking pattern — and placed at the configuration's top level, where it applies to
+every path rather than to the fixtures it was written for. From then on any line matching that shape
+passes anywhere in the repository, and the shapes chosen for placeholders are exactly the shapes a
+careless real credential takes. Neither artifact is what anyone reviews when asking whether the
+scanner works: the answer is sought in whether the hook is installed and whether it runs on push,
+both of which are true.
+
+**Detect.** Treat the scanner's configuration as security-relevant code and read it in full: for
+every allowlist, suppression, or baseline entry, establish the path scope it actually has, not the
+one its comment claims, and reject any that is repository-wide unless it names a specific verified
+value. Distinguish an entry that waives from one that DEFINES a detector — inverting the two in a
+scanner that overloads the same construct converts a suppression into a rule that flags innocent
+fixtures, which is the same defect in the other direction. Separately, inventory every committed
+file that is the output of a security tool or review and grep it for credential-shaped content; a
+report with a snippet field is the highest-yield place in the tree to look. Check whether more than
+one scanning framework is configured and which is actually armed, since a dormant second framework's
+baseline file is a suppression store nothing reviews. Finally, ask whether the scanner was in place
+when the credential first landed — a leak predating the gate is not evidence the gate works, and
+history scanning, not the commit hook, is what settles it.
+
+**False positives.** Redacted or fingerprinted values in reports, where the credential itself is
+absent. Allowlists scoped to explicit fixture paths. Test vectors published by the algorithm's own
+specification. Entries naming one specific value with the reason it is safe recorded beside it.

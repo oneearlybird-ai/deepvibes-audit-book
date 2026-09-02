@@ -762,3 +762,72 @@ history scanning, not the commit hook, is what settles it.
 **False positives.** Redacted or fingerprinted values in reports, where the credential itself is
 absent. Allowlists scoped to explicit fixture paths. Test vectors published by the algorithm's own
 specification. Entries naming one specific value with the reason it is safe recorded beside it.
+
+## U:45 — A single control byte written into a gate script's source makes version control classify the file as binary, so every later change to that guardrail lands with no reviewable diff
+
+**Statement.** A script that enforces a rule — a verifier, a policy gate, a pre-deploy check — needs
+to consume a machine-readable listing, and the natural listing formats are NUL-delimited precisely
+because a NUL cannot occur in a filename. The author writes the delimiter as a literal character in
+the source rather than as an escape, either by pasting it or by letting a shell or editor insert the
+raw byte, and the code is correct: the interpreter parses it, the tests pass, the gate runs. What
+changes is the file's classification. Version control that infers text-versus-binary from content
+finds the control byte and thereafter treats the whole file as binary: its diffs render as a single
+line saying the files differ, its lines are excluded from grep-family searches whose defaults skip
+binary files, and any review tool that renders a diff shows a change of unknown content. The file is
+still tracked, still executed, still edited — the only thing lost is the ability to see what a change
+to it did. That loss lands on the class of file least able to afford it, because a guardrail's
+authority rests entirely on someone having read what it enforces, and the next edit that quietly
+weakens a threshold, inverts a condition, or removes a check arrives as an unreadable blob under a
+commit message that describes something else. Nothing reports the transition; the file simply stops
+being reviewable, and the commit that made it so looks like the smallest possible change.
+
+**Detect.** Scan every tracked source file for bytes outside the printable-plus-whitespace range —
+NUL above all, but also stray escape and form-feed characters — and treat any hit in an executable
+or configuration file as a defect regardless of whether the program still runs. Ask the repository
+what it thinks the file is rather than trusting the extension: a diff that renders as "binary files
+differ" for a file whose extension is a source extension is the whole finding. Confirm the blast
+radius by running the repository's own text-scanning gates and searches against the file and
+checking whether it appears in their file counts, since a text gate that enumerates paths from
+version control will still read it while an ad-hoc grep will not, and the mixture is what makes the
+gap easy to miss. Look for the moment of transition in history, not just the current state, and read
+the change that introduced it in raw form. Where a delimiter genuinely is needed, the correct form
+is the language's escape for the code point.
+
+**False positives.** Genuine binary assets — images, fonts, compiled artifacts, test fixtures that
+are deliberately binary — checked in as themselves. Files a repository explicitly marks binary
+through its attributes mechanism for a stated reason. Encoding markers such as a byte-order mark at
+the start of a file, which change decoding but do not trigger binary classification on their own.
+
+## U:46 — The land gates are scoped to the product and exclude the tooling that implements the gates, so a guardrail can land in a state where it cannot even be loaded
+
+**Statement.** A repository grows two bodies of code: the product, and the tooling that gates the
+product — verifiers, plan checks, pre-apply guards, reconcilers. The gate suite that every change
+must pass is written for the first body. Its tests import the product's modules, its static checks
+walk the product's directories, and the tooling directory is scoped out, usually with a comment
+saying it is not shipped. So a change to a gate script passes the gates by not being examined by
+them: nothing loads the file, nothing executes it, nothing so much as parses it. A change that makes
+the script unloadable — a duplicated binding in an import list, an unterminated construct, a renamed
+export — is therefore admitted to trunk, and the first thing that discovers it is the lane the script
+fronts, at the moment someone tries to deploy. Whether that is an outage or an inconvenience depends
+entirely on how the lane treats a gate that fails to start: a lane that aborts on any non-zero exit
+fails closed and merely blocks deploys until someone reads the error, while a lane that distinguishes
+"the gate said no" from "the gate crashed", or that softens the call, fails open and ships the change
+the guardrail existed to refuse. The gap is easy to keep, because a check that would catch it usually
+does exist — the script's own self-test, or a verifier that exercises it — and lives in the slower,
+periodic lane, so the repository can point at real coverage while every land bypasses it.
+
+**Detect.** Enumerate the tooling directory and count how many of its executable scripts any land- or
+commit-stage gate actually loads; the ratio is usually a small handful out of dozens, and the ones
+covered are covered incidentally by a product test that imports them. For each guardrail script, find
+the check that proves it still runs and name the lane that check belongs to, then compare that lane's
+frequency to the lane that admits changes to the script. Read the call site of every gate in the
+deploy path and establish which exit conditions abort it — a gate invoked in a way that treats any
+non-zero status as refusal is fail-closed; one whose failure is swallowed, softened, or parsed out of
+stdout is not, and that distinction sets the severity. The cheapest complete remedy is a parse-only
+sweep of every tracked script in the tooling directory at the same stage that admits changes to it,
+which costs milliseconds and catches the entire unloadable class.
+
+**False positives.** Tooling directories that are genuinely inert — archived one-shot migrations kept
+as a record, with no lane invoking them. Repositories whose deploy lane runs the full periodic suite
+before every deploy, making the tier gap nominal. Scripts fronted by a lane that is itself gated on a
+separate, covered health check that would refuse to proceed.

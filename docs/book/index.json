@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 987,
+ "rule_count": 990,
  "sections": [
   {
    "id": "A",
@@ -1730,7 +1730,7 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "N:1",
@@ -1795,6 +1795,10 @@
     {
      "id": "N:16",
      "title": "Selected-state styling painted outside the border box inside a scroll container with no padding, so only the first and last children are clipped"
+    },
+    {
+     "id": "N:17",
+     "title": "A floating overlay is painted with the in-flow elevated-surface token, whose alpha is a theme variable set far below one on dark themes, so the overlay is see-through exactly where it must not be"
     }
    ]
   },
@@ -2345,7 +2349,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 44,
+   "rule_count": 46,
    "rules": [
     {
      "id": "U:1",
@@ -2522,6 +2526,14 @@
     {
      "id": "U:44",
      "title": "The secret scanner's two blind spots are authored inside the repository it guards: a report that reproduces the credential it found, and an allowlist entry that waives every line matching a shape"
+    },
+    {
+     "id": "U:45",
+     "title": "A single control byte written into a gate script's source makes version control classify the file as binary, so every later change to that guardrail lands with no reviewable diff"
+    },
+    {
+     "id": "U:46",
+     "title": "The land gates are scoped to the product and exclude the tooling that implements the gates, so a guardrail can land in a state where it cannot even be loaded"
     }
    ]
   },

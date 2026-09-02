@@ -152,3 +152,38 @@ defect and is more serious than the aesthetic one.
 visible edge item signals more content). Effects whose extent is smaller than existing padding, where
 the arithmetic already covers them — verify against the compiled stylesheet rather than the source
 tokens. Rows that never scroll because their content cannot exceed the viewport at any supported size.
+
+## N:17 — A floating overlay is painted with the in-flow elevated-surface token, whose alpha is a theme variable set far below one on dark themes, so the overlay is see-through exactly where it must not be
+
+**Statement.** A theme system expresses surfaces as a colour plus a separate opacity variable, so the
+same named surface can be a solid panel on a light theme and a thin translucent wash on a dark one —
+that is how the dark themes get their layered, glassy depth, and it is correct for surfaces that sit
+in the document flow with the page behind them. The system usually also defines a second surface
+intended for content that floats above the page — a modal or popover surface — whose opacity is
+pinned at one in every theme for the obvious reason. A new overlay component is then built, most
+often a menu, a listbox, a combobox or a popover, and its author reaches for the surface token they
+have seen on every card in the codebase, because on the light theme in front of them the two tokens
+render identically. Nothing errors. The class exists, the variable resolves, the build is clean, and
+the component reviews as consistent with its neighbours. Only on the themes where the elevated
+surface carries an alpha of a few percent does the defect appear, and it appears in the worst
+possible form: the overlay is legible in isolation but the page text beneath it shows straight
+through, so options are read against moving background content. Because the difference lives in a
+theme variable rather than in the component, no amount of reading the component reveals it, and a
+screenshot taken on the default theme certifies it as fine.
+
+**Detect.** List the theme's surface tokens and record each one's opacity across every theme, not
+just the default; the ones defined below one are the in-flow surfaces and must never paint anything
+that floats. Then find every element that escapes the flow — anything anchored, portalled, absolutely
+positioned above a high stacking index, or rendered by a headless menu, listbox, dialog or popover
+primitive — and check which surface token paints it. The highest-yield place to look is a newly
+extracted shared control, since a component built by copying a card's class list inherits the card's
+surface by construction. Verify on the theme with the lowest surface alpha and with content
+deliberately placed behind the open overlay, because on an empty page a five-percent surface still
+looks like a panel. Where the design system has no dedicated floating surface, the finding is that
+absence.
+
+**False positives.** Overlays that are deliberately translucent as an effect and layer their own
+opaque backing or a backdrop filter beneath the content. Tooltips and scrims whose whole purpose is
+to let the underlying content read through. Themes where the in-flow surface opacity is one
+everywhere, making the two tokens genuinely interchangeable — though this is a latent defect that
+the first translucent theme turns real.

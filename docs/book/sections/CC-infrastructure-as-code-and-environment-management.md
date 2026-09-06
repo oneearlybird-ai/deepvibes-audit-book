@@ -890,3 +890,35 @@ resource-scoped fence (a referer list, a resource ARN) carry the narrowing.
 **False positives.** Genuine authorization failures where the simulator or the organization
 policy also denies the action; services whose restriction vocabulary is documented as
 per-operation and where the exact operation names validate when tried alone.
+
+## CC:39 — A deployable's source tree and the declaration that consumes its artifact live in different units, so directory-keyed change selection deploys the unit that changed (a no-op) and never the unit that runs the code
+
+**Statement.** A build step turns a source directory into an artifact in a store, and a
+declaration somewhere reads that artifact by name and deploys it: a function reading a zip
+from an object store, a task definition reading an image tag. The deployment lane decides
+which units to plan and apply by asking which files changed since each unit's last apply,
+keyed on the unit's own directory plus the files its declarations read by path. When a
+componentization places a function's source under one unit and its declaration under
+another, the two are joined only through the artifact store — no path in the declaring unit
+points at the source directory — so a landed code change marks the source-owning unit as
+changed and the lane plans it clean (+0 ~0 -0), while the declaring unit, whose artifact
+reference has a new hash waiting, is never selected. The land, the build and the batch
+summary all report success; the function keeps running the previous code until an operator
+points the lane at the declaring unit by name. Nothing fails, which is why it survives: the
+mismatch is invisible in every green summary, and a code fix "deployed" through the standard
+path is not deployed at all.
+
+**Detect.** For every source directory the build turns into an artifact, find the
+declaration that consumes that artifact (match the artifact key or function name to the
+declared resource) and compare the owning units; any pair where they differ is the finding.
+Then read the lane's change selector: if it keys on unit directories and the declaration's
+own file reads, confirm no path leads from the declaring unit to the source directory.
+Confirm live by landing a code-only change and running the selector: a plan of the
+source-owning unit alone, with the declaring unit absent from the batch, is the defect in
+effect; the live function's code hash after the apply equals the hash before it.
+
+**False positives.** Declarations that reference the source directory by path (an archive
+built from the source at plan time), which the selector follows; lanes that select by
+artifact hash rather than by changed paths; a deliberately shared source tree consumed by
+declarations in several units, where every consumer is listed in the build's own mapping
+that the selector reads.

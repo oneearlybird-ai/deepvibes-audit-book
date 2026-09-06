@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1024,
+ "rule_count": 1025,
  "sections": [
   {
    "id": "A",
@@ -3157,7 +3157,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "CC:1",
@@ -3310,6 +3310,10 @@
     {
      "id": "CC:38",
      "title": "A managed-resource create fails with an authorization error whose real cause is an invalid value in a policy-shaped restriction field, so the operator chases IAM while the fix is one enum"
+    },
+    {
+     "id": "CC:39",
+     "title": "A deployable's source tree and the declaration that consumes its artifact live in different units, so directory-keyed change selection deploys the unit that changed (a no-op) and never the unit that runs the code"
     }
    ]
   },

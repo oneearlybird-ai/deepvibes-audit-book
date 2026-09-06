@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1034,
+ "rule_count": 1035,
  "sections": [
   {
    "id": "A",
@@ -452,7 +452,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 32,
+   "rule_count": 33,
    "rules": [
     {
      "id": "D:1",
@@ -581,6 +581,10 @@
     {
      "id": "D:32",
      "title": "A store named for one entity family hosts several unrelated families, so grants, readers and new work are routed by the name to the wrong home and the other families live unnamed under it"
+    },
+    {
+     "id": "D:33",
+     "title": "An unconditioned update on a row that was deliberately removed recreates it as an attribute-less stub, and a guard that reads the row's attributes treats the stub as permission"
     }
    ]
   },

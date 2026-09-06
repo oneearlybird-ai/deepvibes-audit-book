@@ -180,3 +180,30 @@ space. Record the intended home for each foreign family in the contract before a
 **False positives.** A deliberate single-table design applied consistently across the schema
 and documented as such; adjacency families that are strictly children of the named entity
 (an order's lines under the orders table).
+
+## D:33 — An unconditioned update on a row that was deliberately removed recreates it as an attribute-less stub, and a guard that reads the row's attributes treats the stub as permission
+
+**Statement.** In a key-value store an update on a missing key is an upsert: the write
+succeeds and a new item exists with only the attributes the update set. A lifecycle that
+removes a row on purpose — a pool member's row deleted when it is claimed, a tombstone
+replaced by a projection elsewhere — is silently undone by any later writer that stamps a
+version, a timestamp or a health mark without a condition that the row exist. The stub it
+leaves carries none of the attributes the rest of the system keys on: no status, no owner,
+no protection flag. Every reader that gates on those attributes now sees a row whose
+answer to "may I destroy this" is a blank, and blank is not in the forbidden set. The
+resource behind the stub is live and in use; the guard that was written to protect it
+reads the stub and proceeds. The same stub is invisible to inventories that query by
+status, so the live resource is at once unprotected and uncounted.
+
+**Detect.** For every writer to a table whose rows are removed on purpose, read the
+condition on its updates: a version bump, a heartbeat or a repair stamp without
+`attribute_exists` on the key is the recreator. Then read every destructive path's guard
+and ask what it does when the attribute it checks is absent — a forbidden-set check that
+lets an undefined status through is the defeated guard. Confirm live by listing rows that
+lack the status attribute and joining them against the live resources they name: a stub
+whose resource is in use is the finding, already armed.
+
+**False positives.** Updates guarded by `attribute_exists` on the key (or an equivalent
+conditional write); destructive paths whose guard is a positive allow-list ("only these
+statuses may be destroyed") rather than a forbidden set; tables whose rows are never
+removed by design.

@@ -1185,3 +1185,29 @@ container member after any deploy that touched the builder or added a consumer.
 and the handler guards for by presence — but that shape is a fallback, and the seam usually forbids
 it. Containers assembled by a shared factory that the gate resolves by following the import rather
 than the local literal. Test-only members injected by the harness and never read in production code.
+
+## NN:50 — The landing gate never executes the verifier files it lands, so a verifier that cannot even load reaches the trunk green and the estate runs without the check it claims until the next full certification
+
+**Statement.** A repository keeps its checks as executable verifier files and runs them in two
+places: a fast landing gate that runs a chosen subset, and a full certification that runs them
+all. A change to a verifier file itself - a new rule, a repointed root - is landed through the
+fast gate, which does not include that verifier, and nothing in the fast gate so much as
+loads the file. A verifier with a syntax error, a mangled escape, or a missing comma therefore
+lands green, twice in a row if the author's own check is chained behind an operator that
+swallows its failure. From that moment the trunk carries a check that cannot run; the
+certification lane goes red on load for everyone, which reads as a stale environment rather
+than as a broken file, and any fast-lane deploy in between ships without the protection the
+file's name promises. The trust the estate places in "a verifier exists for that" rests on a
+file nobody proved would start.
+
+**Detect.** List every verifier file the certification lane would run and load each one with
+the language's parse-only check (a syntax check, an import with no side effects) as part of the
+landing gate, before the subset runs. Read the landing gate's own list against the verifier
+directory: every verifier that is not in the subset is landable without ever executing. In
+history, look for commits that touch a verifier and land through a gate that did not run it;
+then load that commit's file. A red certification whose first failure is a load error, not a
+check result, is this finding already in effect.
+
+**False positives.** A verifier deliberately excluded from landing because it needs live
+credentials, when the landing gate still parses it. A repository whose fast gate and full
+certification run the same set.

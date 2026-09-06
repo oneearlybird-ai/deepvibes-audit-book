@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1002,
+ "rule_count": 1010,
  "sections": [
   {
    "id": "A",
@@ -194,7 +194,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "B:1",
@@ -319,6 +319,10 @@
     {
      "id": "B:31",
      "title": "A hardening control added to the object store rejects the managed delivery service's writes, and that service's own error channel is unwritable, so the records pipeline stops with no signal on any surface"
+    },
+    {
+     "id": "B:32",
+     "title": "Enabling bucket-level encryption keys moves the KMS encryption context from the object to the container, so an object-scoped grant condition denies every operation"
     }
    ]
   },
@@ -448,7 +452,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 29,
+   "rule_count": 31,
    "rules": [
     {
      "id": "D:1",
@@ -565,6 +569,14 @@
     {
      "id": "D:29",
      "title": "A stored attribute's TYPE is changed to fix a writer, and rows written before the cutover become poison for readers that were type-correct for the old shape"
+    },
+    {
+     "id": "D:30",
+     "title": "An applied, checksum-verified migration file is edited by a repository-wide path rewrite, so every build made after the edit fails the integrity check at boot"
+    },
+    {
+     "id": "D:31",
+     "title": "A field made optional at the API layer is still written as an explicit null, and the store rejects it because that attribute is an index key"
     }
    ]
   },
@@ -927,7 +939,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 55,
+   "rule_count": 56,
    "rules": [
     {
      "id": "G:1",
@@ -1148,6 +1160,10 @@
     {
      "id": "G:55",
      "title": "The workload was rebuilt in a new account and its alerting fan-in was not, so the alarms there name notification targets that do not exist and the account is deaf while every alarm looks correctly wired"
+    },
+    {
+     "id": "G:56",
+     "title": "A workload relocation moves the emitters but leaves their metric filters and alarms bound to the origin's now-empty log destinations, so coverage counts stay whole while nothing is watched"
     }
    ]
   },
@@ -2200,7 +2216,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "T:1",
@@ -2353,6 +2369,10 @@
     {
      "id": "T:38",
      "title": "A consumer's private reimplementation of the shared credential verify diverges when the credential contract rotates"
+    },
+    {
+     "id": "T:39",
+     "title": "The session verifier catches an infrastructure denial while fetching its signing secret and returns \"no session\", converting a platform fault into a silent per-request logout"
     }
    ]
   },
@@ -2361,7 +2381,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 46,
+   "rule_count": 48,
    "rules": [
     {
      "id": "U:1",
@@ -2546,6 +2566,14 @@
     {
      "id": "U:46",
      "title": "The land gates are scoped to the product and exclude the tooling that implements the gates, so a guardrail can land in a state where it cannot even be loaded"
+    },
+    {
+     "id": "U:47",
+     "title": "A build tool that materializes a copy of the source tree into the working directory makes filesystem-walking scanners read the generated copy as source"
+    },
+    {
+     "id": "U:48",
+     "title": "A freshness gate that compares timestamps calls a content-preserving relocation stale, because the move changes every date without changing a byte"
     }
    ]
   },
@@ -4060,7 +4088,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 49,
+   "rule_count": 50,
    "rules": [
     {
      "id": "NN:1",
@@ -4257,6 +4285,10 @@
     {
      "id": "NN:49",
      "title": "Every test hands the handler a hand-built dependency container, so the production container's wiring is never executed and a name the handler consumes but the builder never produces passes the whole suite and fails on the first real request"
+    },
+    {
+     "id": "NN:50",
+     "title": "The landing gate never executes the verifier files it lands, so a verifier that cannot even load reaches the trunk green and the estate runs without the check it claims until the next full certification"
     }
    ]
   },

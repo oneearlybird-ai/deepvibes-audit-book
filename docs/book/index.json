@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1030,
+ "rule_count": 1031,
  "sections": [
   {
    "id": "A",
@@ -1265,7 +1265,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "I:1",
@@ -1370,6 +1370,10 @@
     {
      "id": "I:26",
      "title": "The enter-animation wrapper ships its children at zero opacity in the server markup and only client script raises them, so any failure of that script leaves complete, correct HTML permanently invisible"
+    },
+    {
+     "id": "I:27",
+     "title": "Per-vertical shells re-declare the product's shared navigation by hand, so labels, order and chrome controls drift per host"
     }
    ]
   },

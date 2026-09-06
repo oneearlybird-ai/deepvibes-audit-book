@@ -233,3 +233,28 @@ and separately by throwing inside one component and confirming the rest of the p
 the correct pattern, not this one. Decorative-only elements whose absence costs nothing. Surfaces
 behind an authenticated shell that already hard-requires script to render at all, where this adds
 no new failure mode.
+
+## I:27 — Per-vertical shells re-declare the product's shared navigation by hand, so labels, order and chrome controls drift per host
+
+**Statement.** A multi-host product paints one dashboard shell per vertical. Each shell owns its
+own navigation registry (tab ids, labels, icons, group order) and its own chrome (where the theme
+control sits, what the sidebar footer holds), authored by copying the canonical shell and editing.
+The shared tabs — the receptionist, the business profile, the customer list, the team, the call
+log — are the same product features on every host, yet each copy renames or reorders them to
+taste: the receptionist is "AI receptionist" on one host and "Your Receptionist" on another, the
+business profile becomes the host's trade noun, the theme control is a header dropdown here and a
+segmented control in the sidebar footer there. A customer who moves between hosts, a support agent
+reading a screen over the phone, and the documentation all meet a different product per host, and
+nothing fails: no gate compares the registries, so the drift is discovered by an owner clicking
+through.
+
+**Detect.** Collect every shell's navigation registry and index it by tab id. For every id that
+appears in more than one shell, compare label, icon and group position; any difference outside the
+vertical's own tabs is the finding. Do the same for the chrome controls (theme, support,
+notifications): the component and its placement must match. Prefer one shared registry of the
+universal groups that each shell consumes and extends with its own group, plus a static gate that
+fails when a shared id is re-labeled or a shared control moves.
+
+**False positives.** A vertical's own tabs (dispatch, listings, menu) — they belong to it. A
+product decision, recorded next to the registry, that a specific host renames a specific shared
+tab.

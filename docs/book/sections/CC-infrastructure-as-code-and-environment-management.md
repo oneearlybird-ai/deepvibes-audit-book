@@ -761,3 +761,38 @@ and has flapped since is the same defect seen from the monitoring side.
 design (a shared organization key, a central log destination), where the cross-account grant is
 declared on both sides and resolves. Identifiers of resources created outside IaC on purpose and
 recorded as such.
+
+## CC:35 — A rename or retirement moves the code and the resource but not the grants that name them, so policies keep asserting access to names that no longer exist while the plan stays clean
+
+**Statement.** A campaign renames a fleet of resources — tables, functions, secret paths,
+parameter trees, roles — or retires a subsystem outright. The code is moved to the new names
+through a shared resolver, the resources are re-created under them, and the IaC plan is clean
+because nothing in an infrastructure tool resolves the string inside a policy document: a grant
+on `table/old_name` is syntactically valid whether or not the table exists. The grants are
+therefore never swept. Two shapes result. Where the consumer moved to another identity — a
+per-request assumed role, a shared helper with its own grant — the old statements are dead
+weight that reads as capability the role never had, and reviewers reason about a permission
+surface that is fiction. Where the consumer did not move, the function runs with a grant on the
+old name and none on the new one, and fails with an access denial that looks like a policy typo,
+usually on a path exercised too rarely to have been seen since the move. The same campaign leaves
+orphan roles that no function references, invoke grants on functions that were renamed away,
+exact-suffix secret ARNs copied from a previous account's secret, and contract entries naming a
+role that was never re-created. Every one of them is invisible to the plan.
+
+**Detect.** From the IaC, extract every resource reference inside policy documents and
+contract-style configuration — templated account and region normalised to the target account —
+and resolve each against that account: describe the table, the function, the role, the log
+group; list the secret by name and compare the suffix; walk the parameter tree prefix. A
+reference that resolves to nothing is the finding whether or not a test or a log complains. Then
+split each hit by consumer: read the function's own source for how it reaches the resource (own
+role, assumed role, layer helper) and simulate the identity that actually makes the call against
+the resource it actually names; an implicit deny there is the outage, an allow elsewhere is dead
+weight. Check every role in the account against the functions that reference it — a role no
+function uses is the same campaign's residue. Make the resolution a live gate, not a one-time
+sweep: the class returns with the next rename.
+
+**False positives.** Grants written ahead of a resource the same change creates, when the
+create and the grant land together. Wildcard grants over a namespace that is legitimately empty
+today by design (a per-customer prefix before the first customer). Service-created targets that
+appear on first use and are documented as such (the log group a tracing or delivery-status
+feature creates itself).

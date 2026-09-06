@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 998,
+ "rule_count": 999,
  "sections": [
   {
    "id": "A",
@@ -2809,7 +2809,7 @@
    "title": "Compliance, Auditing & Data Privacy (GDPR/CCPA/SOC2)",
    "group": "saas-core",
    "file": "sections/Y-compliance-auditing-and-data-privacy-gdpr-ccpa-soc2.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "Y:1",
@@ -2890,6 +2890,10 @@
     {
      "id": "Y:20",
      "title": "A legal or policy document is duplicated by hand into a client binary, so every edit to the canonical text leaves the app presenting a superseded contract"
+    },
+    {
+     "id": "Y:21",
+     "title": "A regulated behaviour that belongs to the customer (recording, disclosure, retention) is hard-coded platform-wide, so the customer cannot adopt the posture its own jurisdiction or profession requires and the platform becomes the party that made the choice"
     }
    ]
   },

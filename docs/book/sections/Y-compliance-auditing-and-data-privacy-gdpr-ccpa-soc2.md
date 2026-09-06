@@ -223,3 +223,32 @@ tomorrow unless the mechanism exists.
 **False positives.** Clients that render the canonical URL in a web view or fetch the text at
 runtime; a generated copy whose build fails on divergence; an intentionally frozen historical
 version presented to the user as such.
+
+## Y:21 — A regulated behaviour that belongs to the customer (recording, disclosure, retention) is hard-coded platform-wide, so the customer cannot adopt the posture its own jurisdiction or profession requires and the platform becomes the party that made the choice
+
+**Statement.** The platform records, discloses, retains or transmits on a customer's behalf, and
+the law attaches the obligation to the customer as the principal: an all-party-consent state, a
+licensed profession's disclosure duty, a records-retention rule. The platform implements one
+posture for every customer, usually the one that was simplest to build or safest for the
+platform, and exposes no control. Two harms follow. The customer whose jurisdiction or
+profession requires a different posture cannot comply without leaving the platform, while the
+platform's own terms often make that customer responsible for a choice it was never allowed to
+make. And by making the choice itself, the platform steps out of the service-provider role it
+relies on everywhere else in its contracts: the recording, the disclosure or the retention is now
+the platform's act rather than the customer's instruction. The pattern hides because the single
+posture is defensible on its own (recording with notice is lawful) and because a control is
+easily confused with a way to provision an unlawful default.
+
+**Detect.** List every behaviour the platform performs on a customer's behalf that a statute
+regulates by the customer's identity or location. For each, find the per-customer setting. If
+none exists, read the terms for the sentence that makes the customer responsible for that
+behaviour and record the contradiction. Where a control exists, verify that its lawful defaults
+are structural: a recording control cannot remove the notice while recording is on; an off state
+stops the vendor copy as well as the first-party one; the choice is written to the customer's
+compliance record with who changed it and when.
+
+**False positives.** Behaviours the platform must own for its own compliance (its own notice,
+its own audit trail); a control deliberately withheld with a documented, counsel-reviewed reason,
+provided the terms do not assign the customer responsibility for it; an off state the
+architecture cannot honour (a vendor that transcribes live audio regardless), where the finding
+is the vendor dependency rather than the missing control.

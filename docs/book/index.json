@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1010,
+ "rule_count": 1012,
  "sections": [
   {
    "id": "A",
@@ -762,7 +762,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "F:1",
@@ -931,6 +931,10 @@
     {
      "id": "F:42",
      "title": "A service acting under its own service-linked role calls the key management service directly, so a via-service-conditioned key policy never admits it — and its cross-account grant only counts when the workload's own account issues it"
+    },
+    {
+     "id": "F:43",
+     "title": "The target of a per-entity assume-role was never provisioned, and because assume-role reports a missing role as a denial, the provisioning gap is investigated as a permissions gap"
     }
    ]
   },
@@ -1892,7 +1896,7 @@
    "title": "Third Party: Stripe Payments Integration",
    "group": "third-party",
    "file": "sections/P-third-party-stripe-payments-integration.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "P:1",
@@ -1973,6 +1977,10 @@
     {
      "id": "P:20",
      "title": "A locally persisted provider-object reference the provider cannot resolve is mapped to a 5xx by the generic provider-error mapper, so a data condition presents as an outage"
+    },
+    {
+     "id": "P:21",
+     "title": "A provider webhook carries a catalog identifier the local plan map does not contain, so the event fails permanently while the provider keeps retrying it"
     }
    ]
   },

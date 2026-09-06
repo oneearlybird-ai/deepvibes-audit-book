@@ -398,3 +398,29 @@ unverified, not healthy.
 change (the create and the reference land together). A hook that is deliberately absent
 because the function opts out of instrumentation — then the variable is unset, not pointed at
 a file that is not there.
+
+## A:44 — A function is declared, deployed and granted, but nothing is wired to invoke it, so it never runs, its grants stand for nothing, and its defects get audited as if they were live
+
+**Statement.** A lifecycle feature is built as a set of functions — suspend, resume, clean up —
+each with a role, a log group, an alias, secret and API grants, alarms, and a place in the
+fleet's monitoring map. The half that calls them never lands: no resource policy lets a service
+invoke them, no event rule targets them, no stream or queue is mapped, and no code in any repo
+names them. The deploy is green, the plan is clean, the monitors report nothing because
+nothing ever happens. Two costs follow. Every grant those roles hold — often the widest in the
+estate, because a cleanup needs the master credential — is standing capability nobody uses,
+and a role with a master secret and no traffic is exactly what a reviewer stops reading
+carefully. And every audit of the function body is spent on code that cannot execute: a real
+defect in the error handling is filed as a live outage and fixed as one, while the actual gap —
+the feature has no caller — stays invisible.
+
+**Detect.** For every deployed function, look for the four ways it can be invoked: resource
+policy statements (both the unqualified function and its aliases), event rules targeting it,
+event source mappings, and a caller by name in source across every repo (search the composed
+name too). Zero of all four, plus zero invocations since creation and an empty log group, is
+the finding. Grade it by what the role holds, not by the function's size. Ask which feature the
+function belongs to and whether its caller was ever built.
+
+**False positives.** A function invoked by an operator by hand under a documented runbook (the
+runbook is the caller; cite it). A scheduled function whose schedule is deliberately disabled
+for a documented reason. A function landed in the same change as its caller, before that
+caller's stack has applied.

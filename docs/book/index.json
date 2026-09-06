@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1031,
+ "rule_count": 1033,
  "sections": [
   {
    "id": "A",
@@ -1624,7 +1624,7 @@
    "title": "Frontend: Browser Security Surfaces",
    "group": "frontend",
    "file": "sections/L-frontend-browser-security-surfaces.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "L:1",
@@ -1713,6 +1713,10 @@
     {
      "id": "L:22",
      "title": "The credentialed API's CORS allowlist admits only production origins while the sanctioned dev/preview config points browsers at that same API"
+    },
+    {
+     "id": "L:23",
+     "title": "A dependency's capability probe calls the Function constructor inside a try/catch, so a strict CSP reports a violation on every page load while the app keeps working"
     }
    ]
   },
@@ -4156,7 +4160,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 54,
+   "rule_count": 55,
    "rules": [
     {
      "id": "NN:1",
@@ -4373,6 +4377,10 @@
     {
      "id": "NN:54",
      "title": "A gate enumerates the targets it checks from a typed list, so a new target is exempt by omission while the gate reports every listed one green"
+    },
+    {
+     "id": "NN:55",
+     "title": "A gate's scope is pinned to the directory the code lived in when the gate was written, so after the code moves the gate runs green on the leftover shell"
     }
    ]
   },

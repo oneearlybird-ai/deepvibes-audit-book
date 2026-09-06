@@ -1318,3 +1318,25 @@ enumeration, and make the gate print the targets it checked so an omission is vi
 
 **False positives.** A deliberately scoped gate whose list is the contract (a reference set the
 rest must match) and whose output names the scope; targets excluded with a recorded reason.
+
+
+## NN:55 — A gate's scope is pinned to the directory the code lived in when the gate was written, so after the code moves the gate runs green on the leftover shell
+
+**Statement.** A lint invocation, a policy scanner or a verifier names its targets as directory
+globs — one app's tree — because that is where the code was the day the gate was written. The
+repository then moves the shared code into a package and stamps sibling apps from a template; the
+gate keeps its globs, keeps running in every hook and pipeline, and keeps reporting a clean tree,
+because the tree it inspects is now a thin shell whose real body lives one directory over. The rules
+the gate carries — no raw environment reads, one HTTP client, no inline scripts, an accessibility
+floor — silently stop applying to most of the code they were written for, and the sibling apps are
+born outside them.
+
+**Detect.** For each gate, list its file globs and compare them with where the guarded constructs
+actually resolve today: run the gate's own rules ad hoc over the whole tree (or over the shared
+package and every sibling app) and diff the result against the gate's normal output; any hit the
+gate does not report is the finding. Check the gate's output names the scope it covered. Prefer
+scoping by discovery — every app directory, the shared packages — or a single root invocation, and
+make a test that fails when a top-level source directory is outside every gate's globs.
+
+**False positives.** A gate deliberately limited to one app whose output says so and whose
+excluded siblings are covered by another gate with a recorded reason.

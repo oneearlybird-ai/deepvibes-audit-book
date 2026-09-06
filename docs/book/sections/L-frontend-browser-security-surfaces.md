@@ -176,3 +176,28 @@ posture.
 **False positives.** Deliberate deny postures that are documented next to the dev setup
 instructions AND paired with a working alternative (dev API stage, same-origin proxy); preview
 environments that inject their own API base pointing at a preview API.
+
+
+## L:23 — A dependency's capability probe calls the Function constructor inside a try/catch, so a strict CSP reports a violation on every page load while the app keeps working
+
+**Statement.** A library decides at runtime whether it may generate code — a schema compiler, a
+template engine, a fast-path serializer — by constructing an empty function inside a try/catch and
+remembering the answer. Under a content security policy whose script-src carries no
+`'unsafe-eval'`, the constructor throws, the library falls back to its interpreted path, and
+nothing visible breaks. But the browser reports the attempt as a policy violation regardless of the
+catch: one console error and one report to the reporting endpoint per page load, on every host that
+ships the bundle. The app's own code contains no eval, so a source scan finds nothing, the error is
+attributed to a hashed vendor chunk nobody can name, and the permanent false alarm trains everyone
+to ignore the console and the report pipeline — where a real injection would later surface.
+
+**Detect.** Take the chunk the violation names, rebuild the app to recover it (Next chunk hashes
+are content-addressed and reproduce locally), and search it for `Function(`, `new Function`,
+`eval(`, `WebAssembly` and string-argument timers; a hit wrapped in try/catch with a
+capability-shaped name is the probe. Then read the dependency for a no-codegen switch (jitless,
+noEval, interpreted mode) and set it once, at the one module that every consumer imports the
+dependency through, before the first schema or template is built. Make that module the only door
+with a static gate that refuses a direct import of the dependency.
+
+**False positives.** Development builds that deliberately add `'unsafe-eval'` for hot reload;
+a dependency that has no probe and only fails under CSP when actually asked to compile — that is a
+functional break, not this rule.

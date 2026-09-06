@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1012,
+ "rule_count": 1013,
  "sections": [
   {
    "id": "A",
@@ -3504,7 +3504,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 9,
+   "rule_count": 10,
    "rules": [
     {
      "id": "FF:1",
@@ -3541,6 +3541,10 @@
     {
      "id": "FF:9",
      "title": "Non-ASCII typography in machine-generated copy, re-encoded by a hop nobody controls"
+    },
+    {
+     "id": "FF:10",
+     "title": "The sending identity's DEFAULT configuration set names a set that no longer exists, so every send fails on a resource the caller never mentioned while the identity still reports itself verified and enabled"
     }
    ]
   },

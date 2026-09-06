@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1013,
+ "rule_count": 1016,
  "sections": [
   {
    "id": "A",
@@ -3141,7 +3141,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "CC:1",
@@ -3286,6 +3286,10 @@
     {
      "id": "CC:36",
      "title": "An attribute the sanctioned out-of-band seed path writes is also compared by the IaC under an immutable-after-create flag, so the first seed that spells the same thing differently deadlocks the whole stack"
+    },
+    {
+     "id": "CC:37",
+     "title": "A relocation updates every reference the plans can see and misses the copies held in a third-party platform's per-project settings, so a fail-open consumer runs with its control silently off in every project"
     }
    ]
   },
@@ -4100,7 +4104,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 50,
+   "rule_count": 52,
    "rules": [
     {
      "id": "NN:1",
@@ -4301,6 +4305,14 @@
     {
      "id": "NN:50",
      "title": "The landing gate never executes the verifier files it lands, so a verifier that cannot even load reaches the trunk green and the estate runs without the check it claims until the next full certification"
+    },
+    {
+     "id": "NN:51",
+     "title": "A gate's failure-reporting branch is the one path its green runs never execute, so the first real failure crashes the reporter instead of reporting"
+    },
+    {
+     "id": "NN:52",
+     "title": "A parity gate hand-lists the sibling copies of one value that must move together, so the copies it does not name become exactly the drift it exists to prevent while its pass reads as full coverage"
     }
    ]
   },

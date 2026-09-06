@@ -829,3 +829,38 @@ through a tool that re-reads and re-sends every other attribute from the declara
 Attributes the declaration must keep watching because a drift there is a security event (the
 key moving to a different key, encryption turning off) — there the answer is a seed tool that
 cannot spell them differently plus a live check, not a wider ignore set.
+
+## CC:37 — A relocation updates every reference the plans can see and misses the copies held in a third-party platform's per-project settings, so a fail-open consumer runs with its control silently off in every project
+
+**Statement.** Some consumers of an account-scoped artifact — a role to assume, a table name, a
+queue URL — live outside the infrastructure tree entirely: a hosting platform's project
+environment variables, a SaaS integration's settings page, a native build's configuration
+file. They were set once by hand when the integration was built, one copy per project, and no
+plan, state file, verifier, or search of the repository reads them. When the artifact is later
+relocated to another account or renamed, the relocation sweeps every in-tree reference — the
+IaC, the code, the resource contract — and every plan is clean in both accounts; the platform
+copies keep naming the origin, which the relocation then demolishes. Whether anyone notices
+depends entirely on the consumer's failure posture. A fail-closed consumer breaks loudly on the
+next request. A fail-open one — the usual design for a rate limiter, an analytics hook, a
+feature-flag fetch — writes a line into the platform's own log stream, which nobody watches from
+the infrastructure side, and keeps serving with the control off. Because the copies are per
+project the defect is fleet-wide and identical everywhere, and because the platform snapshots
+the value into each deployment, correcting the copy changes nothing until every project is
+redeployed. A new project created by cloning an existing one's settings inherits the dead value
+on its first day.
+
+**Detect.** For every artifact a relocation moves, enumerate the consumers that resolve it by
+value rather than through the dependency graph, including the ones outside version control:
+read the hosting platform's project settings through its API — every project, decrypting where
+needed — and compare each value against the artifact's live identifier in the destination
+account. Then read the consumer's failure branch: if the branch taken on credential or
+resolution failure returns the permissive result, the finding has been in effect since the
+relocation's date, and that date is the start of the exposure. Confirm that the platform's own
+logs carry the failure event and that no infrastructure-side alarm consumes them. Check a newly
+created project on day one for values inherited from the project it was cloned from.
+
+**False positives.** Platform settings that are rendered from the infrastructure tree on every
+deploy (a pipeline step that writes them from a state output), which follow the relocation
+automatically; consumers whose failure branch fails closed, where the outage itself is the
+finding and this rule is not; values that intentionally name a cross-account artifact that
+still exists.

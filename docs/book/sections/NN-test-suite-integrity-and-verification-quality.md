@@ -1211,3 +1211,63 @@ check result, is this finding already in effect.
 **False positives.** A verifier deliberately excluded from landing because it needs live
 credentials, when the landing gate still parses it. A repository whose fast gate and full
 certification run the same set.
+
+## NN:51 — A gate's failure-reporting branch is the one path its green runs never execute, so the first real failure crashes the reporter instead of reporting
+
+**Statement.** A verifier has two paths: the scan, which runs on every invocation, and the
+reporting branch, which runs only when the scan finds something. In a healthy repository the
+reporter executes rarely — sometimes never after the day it was written — while the scan is
+exercised hundreds of times. Refactors that move a variable, rename a root, or push path
+resolution into a helper are validated by those green runs, which never enter the reporter, so
+a reference to a symbol that no longer exists in that branch survives indefinitely. The defect
+surfaces exactly when the gate is needed: the scan finds a real duplicate, a real wildcard, a
+real drift, calls the reporter, and the process dies with a reference error instead of a
+finding. The gate has still failed closed, so the lane is blocked, but the operator sees a
+stack trace naming the verifier rather than the defect, reads it as a broken tool, and the
+natural next move is to doubt the verifier instead of the tree. Combined with a scanner that
+walks generated copies, the first-ever failure can be a phantom, and the crash then hides that
+it was phantom. A gate that cannot report is a gate whose findings arrive as tool bugs.
+
+**Detect.** For every verifier, identify the code that runs only on a non-empty failure list and
+execute it deliberately: plant a synthetic violation in a scratch copy, or drive the reporter
+with a fabricated failure array, and read the output for the site, the rule, and a path a human
+can open. Read the failure branches for identifiers and confirm each is defined in that scope,
+especially after a refactor that renamed roots or moved resolution into helpers. In history,
+look for commits that changed a verifier's scan while its reporter changed nothing. A crash
+whose stack trace lands inside a verifier's reporting loop is this finding already in effect.
+
+**False positives.** Reporters exercised by a committed self-test that the landing gate runs; a
+reporter that is a single print of a pre-built string with no computation of its own; a crash
+that occurs in the scan rather than the reporter, which is a different defect (the scan's own
+robustness).
+
+## NN:52 — A parity gate hand-lists the sibling copies of one value that must move together, so the copies it does not name become exactly the drift it exists to prevent while its pass reads as full coverage
+
+**Statement.** When one value must be repeated in several places — an origin allowlist held by a
+response policy and by the function that answers preflight, a host list mirrored in an edge
+function and a configuration document, a version pinned in three build files — a parity gate is
+written to hold the copies equal. The gate's subject inventory is typed by hand from the copies
+the author knew about that day, usually the ones in the file being edited. Later, another
+feature adds a sibling copy of the same value — a second policy for a second plane, a second
+function for a second path — and nothing links it to the gate: the new copy is a valid
+resource, the gate still passes, and its message reports a confident count of lists checked.
+From then on every addition to the value is applied to the named copies and missed on the
+unnamed ones, and the miss is invisible precisely because a gate exists for it — reviewers stop
+reading the unnamed copies. The failure lands on the population the unnamed copy serves: a new
+member admitted to the checked copies works on the primary path and is refused on the sibling
+path, which is typically the less-travelled one (uploads, previews, a second region), where the
+refusal is discovered late and by a user.
+
+**Detect.** For every parity gate, list the copies it names, then derive the copies that exist:
+search the tree for the value's distinctive members (an origin, a host, a version string) and
+for every resource type that can hold that kind of value, and diff the two lists. Any copy
+outside the gate is the finding, whether or not it has drifted yet. Prefer gates whose subject
+inventory is derived — every resource of the holding types, every file matching a shape — over
+gates that enumerate files; where enumeration is unavoidable, add a tripwire that fails when a
+new resource of the holding type appears outside the list. Read the gate's pass message: a fixed
+count ("both lists", "the pair") is a sign the inventory is hand-typed.
+
+**False positives.** Copies that hold a deliberately different value (a stricter list for a
+privileged plane), which must be excluded explicitly with the reason recorded; gates that
+derive their subjects by walking every resource of the holding type; a sibling copy generated
+from the same source the gate reads.

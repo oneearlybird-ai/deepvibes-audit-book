@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 992,
+ "rule_count": 994,
  "sections": [
   {
    "id": "A",
@@ -3081,7 +3081,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 33,
+   "rule_count": 34,
    "rules": [
     {
      "id": "CC:1",
@@ -3214,6 +3214,10 @@
     {
      "id": "CC:33",
      "title": "The relocation builds an empty record store in the destination while the accumulated corpus stays in the abandoned origin, so the retention control the design claims applies exists only where there are no records"
+    },
+    {
+     "id": "CC:34",
+     "title": "A grant names a resource by a literal id copied from the origin environment, the import into the new account makes the plan clean, and every use of the grant fails as an access denial while a designed fallback keeps the request green"
     }
    ]
   },
@@ -4024,7 +4028,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "NN:1",
@@ -4217,6 +4221,10 @@
     {
      "id": "NN:48",
      "title": "The gate's pattern is narrower than the written rule it enforces, so work authored to the documented form is rejected as non-compliant"
+    },
+    {
+     "id": "NN:49",
+     "title": "Every test hands the handler a hand-built dependency container, so the production container's wiring is never executed and a name the handler consumes but the builder never produces passes the whole suite and fails on the first real request"
     }
    ]
   },

@@ -1150,3 +1150,38 @@ the shape of the reference.
 where the narrowing is stated where authors read it. Rules whose prose is a summary and whose
 normative form is the pattern, explicitly. Rejections that trace to one author's mistake rather
 than to a form the prose admits.
+
+## NN:49 — Every test hands the handler a hand-built dependency container, so the production container's wiring is never executed and a name the handler consumes but the builder never produces passes the whole suite and fails on the first real request
+
+**Statement.** A dependency-injection seam gives each handler two entry points: a `core(event, deps)`
+that does the work against whatever container it is handed, and a builder that assembles the real
+container from SDK clients, lazily loaded modules, and helpers. The unit suite exercises `core` by
+constructing its own container in every test — fakes for the clients, a fixed clock, a stub for each
+helper — and never calls the builder, because the builder constructs real clients. That split is the
+seam working as designed, and it has a blind spot exactly the width of the builder: a name the
+handler reads from `deps` is satisfied in every test by the test's own literal, so a helper that was
+added to the handler but wired into the wrong object — a sibling function's return value, a module
+constant, an unrelated literal that happened to sit at the edit's anchor — produces a green suite,
+green static gates that check the seam's *shape* (the builder exists, no module-scope clients, no
+fallback construction), and a production handler that throws `deps.<name> is not a function` on the
+first request that reaches the line. The failure is total for that route, invisible to every test,
+and lands in the deploy that "only added a field", which is precisely the deploy nobody watches.
+
+The mechanism is structural, not a typo: the seam's whole value is that tests do not run the
+builder, so nothing in the test tier can ever observe the builder's output. A regression test that
+calls the builder and asserts one name protects one name; the class is every name.
+
+**Detect.** For each handler, take the set of names the handler and its helpers read from the
+injected container — member reads and destructures of the container parameter — and the set of keys
+the production builder actually produces — the literal it returns, the properties it assigns, minus
+nothing. Any consumed name absent from the produced set is a live defect, whether or not a test
+mentions it. Do this mechanically, in the gate that already enforces the seam's shape, and make a
+builder the tool cannot resolve statically (a spread of an unknown value, a return of a call) a
+failure rather than a skip — an unreadable container is not evidence of a wired one. Confirm the
+class in the live system by reading the function's error log for `is not a function` against a
+container member after any deploy that touched the builder or added a consumer.
+
+**False positives.** Names the handler reads only under a feature the builder deliberately omits
+and the handler guards for by presence — but that shape is a fallback, and the seam usually forbids
+it. Containers assembled by a shared factory that the gate resolves by following the import rather
+than the local literal. Test-only members injected by the harness and never read in production code.

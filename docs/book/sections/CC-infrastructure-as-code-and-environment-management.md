@@ -728,3 +728,36 @@ step — legitimate only if it is written down with a date, and the origin's con
 to still hold in the interim. Stores that are genuinely per-account by design and were never meant
 to travel. A destination that is empty because the source has produced nothing since the cutover,
 which is a different finding about the delivery path, not about custody.
+
+## CC:34 — A grant names a resource by a literal id copied from the origin environment, the import into the new account makes the plan clean, and every use of the grant fails as an access denial while a designed fallback keeps the request green
+
+**Statement.** An IAM policy, key policy, or resource policy names its target by a literal
+identifier — a key id, a pool id, a store id — rather than by a data source or a reference to the
+resource it was created with. The stack is then re-homed: imported into another account or cell,
+where the same policy text was carried over verbatim by the migration. The import succeeds and the
+plan shows no change, because the tool compares code to the imported live text and they are equal;
+nothing in that comparison asks whether the identifier resolves. In the new account the resource
+with that id does not exist. The grant is therefore empty, every operation that needs it fails with
+the service's generic "access to the key is not allowed" or "not authorized", and the failure reads
+as a permissions typo rather than as a reference to another account's resource. When the consumer
+carries a designed fallback for that exact call — the cached copy instead of the fresh read, the
+context value instead of the row — the request still answers, so nothing user-visible breaks; the
+only signal is an error-level log line on every request and an alarm that flaps from the day of
+the move onward and is read as noise.
+
+**Detect.** From the IaC, extract every literal resource identifier inside a policy document
+(`key/<uuid>`, pool ids, store ids, secret suffixes) and resolve each against the account the
+stack is deployed to; an identifier that does not exist there is the finding regardless of the
+plan's verdict. Where a literal-identifier gate keeps a baseline of accepted literals, treat every
+baselined identifier as unresolved until this check has run against the live account. From the
+runtime, read each function's error log for access-denied text on a resource the policy
+supposedly grants; then simulate the role against the resource the consumer actually uses (the
+secret's real key, the table's real key) — an implicit deny against a resource that exists, next
+to an explicit allow on one that does not, is the mechanism confirmed. Check the alarm history of
+the function from the move date: a level-based error alarm that first fired on the day of the move
+and has flapped since is the same defect seen from the monitoring side.
+
+**False positives.** Literal identifiers of resources that genuinely live in another account by
+design (a shared organization key, a central log destination), where the cross-account grant is
+declared on both sides and resolves. Identifiers of resources created outside IaC on purpose and
+recorded as such.

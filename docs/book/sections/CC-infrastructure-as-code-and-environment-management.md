@@ -796,3 +796,36 @@ create and the grant land together. Wildcard grants over a namespace that is leg
 today by design (a per-customer prefix before the first customer). Service-created targets that
 appear on first use and are documented as such (the log group a tracing or delivery-status
 feature creates itself).
+
+## CC:36 — An attribute the sanctioned out-of-band seed path writes is also compared by the IaC under an immutable-after-create flag, so the first seed that spells the same thing differently deadlocks the whole stack
+
+**Statement.** A resource is declared with a placeholder and a flag that forbids the tool from
+overwriting it after creation, because its real value is seeded out of band — a CLI put of a
+secret, a console upload — and must never be reset by an apply. The seed path is sanctioned and
+documented. But the seed write sets more than the one attribute the declaration ignores: it also
+records how the encryption key was named (alias or ARN), a tier, a description, a tag. The
+declaration keeps comparing those attributes, and the next plan wants to move one of them back
+to the declared form — the same key, spelled differently. The update goes through the same call
+the flag guards, the service refuses it, and the apply fails. Nothing in the failure names the
+seed: it reads as a duplicate-name or permission error on an attribute nobody touched. Because
+the stack applies as a unit, every other change in it — a runtime pin, a security fix, a new
+route — is held at the last successful apply until someone reconciles a string that describes
+one key two ways. The ignore set must be exactly the set of attributes the seed path writes:
+wider hides a real re-key or re-tier (CC:4); narrower, as here, turns every legitimate seed
+into an outage of the stack.
+
+**Detect.** For every resource carrying an immutable-after-create or no-overwrite flag, list the
+attributes its sanctioned out-of-band write path can set — read the seed runbook or script and
+the service's write API: which fields does one put call carry? — and compare against the
+declaration's ignore set. Any seed-writable attribute outside the ignore set is the finding,
+before it fires. Confirm live by reading the resource's current attributes back and diffing
+against the declaration: a key named by alias on one side and by ARN on the other is the same
+key and still a plan-time update. Compare the stack's last successful apply with its last landed
+change: a gap, with a refused-update error in the apply log, is the deadlock already in effect.
+Then list what else that stack carries — the held changes are the blast radius.
+
+**False positives.** A seed path that writes only the ignored attribute (a value-only put
+through a tool that re-reads and re-sends every other attribute from the declaration).
+Attributes the declaration must keep watching because a drift there is a security event (the
+key moving to a different key, encryption turning off) — there the answer is a seed tool that
+cannot spell them differently plus a live check, not a wider ignore set.

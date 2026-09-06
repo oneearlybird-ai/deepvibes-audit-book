@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 999,
+ "rule_count": 1000,
  "sections": [
   {
    "id": "A",
@@ -3097,7 +3097,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "CC:1",
@@ -3238,6 +3238,10 @@
     {
      "id": "CC:35",
      "title": "A rename or retirement moves the code and the resource but not the grants that name them, so policies keep asserting access to names that no longer exist while the plan stays clean"
+    },
+    {
+     "id": "CC:36",
+     "title": "An attribute the sanctioned out-of-band seed path writes is also compared by the IaC under an immutable-after-create flag, so the first seed that spells the same thing differently deadlocks the whole stack"
     }
    ]
   },

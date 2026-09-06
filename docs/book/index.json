@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1023,
+ "rule_count": 1024,
  "sections": [
   {
    "id": "A",
@@ -3157,7 +3157,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "CC:1",
@@ -3306,6 +3306,10 @@
     {
      "id": "CC:37",
      "title": "A relocation updates every reference the plans can see and misses the copies held in a third-party platform's per-project settings, so a fail-open consumer runs with its control silently off in every project"
+    },
+    {
+     "id": "CC:38",
+     "title": "A managed-resource create fails with an authorization error whose real cause is an invalid value in a policy-shaped restriction field, so the operator chases IAM while the fix is one enum"
     }
    ]
   },

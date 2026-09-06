@@ -864,3 +864,29 @@ deploy (a pipeline step that writes them from a state output), which follow the 
 automatically; consumers whose failure branch fails closed, where the outage itself is the
 finding and this rule is not; values that intentionally name a cross-account artifact that
 still exists.
+
+
+## CC:38 — A managed-resource create fails with an authorization error whose real cause is an invalid value in a policy-shaped restriction field, so the operator chases IAM while the fix is one enum
+
+**Statement.** Some services validate the restriction block of a resource — the actions an API
+key may call, the resources a grant may name — with the same code path that authorizes the
+caller, and report an unknown value as an authorization failure: "not authorized to perform:
+" with a blank action, "Access denied for operation" from a resource handler, an AccessDenied
+with no message. The caller is an administrator, the organization policy is permissive, the
+IAM simulator says allowed, and every read the operator tries succeeds; only the create fails.
+Because the message names permissions, the investigation runs through service control
+policies, permission boundaries, key policies and the provider's assume-role chain before
+anyone re-reads the restriction list against the documented vocabulary. In infrastructure as
+code the loss compounds: the resource handler surfaces the same text one layer further from
+the field that caused it.
+
+**Detect.** When a create is denied for a principal the simulator allows, bisect the request
+body before the identity: retry the same call with the smallest documented restriction set,
+then add the questionable values back one at a time, deleting each probe object afterwards. An
+error that tracks the body, not the caller, is a validation defect wearing an authorization
+message. Prefer wildcard or documented-enum values in restriction fields and let the
+resource-scoped fence (a referer list, a resource ARN) carry the narrowing.
+
+**False positives.** Genuine authorization failures where the simulator or the organization
+policy also denies the action; services whose restriction vocabulary is documented as
+per-operation and where the exact operation names validate when tried alone.

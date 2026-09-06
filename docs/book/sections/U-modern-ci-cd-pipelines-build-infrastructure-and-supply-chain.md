@@ -873,3 +873,28 @@ that fails when the two diverge outside a declared allowlist.
 
 **False positives.** Template files that intentionally hold a starter (a placeholder shell,
 sample content) and say so in the file; differences that are the app's own vertical features.
+
+## U:50 — A gate bounds one class of its outbound calls and leaves another unbounded, and the suite that runs it has no per-check deadline, so the one unbounded call freezes the whole lane silently and reads as slow rather than dead
+
+**Statement.** A live verifier is hardened after an earlier freeze: every call through one client
+(a CLI wrapper, an SDK) gets a timeout and a retry, and a comment records that "a verifier may be
+red, never frozen". A later addition reaches a second service through a different client — a
+bare HTTP fetch — and inherits none of that: no abort signal, no deadline. The suite that runs the
+verifiers executes each one in a loop with no per-check kill, and the lane that runs the suite
+waits on it. When the second service stalls a connection, the fetch never returns, the verifier
+prints nothing, the suite prints nothing, and the lane sits at "running gate 10 of 10" for as
+long as anyone lets it. Nothing distinguishes this from a slow run; the operator's only signal is
+the clock. Every lane behind that gate — a certify, a release — is blocked by a check that is not
+checking anything.
+
+**Detect.** In every live verifier, list the outbound call sites by client (CLI, SDK, fetch,
+sockets) and confirm each has an explicit deadline; a bounded client beside an unbounded one is
+the finding, and the comment claiming liveness makes it worse, not better. In the runner, look
+for a per-check timeout around each verifier invocation and a progress line before each; a loop
+that runs `node "$v"` bare has neither. Fix at both layers: the call gets an abort deadline in
+line with its siblings, and the runner wraps every check in a kill timeout that reports the check
+as failed with its name, so a frozen check is red within minutes instead of silent for an hour.
+
+**False positives.** A long-running check that streams progress and is documented as long; a call
+whose client applies a default deadline the code does not spell out — verify the client's default
+before flagging.

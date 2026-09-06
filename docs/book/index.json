@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1035,
+ "rule_count": 1036,
  "sections": [
   {
    "id": "A",
@@ -2421,7 +2421,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 49,
+   "rule_count": 50,
    "rules": [
     {
      "id": "U:1",
@@ -2618,6 +2618,10 @@
     {
      "id": "U:49",
      "title": "A scaffold template is a copy of an exemplar app rather than derived from it, so every fix the exemplar receives after the copy is silently absent from the next thing stamped"
+    },
+    {
+     "id": "U:50",
+     "title": "A gate bounds one class of its outbound calls and leaves another unbounded, and the suite that runs it has no per-check deadline, so the one unbounded call freezes the whole lane silently and reads as slow rather than dead"
     }
    ]
   },

@@ -368,3 +368,33 @@ refresh compose.
 
 **False positives.** Deliberately pinned fleets where the template apply IS the documented rollout
 step and the runbook says so.
+
+## A:43 — The function's launch hook names a literal path inside an attached layer, the layer changes shape, and every cold start dies at init while the plan and the deploy stay green
+
+**Statement.** Serverless runtimes let a function hand its startup to a script inside an
+attached layer — an exec wrapper, an instrumentation shim, a bootstrap — configured as a path
+string in the function's environment. The path is a contract with the layer's layout, and
+nothing checks it: the IaC accepts any string, the deploy succeeds, the platform only
+discovers the file is missing when the first cold start tries to execute it. Then the init
+fails with a runtime exit error that reads as a crash in the function's own code, every
+invocation on that sandbox fails the same way, and the function is effectively down for as
+long as the path stays wrong. The path goes wrong quietly: a vendor layer for another language
+uses a different script name, a merged or re-baked layer moves the file, a fleet standard is
+copied by hand into one stack and edited from memory. Low-traffic functions hide it longest —
+a handful of failed invocations a week never trips an alarm tuned for volume, and the error
+text names the wrapper, which nobody searches for.
+
+**Detect.** From the IaC, collect every function's launch-hook variables (exec wrapper,
+entrypoint or handler overrides that name a file under the layer mount). For each, resolve the
+attached layers to their current contents — download the versions the function actually
+references — and assert the path exists and is executable. Compare each stack's hook block
+against the fleet's standard: a lone variant is the finding before it fails. Live, read the
+function's platform init records for a failed status and search the log for the hook path
+followed by "does not exist" or "no such file"; count invocations against errors over the
+retention window to size the outage. Treat a function with zero recent invocations as
+unverified, not healthy.
+
+**False positives.** A function whose hook path is served by a layer attached in the same
+change (the create and the reference land together). A hook that is deliberately absent
+because the function opts out of instrumentation — then the variable is unset, not pointed at
+a file that is not there.

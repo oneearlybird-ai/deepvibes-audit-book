@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1000,
+ "rule_count": 1001,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "A:1",
@@ -178,6 +178,10 @@
     {
      "id": "A:42",
      "title": "The scaling group's launch template pins a literal image id, so promotion plus a refresh relaunches the old image"
+    },
+    {
+     "id": "A:43",
+     "title": "The function's launch hook names a literal path inside an attached layer, the layer changes shape, and every cold start dies at init while the plan and the deploy stay green"
     }
    ]
   },

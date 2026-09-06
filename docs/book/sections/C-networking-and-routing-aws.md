@@ -244,3 +244,29 @@ wildcard is the product, and the finding is instead the absence of a bound-name 
 wildcard pointing at infrastructure you alone control (your own load balancer or CDN distribution,
 answering 404 from your own code) is not this finding: nobody else can claim a name there. The
 mechanism requires a SHARED host that hands unclaimed names to whoever asks for them.
+
+## C:28 — A zone move re-creates the records a generator could see and drops the ones written by hand, so a client-facing host silently loses its record while every check stays green
+
+**Statement.** When a hosted zone is re-homed — to another account, to a routing layer that is
+meant to own every public name — the new zone is populated from a listing of the old one, and the
+listing is filtered: records "owned by retiring resources" are skipped, names created by a manual
+or emergency change are not tagged as anything, and records added to the old zone *after* the
+listing was taken are never seen. The delegation then moves, and a name that was answering the
+day before returns NXDOMAIN. Nothing pages: the certificate behind the name is still valid, the
+origin still exists, the configuration check that compares the vendor's webhook URL to the declared
+URL still matches (the URL is unchanged — it merely no longer resolves), and the consumer of the
+name is a client or a vendor callback whose failures land in *their* logs. The mechanism is the
+difference between "every record the old zone answered" and "every record the generator was told
+to copy"; the omitted names are exactly the ones nobody declared, which is why they were written
+by hand in the first place.
+
+**Detect.** Before a delegation moves, diff the two zones' record sets by name and type and make
+the diff the gate, not the generator's output: every record present in the old zone and absent in
+the new one must be either declared in the new zone's IaC or listed as deliberately retired with
+the reason. After the move, resolve every name that a client, a vendor webhook, or a certificate
+validation depends on from a public resolver, and compare against the old zone's answers. Treat a
+certificate's DNS-validation record as a first-class dependency: its absence surfaces months later
+as a failed renewal.
+
+**False positives.** Names that are documented as retired with the delegation move, and whose
+consumers were updated first. Validation records for certificates that are themselves retired.

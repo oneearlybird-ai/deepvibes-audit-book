@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 990,
+ "rule_count": 992,
  "sections": [
   {
    "id": "A",
@@ -319,7 +319,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "C:1",
@@ -428,6 +428,10 @@
     {
      "id": "C:27",
      "title": "A wildcard record to a shared host silently re-creates every dangling name you delete, so the record-by-record remediation verifies as done while the surface is unchanged"
+    },
+    {
+     "id": "C:28",
+     "title": "A zone move re-creates the records a generator could see and drops the ones written by hand, so a client-facing host silently loses its record while every check stays green"
     }
    ]
   },
@@ -3518,7 +3522,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 10,
+   "rule_count": 11,
    "rules": [
     {
      "id": "HH:1",
@@ -3559,6 +3563,10 @@
     {
      "id": "HH:10",
      "title": "Debug-only instrumentation guarded at the call site but linked in every configuration, so its private-API symbols ship in the store binary"
+    },
+    {
+     "id": "HH:11",
+     "title": "A client build embeds a service hostname the platform treats as movable, so an infrastructure move strands every installed build"
     }
    ]
   },

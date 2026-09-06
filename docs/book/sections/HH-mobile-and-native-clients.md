@@ -99,3 +99,40 @@ by inspecting the release binary, not by reading the manifest. Test-only targets
 part of the shipped bundle. Symbols that merely resemble private identifiers but belong to the
 app's own namespace; confirm against the platform's published list before filing. A separate
 debug-only application target, distinct from the shipped one, that links the harness deliberately.
+
+## HH:11 — A client build embeds a service hostname the platform treats as movable, so an infrastructure move strands every installed build
+
+**Statement.** A native or web client reaches a long-lived service — a realtime socket, a media
+gateway, an upload endpoint — through a hostname written into the build as a constant or a
+build-time environment default. The platform, meanwhile, treats that hostname as one it may
+re-home: the record moves between DNS zones during an account or cell migration, or the custom
+domain behind it is re-created, and nothing on the platform side lists the installed clients as
+consumers of the name. The next move omits the record or points it elsewhere, and every build in
+the field — the store version, the beta, the ones users will not update for months — fails the
+same way at the same moment with no server-side change able to reach them. The failure is worse
+than a broken web deploy because it cannot be rolled forward: only a store release repairs it, and
+until then the platform must resurrect the old name regardless of where it wanted to be.
+
+The mechanism has two halves that are usually owned by two teams and reviewed separately: the
+client that embeds the name never appears in the infrastructure's consumer list, and the
+infrastructure that moves the name never sees the client's constant. A build-time environment
+override with an embedded default is the same defect wearing a configuration costume: the default
+is what ships, and the override is set nowhere.
+
+**Detect.** In each client codebase, list every scheme-qualified host literal (`wss://`, `https://`,
+`stun:`, custom-scheme URLs) and every build-time environment variable whose *default* is a host.
+For each, find the platform artifact that owns the name: the DNS record and the certificate or
+custom-domain resource. If the name is not declared in the platform's routing layer with the
+client named as a consumer, or the client learns it from anything but a server response it
+already fetches at bootstrap, flag it. Prove the exposure live: resolve the name from a public
+resolver and open the protocol handshake; a name that answers today is still a finding if a
+rename would require a store release to repair. The fix has a fixed shape: the platform's routing
+layer owns the public name, the server hands the address to clients in the bootstrap payload they
+already parse, and the client refuses to connect until it has been handed one — no embedded
+default, no environment override.
+
+**False positives.** The API origin the bootstrap request itself is sent to — something has to be
+embedded to fetch the rest, and that one name must be treated as permanent and owned by the
+routing layer explicitly. Hosts that are genuinely immutable by contract with a third party (a
+vendor's fixed API domain). A development or test target that points at a fixture server and is
+never shipped.

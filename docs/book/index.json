@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1025,
+ "rule_count": 1028,
  "sections": [
   {
    "id": "A",
@@ -1455,7 +1455,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "K:1",
@@ -1608,6 +1608,10 @@
     {
      "id": "K:38",
      "title": "A shared production data path substitutes fabricated records when the real query is empty, so an empty account is shown someone else's invented customers as its own"
+    },
+    {
+     "id": "K:39",
+     "title": "A server-owned list is held in two client stores, one written by the fetch the screen renders from and one by the context that acts on a row, so an action on a freshly created row reads the store that does not yet hold it and its fallback picks the wrong target"
     }
    ]
   },
@@ -3322,7 +3326,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "DD:1",
@@ -3463,6 +3467,10 @@
     {
      "id": "DD:35",
      "title": "The deployment gate names its rollback monitors as strings across a state boundary, so when the monitored plane relocates the gate keeps a list of alarms that are latched or absent — and the list still validates"
+    },
+    {
+     "id": "DD:36",
+     "title": "A reference-data model is replaced by adding the new shape beside the old one, so every reader, seed, verifier and monitor keeps whichever half it was written against and each later fix moves one consumer while the system runs on both"
     }
    ]
   },
@@ -4140,7 +4148,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 52,
+   "rule_count": 53,
    "rules": [
     {
      "id": "NN:1",
@@ -4349,6 +4357,10 @@
     {
      "id": "NN:52",
      "title": "A parity gate hand-lists the sibling copies of one value that must move together, so the copies it does not name become exactly the drift it exists to prevent while its pass reads as full coverage"
+    },
+    {
+     "id": "NN:53",
+     "title": "A verifier or test suite lives outside the path pattern its gate enumerates, so it passes by hand, gates nothing, and the artifact it guards drifts for days under a green build"
     }
    ]
   },

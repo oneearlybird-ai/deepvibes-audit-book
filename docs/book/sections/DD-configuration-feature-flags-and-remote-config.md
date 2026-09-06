@@ -802,3 +802,34 @@ the platform genuinely supports them and the reference is intentional — verify
 than assuming the string is a mistake. Gates whose monitor list is intentionally empty or
 advisory, where rollback is manual. Monitors that are absent because the guarded feature is not
 deployed in this environment at all, making the whole gate inert by design.
+
+## DD:36 — A reference-data model is replaced by adding the new shape beside the old one, so every reader, seed, verifier and monitor keeps whichever half it was written against and each later fix moves one consumer while the system runs on both
+
+**Statement.** When a reference-data family — per-category behaviour rows, lookup tables,
+configuration packs — is redesigned, the new shape is often added next to the old one: new
+rows or new fields for the new consumer, a new reader for it, while the old rows keep their old
+fields and the old readers keep reading them. Nothing forces the cut-over, so the code base
+carries two models of the same thing. Each surface then binds to one half: the writer seeds the
+old rows, the new verifier counts the new fields, an alarm watches a token only the old reader
+emits, a worker waits for an event a newer rule forbids, a client still asks the question whose
+answer only the old rows can hold. From then on every fix is applied to the half the author
+happens to be reading, which is exactly how the halves diverge further: the row family shrinks
+on one side while a verifier on the other side pins its old size; a default moves into code while
+rows still declare it; a key dimension — a suffix, a variant letter — is retired in the writer while
+five readers still parse it. The system is never wrong on any single line and never right as a
+whole, and the cost arrives as "the agent lost X" reports whose cause is a consumer left on the
+other half.
+
+**Detect.** For every reference-data family, list the fields the rows carry and the fields each
+reader projects: a carried field with no reader, or a read field with no writer, marks a
+half-migrated model. List every parser of the key (suffix stripping, split-on-dash helpers,
+base-code functions) and every producer of the key; a parser with no producer is the old half.
+Read every verifier that pins a count or a shape of the family and check it against what the
+writer actually writes. For each monitor token, find its emitter. When a redesign lands, require
+one change to move rows, writer, every reader, every verifier, every monitor and every client
+input together, and to delete the old half in that change; a "for now" second model is the
+finding before it has drifted.
+
+**False positives.** A deliberate versioned migration with an expiry — both shapes read for a
+bounded window, a tracking row naming the removal date, and a gate that fails after it;
+read-only archives kept for provenance that no runtime reads.

@@ -849,3 +849,27 @@ separate, covered health check that would refuse to proceed.
 **Detect.** For every freshness or lag gate, read what it actually compares and classify the signal as time-based or content-based. Time-based comparisons are suspect wherever a restructure, a re-vendoring, or a bulk reformat can touch dates without touching content. Confirm by locating a moved-not-changed artifact and running the gate against it: a red verdict alongside a build system reporting no work is the defect. The correct shape is for the date to serve only as a cheap pre-filter and for a content digest — recorded as a tag or manifest entry on the published artifact — to make the decision.
 
 **False positives.** Gates whose timestamp comparison is explicitly a pre-filter feeding a digest check; artifacts with no stable content identity, where a date is the only available signal and the gate documents that limit; and genuinely stale artifacts, which must be excluded by comparing digests before the finding is written — a red freshness gate is not automatically a false one.
+
+
+## U:49 — A scaffold template is a copy of an exemplar app rather than derived from it, so every fix the exemplar receives after the copy is silently absent from the next thing stamped
+
+**Statement.** A monorepo keeps a "new app" template that was created by copying a working app
+at one moment: its layout, its middleware, its public assets. The working app keeps
+evolving — a security header is added, a nonce is threaded through to a third-party inline
+script, an icon set is replaced, a route is added — and each of those fixes lands in the app
+and in the other apps that were live at the time, while the template, which nobody runs,
+keeps the shape of the day it was copied. The next app stamped from it is born with every
+gap the estate had already closed: a page that trips its own content security policy on load,
+a missing brand image, an unguarded object-src. Because the template is a first-class part of
+the repository, the stamping looks like the sanctioned path, and the regressions are
+attributed to the new app's author rather than to the copy that predates them.
+
+**Detect.** Diff the template against the newest app that was stamped from it (with the
+placeholders substituted); every hunk is either a deliberate template difference or a fix the
+template missed, and the second kind is the finding. Look for fixes recorded against one app
+whose ledger note says "and the other apps" without naming the template. Prefer a template
+that is generated from the exemplar by a script that strips the app-specific names, or a gate
+that fails when the two diverge outside a declared allowlist.
+
+**False positives.** Template files that intentionally hold a starter (a placeholder shell,
+sample content) and say so in the file; differences that are the app's own vertical features.

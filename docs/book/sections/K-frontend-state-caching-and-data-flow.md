@@ -579,3 +579,26 @@ before they ship: the moment they are committed to a trunk-only repository they 
 **False positives.** Fixtures inside the test harness or a storybook; a clearly labelled demo
 mode that is opt-in, marks its records as sample data, and cannot be acted upon; empty-state
 illustrations that render no record shape.
+
+## K:39 — A server-owned list is held in two client stores, one written by the fetch the screen renders from and one by the context that acts on a row, so an action on a freshly created row reads the store that does not yet hold it and its fallback picks the wrong target
+
+**Statement.** The client keeps the same server list in two places: a query cache the grid or
+list renders from and refreshes on creation, and a context-level state array that the acting
+code — switch, navigate, open — consults for a target (a host, a role, a route). Creating a row
+refreshes the first store, so the new card appears, and not the second. The action taken on
+that card finds nothing in the second store, and its miss branch is a fallback — the current
+host, the current location — so the switch happens in place on the wrong target and the screen
+resolves to whichever row was active before. The user sees a click do nothing, then land
+somewhere else. The fallback is the multiplier: had the miss thrown, the stale store would have
+surfaced as an error on the first click instead of as a wrong destination.
+
+**Detect.** Enumerate every client store of a server list (query keys, context state, module
+memory) and every action that reads one; a list held in more than one store with different
+refresh triggers is the finding. Read each action's miss branch: a fallback to "here" or
+"current" is a second finding. Fix by making the action read the one store the screen renders
+from, or better by having the server answer the action with its target so the client holds no
+copy, and by refusing on a miss.
+
+**False positives.** A second store that is a pure derived selector over the first with no fetch
+of its own; server-rendered initial state that the query cache replaces before any action can
+run.

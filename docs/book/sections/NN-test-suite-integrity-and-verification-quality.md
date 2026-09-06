@@ -1271,3 +1271,50 @@ count ("both lists", "the pair") is a sign the inventory is hand-typed.
 privileged plane), which must be excluded explicitly with the reason recorded; gates that
 derive their subjects by walking every resource of the holding type; a sibling copy generated
 from the same source the gate reads.
+
+## NN:53 — A verifier or test suite lives outside the path pattern its gate enumerates, so it passes by hand, gates nothing, and the artifact it guards drifts for days under a green build
+
+**Statement.** Gates discover their checks by pattern — a `verify-*` glob under one directory,
+a `*.test` glob under another, a runner's file list — and a check written to guard a specific
+artifact is placed beside the artifact instead, in a tools directory that no pattern covers. It
+runs when its author runs it, passes, and is cited by READMEs as the thing that keeps the
+artifact honest; no runner ever invokes it. The artifact then changes under a different author
+— a template rewrite, a build-tool rewrite — who never runs the orphan check; the materialized
+outputs, the docs and the suite fall out of step with the source for days, and the build stays
+green because the only check that would have failed is the one nothing runs. A common variant
+compounds it: the check byte-compares a generated directory that a generic ignore rule keeps
+out of version control, so on any clone but the author's the directory does not exist and the
+check would fail on sight — unseen for the same reason.
+
+**Detect.** List every file whose name or contents claim to be a verifier, static check or test;
+list what each gate actually enumerates (the runner globs, the task-runner targets, the CI
+steps); diff the two. Any check outside every pattern is the finding whether or not it passes
+today. Run each check on a fresh clone: one that reads an ignored output fails there. Fix by
+moving the check into an enumerated path, or by adding a tripwire that fails when a
+verifier-shaped file exists outside one, and by making the generated artifact either committed
+or rebuilt by the gate itself.
+
+**False positives.** A check deliberately run only by a scheduled job or a release lane, when a
+tracking row or the gate's own documentation names that lane and the lane is shown to run it;
+scratch scripts that are not presented as gates.
+
+
+## NN:53 — A gate enumerates the targets it checks from a typed list, so a new target is exempt by omission while the gate reports every listed one green
+
+**Statement.** A static gate that must hold across every app, stack, function or host keeps
+its list of targets as a literal array in its own source. The list was complete when written.
+A new target is added to the repository through the sanctioned path — a scaffold, a registry
+entry, a new directory — and the gate never learns of it; it walks its four or five names,
+finds them all compliant, and prints a count that reads as total coverage. The new target ships
+with exactly the defect the gate exists to catch, and the gate's own green output is later
+cited as evidence that the class of defect was checked. The failure is invisible in the run
+log because nothing in it names what was not checked.
+
+**Detect.** For every gate, find where its target set comes from; a literal list of names in
+the gate file is the finding whenever the same names also exist as directories, registry
+entries or state files the gate could have read. Compare the gate's reported count with the
+count on disk. Prefer discovery (the directory listing, the registry, the state) over
+enumeration, and make the gate print the targets it checked so an omission is visible.
+
+**False positives.** A deliberately scoped gate whose list is the contract (a reference set the
+rest must match) and whose output names the scope; targets excluded with a recorded reason.

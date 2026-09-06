@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1033,
+ "rule_count": 1034,
  "sections": [
   {
    "id": "A",
@@ -3173,7 +3173,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "CC:1",
@@ -3330,6 +3330,10 @@
     {
      "id": "CC:39",
      "title": "A deployable's source tree and the declaration that consumes its artifact live in different units, so directory-keyed change selection deploys the unit that changed (a no-op) and never the unit that runs the code"
+    },
+    {
+     "id": "CC:40",
+     "title": "A pool maintainer counts only healthy and in-progress members as in flight, so every failed build frees capacity and the loop creates without bound until an account quota stops it"
     }
    ]
   },

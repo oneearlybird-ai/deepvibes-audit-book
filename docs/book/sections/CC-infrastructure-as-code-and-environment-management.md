@@ -791,6 +791,8 @@ weight. Check every role in the account against the functions that reference it 
 function uses is the same campaign's residue. Make the resolution a live gate, not a one-time
 sweep: the class returns with the next rename.
 
+Grants minted at runtime from a template in code — trust policies and inline policies a provisioner stamps on every tenant's roles, notification targets a worker writes per bucket — are grants too: a live target check that reads only the policies the IaC declares misses them, and a retirement that survives that check still breaks the next mint.
+
 **False positives.** Grants written ahead of a resource the same change creates, when the
 create and the grant land together. Wildcard grants over a namespace that is legitimately empty
 today by design (a per-customer prefix before the first customer). Service-created targets that
@@ -922,3 +924,33 @@ built from the source at plan time), which the selector follows; lanes that sele
 artifact hash rather than by changed paths; a deliberately shared source tree consumed by
 declarations in several units, where every consumer is listed in the build's own mapping
 that the selector reads.
+
+## CC:40 — A pool maintainer counts only healthy and in-progress members as in flight, so every failed build frees capacity and the loop creates without bound until an account quota stops it
+
+**Statement.** A scheduled maintainer keeps a warm pool of pre-built units — tenant shells,
+runners, environments — at a target size. Each run counts the members it considers in
+flight, subtracts them from the target, and builds the shortfall, capped per run. A build
+that fails is moved to a quarantine or failed state for a repair path to look at later. If
+the count of in-flight members excludes those failed units, a failure does not consume
+capacity: the next run sees the same shortfall and builds again. When the cause of failure
+is systemic — a principal the build's policies name no longer exists, a permission was
+revoked, a dependency's quota is exhausted — every build fails the same way, and the loop
+turns a steady cadence into unbounded creation: one failed unit per slot per run, each
+carrying every side resource the build minted before it failed (identity pools, keys, policy
+stores, buckets). Nothing raises an alarm because each run is individually successful; the
+first hard stop is an account-level quota on one of the side resources, which then also
+denies legitimate builds and hands the repair path a second systemic failure to retry
+against on the same cadence.
+
+**Detect.** Read the maintainer's sizing: the set of states it counts as in flight against
+the target, and the state a failed build lands in. If the failed state is outside the
+in-flight set and nothing else bounds creation — no cap on quarantined count, no backoff
+after N consecutive failures, no alarm on the failed-state population — the loop is
+unbounded by construction. Confirm live: count members per state and creations per hour;
+a failed-state population that grows at the per-run cap while the healthy population stays
+flat is the loop running. Then walk the side resources one build mints and compare each
+count with its account quota.
+
+**False positives.** Maintainers whose failed builds stay in the in-flight count until a
+reaper removes them; loops with a consecutive-failure breaker or a hard cap on the failed
+population; pools whose builds mint no side resources.

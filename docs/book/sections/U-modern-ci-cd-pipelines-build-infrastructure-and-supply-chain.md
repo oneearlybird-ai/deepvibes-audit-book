@@ -30,6 +30,8 @@ Lockfiles: Not committed or not enforced in CI (install vs ci) — builds non-re
 
 SCA: No dependency-vulnerability gate (osv-scanner/npm audit/Dependabot) — known-CVE dependencies rot in place.
 
+**Verification note.** An artifact can carry two dependency trees at once - a vendored bundle's and the build's own install - and a fix applied to one leaves the other untouched while the build log reports success. Verify a dependency fix at the exact path the scanner cites inside the published artifact, never by the presence of the fixed version somewhere in the archive.
+
 ## U:7 — Secret Scanning: No gitleaks/trufflehog hook on push — credentials reach remote history…
 
 Secret Scanning: No gitleaks/trufflehog hook on push — credentials reach remote history before anyone notices.

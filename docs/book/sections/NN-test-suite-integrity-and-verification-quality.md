@@ -1299,7 +1299,7 @@ tracking row or the gate's own documentation names that lane and the lane is sho
 scratch scripts that are not presented as gates.
 
 
-## NN:53 — A gate enumerates the targets it checks from a typed list, so a new target is exempt by omission while the gate reports every listed one green
+## NN:54 — A gate enumerates the targets it checks from a typed list, so a new target is exempt by omission while the gate reports every listed one green
 
 **Statement.** A static gate that must hold across every app, stack, function or host keeps
 its list of targets as a literal array in its own source. The list was complete when written.

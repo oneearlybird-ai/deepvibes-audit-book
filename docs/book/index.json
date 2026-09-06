@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1028,
+ "rule_count": 1030,
  "sections": [
   {
    "id": "A",
@@ -2409,7 +2409,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "U:1",
@@ -2602,6 +2602,10 @@
     {
      "id": "U:48",
      "title": "A freshness gate that compares timestamps calls a content-preserving relocation stale, because the move changes every date without changing a byte"
+    },
+    {
+     "id": "U:49",
+     "title": "A scaffold template is a copy of an exemplar app rather than derived from it, so every fix the exemplar receives after the copy is silently absent from the next thing stamped"
     }
    ]
   },
@@ -4148,7 +4152,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 53,
+   "rule_count": 54,
    "rules": [
     {
      "id": "NN:1",
@@ -4361,6 +4365,10 @@
     {
      "id": "NN:53",
      "title": "A verifier or test suite lives outside the path pattern its gate enumerates, so it passes by hand, gates nothing, and the artifact it guards drifts for days under a green build"
+    },
+    {
+     "id": "NN:54",
+     "title": "A gate enumerates the targets it checks from a typed list, so a new target is exempt by omission while the gate reports every listed one green"
     }
    ]
   },

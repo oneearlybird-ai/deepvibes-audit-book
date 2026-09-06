@@ -148,3 +148,54 @@ deployment whose opening disclosure already states the automation, where a later
 avoids repeating it. Regulated deployments that carry a documented, counsel-reviewed disclosure
 posture different from the default; the finding is an undocumented concealment instruction, not a
 disagreement about wording.
+
+## Y:18 — A regulated call-opening utterance the published terms promise as fixed (recording notice, automation disclosure, caller identification) is delegated to the language model or to customer-editable text, or emitted on one lane only
+
+**Statement.** The operator's own terms promise that every call opens with a specific
+utterance — the call is recorded, the voice is automated, the business and a callback number —
+and describe it as unremovable. In the running system the utterance exists only as (a) a line
+in the model's instructions, which a model may reword, defer or skip; (b) a greeting the
+customer can overwrite, guarded by a length check and nothing else; or (c) a deterministic
+pre-connect prompt on the inbound lane that the outbound, voicemail and transfer lanes never
+pass through. Because such terms usually reallocate liability around the utterance (the
+customer indemnifies the operator except where the operator failed to deliver it), the gap
+belongs to the operator alone, and customers in disclosure jurisdictions rely on the sentence
+to discharge their own duty. It survives review because a deterministic line does exist and
+sounds right in a demo, while the promise is read in the legal document by different people.
+
+**Detect.** Enumerate every path that puts a caller on a recorded or synthetic-voice leg —
+inbound agent, outbound agent, voicemail, transfer, scheduled callback — and find the component
+that speaks the opening on each. Require a fixed, non-model, pre-connect step whose words carry
+the promised substance. Read the greeting validators and confirm a customer cannot delete or
+contradict the utterance. Diff the emitted words against the promise in the terms, clause by
+clause. On outbound lanes check for the identification (calling business, callback number)
+that artificial-voice rules require regardless of consent. Count lanes, not just the demo lane.
+
+**False positives.** Terms that promise disclosure only on request (then the prompt is the right
+home and Y:17 governs concealment); lanes that never record and never use a synthetic voice; a
+jurisdiction-specific wording variant that keeps the promised substance; a documented,
+counsel-reviewed decision to narrow the promise, applied to the terms in the same change.
+
+## Y:19 — A published retention or deletion window is enforced in first-party storage only: the subprocessor holding the same content is configured for default or unlimited retention and nothing propagates deletion
+
+**Statement.** The operator publishes a retention window (recordings deleted after N days) or
+a deletion commitment (content deleted within N days of a request, subprocessors instructed)
+and implements it, when at all, on its own buckets and tables. The same content — audio,
+transcripts, prompts — also lives with the vendor that produced it, under that vendor's
+retention setting, which defaults to years or to unlimited, and no offboarding or lifecycle
+path ever calls the vendor's deletion API. The published window is therefore false for the
+copy that is easiest to subpoena and hardest to see. The gap persists because the vendor
+setting lives in a deployment script or a dashboard, outside the data-lifecycle code, and
+because changing it carries vendor-incident risk, so it is deferred and forgotten.
+
+**Detect.** For each subprocessor that receives content, read the declared retention and
+zero-retention configuration in code, not the dashboard. Grep the deletion, retirement and
+lifecycle paths for calls to the vendor's delete or purge API. Compare both with the published
+window. Read the account-level training or data-use setting and the executed DPA: a vendor's
+licence to reuse content is the same exposure stated in a different section, and under the
+third-party-interception theories now in litigation the vendor's capability alone is the harm.
+
+**False positives.** Vendors that only transit content and store nothing (verify against the
+vendor's documented retention, not its sales page); vendors under contractual zero retention
+with evidence on file; a published window that explicitly scopes itself to first-party systems
+and names the vendor copy separately — then audit that sentence for truth instead.

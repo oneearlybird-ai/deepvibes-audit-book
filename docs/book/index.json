@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 994,
+ "rule_count": 996,
  "sections": [
   {
    "id": "A",
@@ -2809,7 +2809,7 @@
    "title": "Compliance, Auditing & Data Privacy (GDPR/CCPA/SOC2)",
    "group": "saas-core",
    "file": "sections/Y-compliance-auditing-and-data-privacy-gdpr-ccpa-soc2.md",
-   "rule_count": 17,
+   "rule_count": 19,
    "rules": [
     {
      "id": "Y:1",
@@ -2878,6 +2878,14 @@
     {
      "id": "Y:17",
      "title": "The agent persona instructs the model to preserve the caller's belief that it is human and supplies a canned deflection for the direct question, turning a disclosure duty into active concealment"
+    },
+    {
+     "id": "Y:18",
+     "title": "A regulated call-opening utterance the published terms promise as fixed (recording notice, automation disclosure, caller identification) is delegated to the language model or to customer-editable text, or emitted on one lane only"
+    },
+    {
+     "id": "Y:19",
+     "title": "A published retention or deletion window is enforced in first-party storage only: the subprocessor holding the same content is configured for default or unlimited retention and nothing propagates deletion"
     }
    ]
   },

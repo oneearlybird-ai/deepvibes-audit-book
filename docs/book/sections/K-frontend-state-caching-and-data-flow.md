@@ -556,3 +556,26 @@ requests is the same finding seen from the back end.
 demonstration surface. Props that are legitimately absent for the current viewer (a permission the user
 lacks, a capability the account has not enabled) and whose empty state is the correct final answer.
 Placeholders inside a feature that is itself gated off and not reachable in production.
+
+
+## K:38 — A shared production data path substitutes fabricated records when the real query is empty, so an empty account is shown someone else's invented customers as its own
+
+**Statement.** While sketching a new surface, a developer gives a list component a
+hand-written fallback - a few realistic-looking records returned whenever the live query
+comes back empty - so the screen has something to show. The fallback lives in the shared
+component every product variant renders, not in the sketch, and nothing gates it: no
+environment check, no flag, no visual marker. Every genuinely empty account then sees the
+fabricated records as real ones - names, phone numbers, notes with access codes - and every
+action on them (open, edit, call) operates on data that does not exist. The empty state, the
+one screen a new customer is guaranteed to see, becomes a lie. Because the fallback only
+fires when the query is empty, seeded test accounts never reproduce it.
+
+**Detect.** Search shared data-flow components for literal arrays of domain records and for
+any branch that returns a constant collection on an empty or failed result. Read the empty
+state of every list against a freshly created account. Treat realistic fabricated records
+(real-looking names, addresses, codes) in a production path as a high-severity finding even
+before they ship: the moment they are committed to a trunk-only repository they are live.
+
+**False positives.** Fixtures inside the test harness or a storybook; a clearly labelled demo
+mode that is opt-in, marks its records as sample data, and cannot be acted upon; empty-state
+illustrations that render no record shape.

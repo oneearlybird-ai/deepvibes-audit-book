@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1017,
+ "rule_count": 1023,
  "sections": [
   {
    "id": "A",
@@ -452,7 +452,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "D:1",
@@ -577,6 +577,10 @@
     {
      "id": "D:31",
      "title": "A field made optional at the API layer is still written as an explicit null, and the store rejects it because that attribute is an index key"
+    },
+    {
+     "id": "D:32",
+     "title": "A store named for one entity family hosts several unrelated families, so grants, readers and new work are routed by the name to the wrong home and the other families live unnamed under it"
     }
    ]
   },
@@ -943,7 +947,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 57,
+   "rule_count": 58,
    "rules": [
     {
      "id": "G:1",
@@ -1172,6 +1176,10 @@
     {
      "id": "G:57",
      "title": "A per-event alarm placed on a condition that is permanent until someone acts clears itself after every occurrence, so a standing defect is rendered as a series of short blips that nobody reads as one thing"
+    },
+    {
+     "id": "G:58",
+     "title": "A log-token monitor names a token on a function that never emits it because the emitter lives in another workload's log group, so the alarm is dead and the coverage gate stays red on trunk"
     }
    ]
   },
@@ -1447,7 +1455,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "K:1",
@@ -1596,6 +1604,10 @@
     {
      "id": "K:37",
      "title": "A component wired to literal empty props as a deliberate sequencing placeholder, with nothing that fails when the real source ships"
+    },
+    {
+     "id": "K:38",
+     "title": "A shared production data path substitutes fabricated records when the real query is empty, so an empty account is shown someone else's invented customers as its own"
     }
    ]
   },
@@ -3732,7 +3744,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 38,
+   "rule_count": 41,
    "rules": [
     {
      "id": "JJ:1",
@@ -3885,6 +3897,18 @@
     {
      "id": "JJ:38",
      "title": "A defensive guard suppresses an output to prevent a collision an existing ordering invariant already prevents, and its only live effect is removing the user's ability to act"
+    },
+    {
+     "id": "JJ:39",
+     "title": "A seeded default row omits the attribute a downstream invariant keys on, so the invariant silently never applies to anything the system created for itself"
+    },
+    {
+     "id": "JJ:40",
+     "title": "A reader projects attributes no writer of the store produces, so the feature is structurally empty and reports \"nothing\" as a true answer"
+    },
+    {
+     "id": "JJ:41",
+     "title": "Pooled resource assignment takes the first free candidate in storage order, so one member absorbs every job whenever they are free while the rest of the pool idles"
     }
    ]
   },

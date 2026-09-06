@@ -773,3 +773,80 @@ reasoning omits.
 affordances the surface renders, a channel that truncates), where the guard is the enforcement rather
 than a belief about ordering. Cases where the two affordances genuinely lead to different destinations
 and showing the later one would be wrong on its own merits, independent of collision.
+
+
+## JJ:39 — A seeded default row omits the attribute a downstream invariant keys on, so the invariant silently never applies to anything the system created for itself
+
+**Statement.** A provisioning step writes default rows - starter services, sample
+categories, initial resources - from a code constant or a template, and the template predates
+an invariant that a later component keys on an attribute of those rows: "collect an address
+when the service happens at the customer's location", "require a deposit when the item is
+made to order", "block the slot when the resource is off site". The invariant's reader treats
+an absent attribute as the permissive value, because absence is the shape of every row that
+was written before the attribute existed. The rows the system seeds for itself therefore
+never trigger the invariant, while rows a person creates through the form (which requires
+the attribute) do. The product looks correct for every hand-made record and wrong for every
+default one, and the default ones are the majority on day one. Nothing errors: the reader's
+permissive default is exactly what it was designed to do.
+
+**Detect.** For every attribute a reader keys a rule on, enumerate every writer of that row
+family, including seeders, importers, migrations and fixtures, and check that each one writes
+the attribute explicitly. Pay special attention to the reader's treatment of absence - a
+default of "not required" for an absent attribute is where the seeded rows fall through. Then
+read the seed source itself: a catalog that carries the attribute for none of its entries is
+the finding, whichever value the entries should have. Prove it with the invariant's own
+outcome: provision a fresh instance and exercise the flow the invariant guards using only
+seeded rows.
+
+**False positives.** Seed rows that are deliberately inert until a person completes them and
+whose reader refuses (not permits) an absent attribute; attributes the reader derives from
+another source of truth (the industry, the category) rather than from the row itself.
+
+## JJ:40 — A reader projects attributes no writer of the store produces, so the feature is structurally empty and reports "nothing" as a true answer
+
+**Statement.** A component reads a store by projecting a small set of attributes and
+filtering on them - "the bookings dated today", "the orders with status pending" - and the
+attributes it names are not the ones any writer of that store produces: the writer stores an
+instant and the reader filters on a calendar date, the writer stores a nested status and the
+reader filters on a flat one, the writer was replaced and the new one dropped a field. The
+query is valid, the projection returns rows with the named attributes absent, the filter
+matches none, and the component reports the empty result as a fact about the world: no
+appointments today, no pending orders, nothing to review. It is indistinguishable from a quiet
+day. The unit tests pass because their fixtures were written from the reader's expectation,
+not the writer's output.
+
+**Detect.** For every projection and filter, name the writer of the store and read the
+attributes it actually puts on the row; a reader attribute with no writer is the finding, not a
+warning. Prefer fixtures built from a writer's real output (a captured row, or a call to the
+writer's own builder) over hand-typed ones. In production, treat a persistently empty result
+from a component whose inputs are known to be non-empty as a wiring defect until proven
+otherwise - count the rows in the store directly and compare.
+
+**False positives.** Optional attributes that some writers produce and the reader documents as
+best-effort; a reader that falls back to the writer's attribute when its preferred one is
+absent, with a test proving the fallback.
+
+## JJ:41 — Pooled resource assignment takes the first free candidate in storage order, so one member absorbs every job whenever they are free while the rest of the pool idles
+
+**Statement.** A booking, dispatch or ticket-routing engine lets a request name a pool
+("any technician", "any table for four", "any on-call nurse") rather than a person, and the
+assignment step walks the pool's candidates in the order the store returned them and takes
+the first one that is free. Storage order is stable - an id, a creation time - so the same
+member sits at the head of the list for every request, and the second member is reached
+only when the first is busy. Load concentrates on one person, the others are underused, and
+for field work the first member is sent across town while a colleague sits idle next to the
+customer. Every individual assignment is correct - a free candidate was chosen - so no
+validation fails, no test notices, and the owner sees the pattern only in the aggregate, if at
+all. It is often introduced innocently by a constraint solver whose backtracking needs some
+order and was handed the store's.
+
+**Detect.** Find the assignment step for any pool-mode requirement and read how the candidate
+list is ordered before the first-fit pass. If the order is the store's (key order, insertion
+order) with no load, rotation, proximity or fairness input, the finding stands regardless of
+whether a complaint has arrived. Simulate a day of requests against a pool of three free
+members and count assignments per member. Check that reassignment paths (reschedule,
+manual override) do not mask the defect by fixing individual cases.
+
+**False positives.** Pools with a single member; assignment rules that intentionally prefer
+a primary member with the rest as overflow, documented as such and visible in the product; a
+solver that sorts candidates by an explicit score before backtracking.

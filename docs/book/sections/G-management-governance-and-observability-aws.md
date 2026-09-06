@@ -1194,3 +1194,28 @@ beside the per-event detector, never instead of it.
 alarms that latch by design (a queue depth, a gauge) and therefore cannot self-clear; an
 alarm whose recovery message is deliberately suppressed and whose runbook treats the first
 firing as a ticket, when that runbook is demonstrably followed.
+
+
+## G:58 — A log-token monitor names a token on a function that never emits it because the emitter lives in another workload's log group, so the alarm is dead and the coverage gate stays red on trunk
+
+**Statement.** Monitoring is declared per function as a list of log tokens, and a static
+coverage gate checks that every declared token is emitted by that function's source. A
+token is named on the function that owns the domain event ("booking created") while the only
+code that emits it runs elsewhere - a tool server, a stream consumer, a sibling function -
+writing to a different log group. The metric filter on the named function matches nothing
+forever, so the alarm never fires, and the coverage gate fails on trunk with a message that
+reads like a housekeeping nit. Because the gate belongs to the slow certification lane rather
+than the landing lane, the red persists across every landing, every stack's certification
+fails at the same step before it starts, and the debt of unpaid certifications grows with no
+one stack to blame.
+
+**Detect.** For every token in a function's monitor entry, find the emitter by searching the
+whole repository, not the function's directory; when the emitter is another workload, the
+token is on the wrong entry. Run the coverage verifier on trunk itself, not only in a work
+tree, and treat a red on trunk as a finding whose owner is the domain that declared the token.
+Check which lane the verifier runs in: a coverage gate that only the certification lane runs
+cannot stop the landing that broke it.
+
+**False positives.** A token intentionally declared on the function that will emit it in the
+same change (the config and the code land together); tokens listed in an explicit emission
+exemption with the runtime path that carries them.

@@ -156,3 +156,27 @@ expressions where attribute-name aliases obscure a correct hash-key condition �
 **Detect.** For every field whose optionality was relaxed, resolve whether the attribute appears in any index key schema — not only the base table's key — by reading the live table description rather than the model. Then read the write path for an explicit null assignment, and the update path for a set-to-null where a remove is required. Confirm live: attempt or locate a create without the field and read the store's error, and check the readers of that index, since omitting the attribute removes the row from a sparse index and any consumer that assumed total membership now misses it.
 
 **False positives.** Attributes that are keys only of the base table, where the field was never truly optional and the API change is itself the defect; stores that model a null key as an absent attribute; write paths that already omit rather than nullify — verify by reading the marshalled item, not the function signature; and cases where a sparse index is the intended design and every reader of it independently requires the field.
+
+
+## D:32 — A store named for one entity family hosts several unrelated families, so grants, readers and new work are routed by the name to the wrong home and the other families live unnamed under it
+
+**Statement.** A table is created for one entity - the agent, the order, the account - and
+over time gains sort-key families for things that were convenient to co-locate: the team,
+the bookable resources, their time off, the routing groups. The name still says the first
+entity. Every grant that needs the team must be granted "the agents table"; every reader
+discovering the data model from names looks elsewhere first; every new family is added here
+because the neighbours are, and the key-space collisions and id-space confusions that follow
+(a reader treating one family's ids as another's) grow in exactly this soil. When the rest of
+the model is one table per family, the misnamed store is the exception that nobody documents
+as one. Nothing is broken by the layout itself; the cost is paid by every person who reasons
+from the name.
+
+**Detect.** Compare each store's declared sort-key families with its name; a store whose
+families belong to more than one domain concept, in a schema that otherwise keeps families
+apart, is the finding. Look for grants and profiles that name the store for access to a family
+the name does not suggest, and for incidents where one family's id was read in another's
+space. Record the intended home for each foreign family in the contract before any move.
+
+**False positives.** A deliberate single-table design applied consistently across the schema
+and documented as such; adjacency families that are strictly children of the named entity
+(an order's lines under the orders table).

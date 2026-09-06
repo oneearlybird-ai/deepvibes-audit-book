@@ -199,3 +199,27 @@ third-party-interception theories now in litigation the vendor's capability alon
 vendor's documented retention, not its sales page); vendors under contractual zero retention
 with evidence on file; a published window that explicitly scopes itself to first-party systems
 and names the vendor copy separately — then audit that sentence for truth instead.
+
+## Y:20 — A legal or policy document is duplicated by hand into a client binary, so every edit to the canonical text leaves the app presenting a superseded contract
+
+**Statement.** The canonical terms, privacy policy or data processing addendum live in one
+text file on the web surface, and a native client embeds a pasted copy of the same text so
+the document renders without a web view. The copy carries its own "last updated" string.
+Nothing links the two: no build step reads the canonical file, no test compares them, no
+release checklist names the copy. The first edit to the canonical text — which is exactly the
+edit made when a promise turns out to be untrue — leaves the app showing the old promise with
+the old date, and the app is a surface customers sign up on. The drift is invisible to any
+verifier that guards the web surface, because the copy sits in a different repository and a
+different language, and it is invisible to the client's own review because legal text is read
+as content rather than as contract.
+
+**Detect.** Grep every client repository for a distinctive sentence from each legal document
+and for each document's date string. For every hit that is not a link to the canonical URL,
+look for the mechanism that regenerates it (a build step reading the canonical file, a fetched
+endpoint, a shared package) and for a test that fails when the copies diverge. Compare the
+embedded date with the canonical date on the same day; a match today proves nothing about
+tomorrow unless the mechanism exists.
+
+**False positives.** Clients that render the canonical URL in a web view or fetch the text at
+runtime; a generated copy whose build fails on divergence; an intentionally frozen historical
+version presented to the user as such.

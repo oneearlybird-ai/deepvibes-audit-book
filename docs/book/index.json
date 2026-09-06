@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1016,
+ "rule_count": 1017,
  "sections": [
   {
    "id": "A",
@@ -943,7 +943,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 56,
+   "rule_count": 57,
    "rules": [
     {
      "id": "G:1",
@@ -1168,6 +1168,10 @@
     {
      "id": "G:56",
      "title": "A workload relocation moves the emitters but leaves their metric filters and alarms bound to the origin's now-empty log destinations, so coverage counts stay whole while nothing is watched"
+    },
+    {
+     "id": "G:57",
+     "title": "A per-event alarm placed on a condition that is permanent until someone acts clears itself after every occurrence, so a standing defect is rendered as a series of short blips that nobody reads as one thing"
     }
    ]
   },

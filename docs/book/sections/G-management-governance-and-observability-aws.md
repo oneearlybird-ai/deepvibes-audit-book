@@ -1161,3 +1161,36 @@ than a notification, which have no human destination by design.
 **Detect.** For every relocation, list the observability resources that named the moved workloads and prove where each one is declared; any that live outside the moved unit are suspects. For each suspect, confirm against live state rather than IaC: read the origin log destination's most recent event timestamp, and read the alarm's state history for the period since the move — an alarm with no state transitions across a window in which the workload demonstrably served errors is the finding. Treat a coverage verifier's pass as evidence of nothing until you have checked what it counts: verifiers that assert existence of an alarm per workload cannot see that the alarm is pointed at an empty source. Compare the emitter's real destination against the filter's declared source directly.
 
 **False positives.** Deliberate dual-running windows where the origin still receives traffic and both sets are intentionally live; alarms sourced from service-level metrics published by the platform rather than from log filters, which follow the workload automatically; monitoring that was moved in the same change and whose apparent silence reflects a genuinely quiet workload — establish the workload was actually invoked before calling the alarm blind.
+
+## G:57 — A per-event alarm placed on a condition that is permanent until someone acts clears itself after every occurrence, so a standing defect is rendered as a series of short blips that nobody reads as one thing
+
+**Statement.** An alarm is added to close a "miss path has no signal" finding, and it is shaped
+for the event it was written against: threshold one, a single evaluation period, missing data
+treated as not breaching. That shape is right for a transient fault — a failed call, a rejected
+write — where each occurrence is its own incident. It is wrong for a condition that persists
+until a human acts: a reference table that was never seeded, a store built empty by a
+relocation, a permission that was never granted. Such a condition produces one event per
+request that touches it, so the alarm enters its firing state for one period after each
+request and returns to healthy as soon as traffic pauses. The notification channel receives
+a scatter of alarm-then-recovered pairs, spaced by whatever the request rate happens to be,
+and every recovery message says the problem went away. Readers learn to treat the pair as
+noise, and nothing in the stream says that the condition has been continuous since a
+particular date. The signal exists, has fired, and has been delivered, and the defect is still
+invisible — the worst of the three outcomes, because a later audit finds the alarm, finds its
+history, and reasonably concludes the estate was watching. The alarm's own history is the only
+record of persistence, and only when read as a whole.
+
+**Detect.** For every alarm whose metric is a log-token count, ask what the token means: does
+it mark an event that ends with the request, or a state that will still be true on the next
+request? For a state, a per-event alarm shape is the finding, whether or not it has fired.
+Read the alarm history over a long window and look for repeated firing-and-recovering pairs
+against the same token; three or more pairs with no intervening fix is a standing condition
+being reported as blips. Then verify the condition directly — read the store, the grant, the
+row — rather than the alarm. Confirm the fix owns both halves: a standing check (a scheduled
+probe that reads the thing the token complains about and stays in alarm until it is present)
+beside the per-event detector, never instead of it.
+
+**False positives.** Tokens that genuinely mark per-request faults with independent causes;
+alarms that latch by design (a queue depth, a gauge) and therefore cannot self-clear; an
+alarm whose recovery message is deliberately suppressed and whose runbook treats the first
+firing as a ticket, when that runbook is demonstrably followed.

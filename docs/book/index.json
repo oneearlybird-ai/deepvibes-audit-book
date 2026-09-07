@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1038,
+ "rule_count": 1039,
  "sections": [
   {
    "id": "A",
@@ -3185,7 +3185,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "CC:1",
@@ -3350,6 +3350,10 @@
     {
      "id": "CC:41",
      "title": "Tenant grants are minted from a versioned template, but the reconciler that restamps drift covers only the pool, so a template change reaches the tenants already in service only when an operator invokes the repair by hand"
+    },
+    {
+     "id": "CC:42",
+     "title": "A tool switch moves the working cache to a new directory name, and every scanner that skipped the old name keeps skipping only the old name, so a clone that has planned shows every declaration twice"
     }
    ]
   },

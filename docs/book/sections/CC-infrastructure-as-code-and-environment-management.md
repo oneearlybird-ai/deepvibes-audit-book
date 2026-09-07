@@ -980,3 +980,25 @@ tenants' policies.
 gated lane (a canary, a maintenance window, an explicit approval) that still runs without a
 human remembering; templates whose in-service units are intentionally frozen at their minted
 version, with the freeze recorded and the template change flow requiring a migration.
+
+## CC:42 — A tool switch moves the working cache to a new directory name, and every scanner that skipped the old name keeps skipping only the old name, so a clone that has planned shows every declaration twice
+
+**Statement.** Static verifiers walk the tree and skip the directories that are not source:
+the version control store, dependency installs, and the IaC tool's working cache. When the
+tool is replaced or upgraded and its cache moves — a new directory name under each unit —
+the enforcement that says "the cache lives outside the tree" is added in one place, and the
+skip lists in every other scanner still name the retired directory. On a clean clone nothing
+shows. On any clone that has planned with the cache in-tree (an older lane, a manual run, a
+flag not exported), every declaration exists twice, and the scanners report duplicate
+resources, duplicate failure destinations, doubled wildcards and identifiers, none of which
+exist in the source. The reds land on whoever runs the suite next, are attributed to the
+last land, and are chased as code defects.
+
+**Detect.** List every scanner that names the retired cache directory in a skip list and
+check whether it also names the current one. Confirm live by creating the cache in-tree in a
+scratch clone (or finding a clone that has one) and running the suite: duplicate findings
+that vanish when the cache is removed are the signature. The tool's own relocation check
+passing is not evidence; it only proves the cache is absent on that clone.
+
+**False positives.** Scanners that walk version-controlled files only (they never see an
+ignored cache); suites whose runner deletes or relocates the cache before scanning.

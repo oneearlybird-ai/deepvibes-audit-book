@@ -1340,3 +1340,21 @@ make a test that fails when a top-level source directory is outside every gate's
 
 **False positives.** A gate deliberately limited to one app whose output says so and whose
 excluded siblings are covered by another gate with a recorded reason.
+
+## NN:56 — A verifier run that overlaps an edit to the files it scans proves nothing about either tree
+
+**Statement.** A verification suite reads the tree over seconds to minutes. An edit landed
+while it runs — the author's own fix, a rebase, a peer's land, a generated file — means the
+suite read some files before the change and some after, and its verdict describes a tree
+that never existed. A green from such a run is cited as proof, a gate later reports the red
+the run should have shown, and the disagreement is chased as flakiness. The same holds in
+reverse: a red that overlapped a fix is not evidence the fix failed.
+
+**Detect.** Record the tree's revision (and the working copy's dirty set) at the start and
+end of every verifier run and refuse to report a verdict when they differ. When a green and a
+red disagree on "the same" tree, compare the two runs' start and end revisions before
+reading either verdict. Runners that print only a verdict, never the revision, are the
+condition that lets this survive.
+
+**False positives.** Runs pinned to a committed revision in an isolated worktree; suites
+that snapshot the tree before scanning.

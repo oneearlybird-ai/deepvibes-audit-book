@@ -1002,3 +1002,29 @@ passing is not evidence; it only proves the cache is absent on that clone.
 
 **False positives.** Scanners that walk version-controlled files only (they never see an
 ignored cache); suites whose runner deletes or relocates the cache before scanning.
+
+## CC:43 — A lane that plans a copy of the unit resolves the unit's out-of-tree reads through a link that the first workspace to run creates in a shared cache and a presence guard never refreshes, so every later workspace plans against someone else's tree
+
+**Statement.** A certification lane plans from a copy of the unit placed in a tool cache
+rather than from the unit in place. Any read that walks out of the unit — a sibling module,
+a policy document, a catalog in another unit — lands outside the copy, so a hook creates a
+link from the cache back into a source tree. When the cache is shared across the parallel
+workspaces of one machine and the hook is guarded by "create if absent", the link is created
+once, by whichever workspace runs first, and points into that workspace's checkout for the
+life of the cache. Every other workspace's plan then reads its neighbour's tree: identical
+while all of them track the same head, stale the moment one lags, missing the day one is
+deleted, and in every case invisible, because the plan reports the copy's path, not the
+link's target. A second, quieter consequence: a plan-time read that escapes the unit is a
+defect the in-place lane can never reveal, because in place the read succeeds; only the copy
+lane sees it, and only after the link idiom papers over it.
+
+**Detect.** List the links under the shared cache and print their targets: any target that
+names a specific workspace's checkout is the finding. Read the hook: a presence guard with no
+target comparison confirms that the link is never refreshed. Reproduce by letting one
+workspace fall behind head and certifying from another. For the second consequence, grep the
+units for reads with relative parents that climb out of the unit and ask which lane has ever
+evaluated them.
+
+**False positives.** Caches scoped per workspace (each workspace's copies and links are its
+own); hooks that recreate the link when its target differs from the current root; reads
+resolved through the tool's own dependency mechanism rather than a filesystem climb.

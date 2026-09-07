@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1039,
+ "rule_count": 1041,
  "sections": [
   {
    "id": "A",
@@ -3185,7 +3185,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "CC:1",
@@ -3354,6 +3354,10 @@
     {
      "id": "CC:42",
      "title": "A tool switch moves the working cache to a new directory name, and every scanner that skipped the old name keeps skipping only the old name, so a clone that has planned shows every declaration twice"
+    },
+    {
+     "id": "CC:43",
+     "title": "A lane that plans a copy of the unit resolves the unit's out-of-tree reads through a link that the first workspace to run creates in a shared cache and a presence guard never refreshes, so every later workspace plans against someone else's tree"
     }
    ]
   },
@@ -4184,7 +4188,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 55,
+   "rule_count": 56,
    "rules": [
     {
      "id": "NN:1",
@@ -4405,6 +4409,10 @@
     {
      "id": "NN:55",
      "title": "A gate's scope is pinned to the directory the code lived in when the gate was written, so after the code moves the gate runs green on the leftover shell"
+    },
+    {
+     "id": "NN:56",
+     "title": "A verifier run that overlaps an edit to the files it scans proves nothing about either tree"
     }
    ]
   },

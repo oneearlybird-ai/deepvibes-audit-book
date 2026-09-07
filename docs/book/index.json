@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1037,
+ "rule_count": 1038,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "A:1",
@@ -186,6 +186,10 @@
     {
      "id": "A:44",
      "title": "A function is declared, deployed and granted, but nothing is wired to invoke it, so it never runs, its grants stand for nothing, and its defects get audited as if they were live"
+    },
+    {
+     "id": "A:45",
+     "title": "A vendor handler shim in front of every function uses an API the runtime's next major removes, the runtime warns on every cold start fleet-wide, and nothing ties the warning to the runtime bump that will trip it"
     }
    ]
   },

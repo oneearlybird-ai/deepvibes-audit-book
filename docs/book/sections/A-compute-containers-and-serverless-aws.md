@@ -424,3 +424,29 @@ function belongs to and whether its caller was ever built.
 runbook is the caller; cite it). A scheduled function whose schedule is deliberately disabled
 for a documented reason. A function landed in the same change as its caller, before that
 caller's stack has applied.
+
+## A:45 — A vendor handler shim in front of every function uses an API the runtime's next major removes, the runtime warns on every cold start fleet-wide, and nothing ties the warning to the runtime bump that will trip it
+
+**Statement.** Observability and tracing vendors ship a layer whose wrapper becomes the
+function's real handler: the platform invokes the shim, the shim invokes the code. When the
+shim is written against a handler contract the runtime is retiring — a callback signature, a
+removed global — the current runtime keeps working and logs a deprecation warning on every
+cold start of every function that carries the shim, which is the whole fleet. The warning
+names the function, not the shim, so each owner reads it as advice about their own code, which
+is already compliant, and ignores it. The upgrade that actually breaks it is the runtime bump,
+made months later in the infrastructure tree by someone who never saw the warning, and the
+failure lands in INIT on every function at once, before any handler runs, so no per-function
+error path or DLQ catches it. The vendor pin verifier, if one exists, checks that the pinned
+shim version is current and vulnerability-free; it does not check that the shim supports the
+runtime the tree is about to move to.
+
+**Detect.** Grep the fleet's logs for the runtime's deprecation warning text and count
+distinct functions; a count near the fleet size with handlers that are themselves modern is
+the shim. Read the wrapper the exec-wrapper variable names and its handler signature. Then
+find the runtime version in the IaC and the process that bumps it: if nothing there consults
+the shim's supported-runtime list, the finding stands. Confirm with the vendor's release notes
+for the pinned shim version.
+
+**False positives.** Warnings that name the function's own handler; shims the vendor has
+already released as runtime-compatible where the tree pins that version; runtime bumps that
+are gated on a fleet-wide canary that exercises INIT before any production function moves.

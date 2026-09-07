@@ -954,3 +954,29 @@ count with its account quota.
 **False positives.** Maintainers whose failed builds stay in the in-flight count until a
 reaper removes them; loops with a consecutive-failure breaker or a hard cap on the failed
 population; pools whose builds mint no side resources.
+
+## CC:41 — Tenant grants are minted from a versioned template, but the reconciler that restamps drift covers only the pool, so a template change reaches the tenants already in service only when an operator invokes the repair by hand
+
+**Statement.** A provisioner mints each tenant's roles, trust policies and inline grants from
+a template carrying a version, and a scheduled reconciler compares each unit's stamped version
+with the template's and restamps the ones behind. The reconciler was written for the warm
+pool — units nobody is using yet — and its selection excludes the units that have been handed
+to a tenant, on the reasoning that touching a live tenant's grants is a customer-facing act. The
+consequence is that every template change that matters most — a new platform principal that
+must be trusted, a retired one that must stop being named, a narrowed statement — reaches the
+pool automatically and the live tenants never, until someone remembers the manual invocation.
+The gap is invisible in the reconciler's own metrics (the pool reads converged) and surfaces as
+an access denial on the first live call through the new principal, or as a trust policy that
+still names a deleted role by its opaque id long after the retirement.
+
+**Detect.** Read the reconciler's selection: the set of states it scans for version drift and
+the set it treats as "assigned" or "in service". If in-service units are excluded, list them
+live and compare their stamped version with the template's; any behind is the finding, and
+the operations log will show the manual restamps that have been covering for it. Confirm by
+tracing one recent template change (a trusted-principal addition or a retirement) to the live
+tenants' policies.
+
+**False positives.** Reconcilers that restamp in-service units through a deliberately slower or
+gated lane (a canary, a maintenance window, an explicit approval) that still runs without a
+human remembering; templates whose in-service units are intentionally frozen at their minted
+version, with the freeze recorded and the template change flow requiring a migration.

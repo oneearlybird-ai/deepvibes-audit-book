@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1036,
+ "rule_count": 1037,
  "sections": [
   {
    "id": "A",
@@ -3181,7 +3181,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "CC:1",
@@ -3342,6 +3342,10 @@
     {
      "id": "CC:40",
      "title": "A pool maintainer counts only healthy and in-progress members as in flight, so every failed build frees capacity and the loop creates without bound until an account quota stops it"
+    },
+    {
+     "id": "CC:41",
+     "title": "Tenant grants are minted from a versioned template, but the reconciler that restamps drift covers only the pool, so a template change reaches the tenants already in service only when an operator invokes the repair by hand"
     }
    ]
   },

@@ -299,7 +299,12 @@ invocations against its logged failures over a window; equality proves it has ne
 **False positives.** Stores encrypted with a service-owned key, where no key grant is required;
 principals whose key access is granted by the key policy rather than an identity policy (check
 both sides before filing); read paths against a store whose encryption context the caller never
-touches because it only reads metadata the service returns unencrypted.
+touches because it only reads metadata the service returns unencrypted. A denied key call that the audit trail records during a describe-or-get of a resource whose
+secret block is key-encrypted (a function's environment, a job's parameters) is opportunistic: the
+describe succeeds and returns everything except that block, so the principal is failing only if
+its work reads the block - trace the consumer's code, or the managed service's own status surface
+(scan coverage, evaluation results), before filing. Denials equal in count to the describes, beside
+successful downstream calls in the same trail, are the signature of an opportunistic decrypt.
 
 ## F:30 — A caller granted sts:AssumeRole on a stamped role family is never admitted by the family's trust template, so the grant's two halves ship apart and the path is dead on first exercise
 
@@ -691,7 +696,11 @@ grants of their own.
 verify by listing callers, not by reading the resource type. Setups where the orchestration
 service's access is already carried by a separate unconditioned statement. Genuine key-state
 failures: confirm the key is enabled and not pending deletion before reading the error as
-authorization.
+authorization. A service-linked role's denied key
+call that arrives through another service's describe-or-get (a scanner reading a function whose
+environment is key-encrypted) proves nothing on its own - the describe succeeds without the encrypted
+block, and the service's work fails only if it needs that block; read the service's own coverage or
+status surface before writing a key-policy statement that hands it the plaintext.
 
 ## F:43 — The target of a per-entity assume-role was never provisioned, and because assume-role reports a missing role as a denial, the provisioning gap is investigated as a permissions gap
 

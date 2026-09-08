@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1041,
+ "rule_count": 1042,
  "sections": [
   {
    "id": "A",
@@ -3185,7 +3185,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "CC:1",
@@ -3358,6 +3358,10 @@
     {
      "id": "CC:43",
      "title": "A lane that plans a copy of the unit resolves the unit's out-of-tree reads through a link that the first workspace to run creates in a shared cache and a presence guard never refreshes, so every later workspace plans against someone else's tree"
+    },
+    {
+     "id": "CC:44",
+     "title": "A provider treats a nested collection attribute as computed, so deleting its block from the declaration plans nothing: the file says the member is gone, the live resource still has it, and the green plan is what hides the gap"
     }
    ]
   },

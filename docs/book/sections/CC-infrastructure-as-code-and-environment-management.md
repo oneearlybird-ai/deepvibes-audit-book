@@ -1028,3 +1028,32 @@ evaluated them.
 **False positives.** Caches scoped per workspace (each workspace's copies and links are its
 own); hooks that recreate the link when its target differs from the current root; reads
 resolved through the tool's own dependency mechanism rather than a filesystem climb.
+
+## CC:44 — A provider treats a nested collection attribute as computed, so deleting its block from the declaration plans nothing: the file says the member is gone, the live resource still has it, and the green plan is what hides the gap
+
+**Statement.** A resource carries a repeatable nested block whose members have their own
+lifecycle in the API — secondary indexes, replicas, rules, listener actions. The provider
+marks that attribute computed, meaning an omitted block is read as "whatever the live
+resource has" rather than as "none". Removing the block is therefore not a deletion request:
+the plan is empty, the apply is a no-op, and from that moment the declaration describes a
+resource that does not exist in that shape. This is the reverse of the usual drift, and worse
+in one specific way: ordinary drift is created by someone changing the live system, while
+this is created by the cleanup itself, and the author reads the empty plan as proof the
+cleanup was already converged. The same computed flag also adopts members created out of
+band, silently, at the next refresh. Two follow-on traps complete the shape: the state file
+keeps the members, so a state-based inventory agrees with the live system and disagrees with
+the tree; and where the provider offers a standalone resource for the member as the supported
+removal path, that resource is often newer than the pinned provider and may be experimental,
+so the obvious fix is unavailable at the version actually in use.
+
+**Detect.** Treat "no changes" after a deletion as a finding, not a result: any plan that
+reports nothing on a file whose blocks were just removed means the attribute is computed.
+Confirm by reading the provider schema for that attribute rather than the resource
+documentation, which usually says only "optional". For every such collection, compare the
+live member list against the declaration directly — the plan and the state will both agree
+with the live system, so neither can be the check. When a standalone member resource exists,
+read its maturity against the pinned provider version before planning a migration through it.
+
+**False positives.** Attributes the provider recomputes from other declared fields and that
+have no independent existence; removals that do plan a deletion (the ordinary case, which
+proves the attribute is not computed); a no-op plan whose edit was genuinely cosmetic.

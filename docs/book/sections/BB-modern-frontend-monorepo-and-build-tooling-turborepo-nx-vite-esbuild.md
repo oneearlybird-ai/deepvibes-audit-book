@@ -127,3 +127,39 @@ test helpers, CLI tools — where the tracer is not involved. Walks bounded by a
 limit or by a sentinel the tracer can resolve. A bundle that is large for an unrelated and
 already-known reason; confirm by tracing the file list, since the size symptom is shared by many
 causes.
+
+## BB:14 — One app in a monorepo carries no per-project install configuration while its siblings all do, so the host installs only that app's own subtree while its typecheck spans shared packages, and the app stops deploying the first time shared code imports a dependency it does not own
+
+**Statement.** Hosting platforms resolve build configuration from each project's declared root
+directory, so in a monorepo whose projects each root at their own application directory, the
+install command is configured per project rather than once for the repository. When most
+applications carry that configuration and one does not, the odd one out silently receives the
+platform's default install, which resolves only its own subtree and omits the dependencies of
+the shared packages it consumes. Nothing fails at that moment: the gap is latent for as long as
+the shared code happens to import only what the lone app already depends on. It becomes an
+outage the first time any shared component adds a dependency of its own — a change made in a
+different directory, reviewed as a feature, and correct in every repository-level sense. The
+error names the missing module and the shared file that imports it, so it reads as a dependency
+declaration bug in the shared package, which is precisely where the dependency IS correctly
+declared; the actual defect is one missing configuration file in an app that no one edited. The
+blast radius is total for that app and zero for every other, and because the sibling projects
+keep deploying from the same commits, dashboards show a healthy pipeline. Where the app's
+typecheck is deliberately configured to span the shared sources, the mismatch is guaranteed
+rather than probable: the type gate reads files whose dependencies the install was never asked
+to provide.
+
+**Detect.** Enumerate the projects a host has configured against one repository and list, for
+each, whether its root directory contains the per-project configuration that sets the install
+command; any project missing what its siblings carry is the finding, before any symptom. Then
+confirm the consequence: read the odd app's typecheck scope and ask whether it includes sources
+outside its own subtree. Confirm live by reading the host's build log for the failing project
+and comparing its installed package count against a sibling's — an install an order of
+magnitude smaller is the omission, not a coincidence. When a module-not-found error names a
+shared package's own dependency, check which install ran before concluding the dependency is
+undeclared.
+
+**False positives.** Apps deliberately isolated from the shared packages, whose typecheck and
+imports genuinely stay inside their own subtree. Repositories where the host is configured once
+at the repository root for every project, so no per-project file is expected. A missing module
+that really is undeclared in the shared package — verify by reading that package's manifest
+before filing this.

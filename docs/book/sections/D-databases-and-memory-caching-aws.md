@@ -207,3 +207,35 @@ whose resource is in use is the finding, already armed.
 conditional write); destructive paths whose guard is a positive allow-list ("only these
 statuses may be destroyed") rather than a forbidden set; tables whose rows are never
 removed by design.
+
+## D:34 — A conditional write's fallback path reuses the guarded attempt's expression-attribute maps after dropping the attribute they were built for, and the store rejects every fallback for unused expression attributes
+
+**Statement.** A writer that must not move a value backwards is written as two attempts: a
+guarded update carrying a condition on that value, and — when the condition fails because the
+stored row already holds a later one — a second update that writes everything except it. The
+second attempt is authored by copying the first and deleting the clause, but the name and value
+maps are shared objects built once above both calls, so they still carry the placeholder the
+deleted clause was the only reader of. Document-store update APIs reject a request whose
+declared expression attributes are not all referenced, so the fallback fails validation every
+single time it is reached. The result is a write path that works perfectly until the moment it
+is supposed to degrade, and fails exactly and only in the case it was written to handle. It is
+invisible in three ways at once: the failure is a client-side validation error, not a conflict,
+so retry logic treats it as a new problem; the fallback is by definition the rarer branch, so a
+smoke test that writes each key once never reaches it; and the counter that would show the
+branch succeeding is incremented only on the success the branch never achieves, so the metric
+that should reveal it reads zero rather than wrong. Where a whole delivery is failed when no
+row lands, the same defect converts a benign duplicate into a retried, alarming invocation.
+
+**Detect.** Find every catch block that responds to a conditional-write failure by re-issuing
+the write, and check whether the name/value maps are constructed once and passed to both calls.
+Then diff the two expressions: every placeholder that appears in the first and not the second
+is a rejection. Confirm live rather than by reading — the branch is reachable only on a real
+conflict, so query the logs for validation errors from that writer, and read the counter the
+fallback increments on success: a fallback that has never once succeeded in production, on a
+table with repeated keys, is this. Unit tests that stub the write dependency cannot see it; the
+expression is built in the real-dependency factory, below the seam the tests replace.
+
+**False positives.** Fallbacks that build their own maps, or that pass a map derived by
+deletion from the first. Stores whose API ignores unreferenced expression attributes rather
+than rejecting them. A fallback that is genuinely unreachable because the condition cannot fail
+(a key written exactly once by construction) — though the dead branch is then its own finding.

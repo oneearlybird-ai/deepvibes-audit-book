@@ -34,6 +34,16 @@ CloudTrail: Failing to Log S3 Data Events for Sensitive Asset Pools. Omitting gr
 
 CloudWatch: Alarms without actions, or actions routed to dead/unsubscribed SNS topics — alerts firing into the void.
 
+**False positives.** An alarm with an empty action list is not necessarily unreachable: it may be an
+INPUT to a composite alarm, which is the deliberate shape — the input carries the measurement, the
+composite carries the notification, and giving the input its own action would page on the half-signal
+the composite exists to suppress. Before calling an actionless alarm a hole, join it against every
+composite alarm's rule expression in the account, not just against the metric-alarm set: a census that
+lists metric alarms alone will always report the composite's inputs as unreachable. The same applies
+to alarms referenced by a dashboard, a rollback monitor, or a deployment gate, which consume alarm
+STATE rather than a notification. Read the alarm's own description first — a deliberate input usually
+says so, and says which composite is the page.
+
 ## G:8 — CloudWatch: No composite alarms — a single incident pages 40 times across correlated sym…
 
 CloudWatch: No composite alarms — a single incident pages 40 times across correlated symptoms.

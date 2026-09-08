@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1044,
+ "rule_count": 1045,
  "sections": [
   {
    "id": "A",
@@ -959,7 +959,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 58,
+   "rule_count": 59,
    "rules": [
     {
      "id": "G:1",
@@ -1192,6 +1192,10 @@
     {
      "id": "G:58",
      "title": "A log-token monitor names a token on a function that never emits it because the emitter lives in another workload's log group, so the alarm is dead and the coverage gate stays red on trunk"
+    },
+    {
+     "id": "G:59",
+     "title": "Event-bus rule armed for telemetry the source only emits through an opt-in publisher that was never configured, so the rule is enabled, counts as coverage, and can never fire"
     }
    ]
   },

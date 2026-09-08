@@ -1219,3 +1219,40 @@ cannot stop the landing that broke it.
 **False positives.** A token intentionally declared on the function that will emit it in the
 same change (the config and the code land together); tokens listed in an explicit emission
 exemption with the runtime path that carries them.
+
+## G:59 — Event-bus rule armed for telemetry the source only emits through an opt-in publisher that was never configured, so the rule is enabled, counts as coverage, and can never fire
+
+**Statement.** Some services emit their operational events only through an opt-in publishing
+container attached to the emitting resource — a sending configuration set, a notification
+configuration, an event-destination binding. The events themselves are first-class and
+documented, so a bus rule written against their source and detail-types is spelled perfectly and
+is accepted by the bus. It is also permanently silent, because nothing upstream has been told to
+publish. This is the event-bus analogue of the opt-in metric family (G:22), and it is strictly
+harder to see: an alarm on an unpublished metric at least sits visibly in ALARM or
+INSUFFICIENT_DATA forever, whereas an enabled rule that has never matched is byte-for-byte
+indistinguishable from a rule guarding a condition that has simply not occurred. Silence is the
+expected reading. Every review artifact reinforces the error — the rule is present, ENABLED, its
+pattern is correct, its target is wired, and its description states the health question it
+answers — so coverage reviews, dashboards and audit checklists all count it as protection for a
+signal that has never once been produced. It is distinct from a consumer whose event vocabulary
+no producer emits (E:26): there the names are wrong; here the names are right and the producer
+is switched off. The blast radius is the whole class of conditions the events carried, which for
+delivery and reputation telemetry is typically the one class that also throttles or suspends the
+service when it goes unattended.
+
+**Detect.** Do not read the rule; read the emitting side. For every bus rule, name the resource
+that would produce its events and query live whether the opt-in publisher exists and is attached
+to that specific resource — the account having zero such containers is the unambiguous form. Then
+confirm the negative directly: search the rule's target sink for any event of those detail-types
+over a window in which the underlying activity certainly occurred, and treat zero as the finding
+rather than as quiet. The IaC signature is a rule whose description names the publishing
+container by name while no resource of that type is declared anywhere in the tree — a description
+that references infrastructure the repository does not create is the cheapest grep in this rule.
+Beware the account trap: run the check under credentials for the account that actually emits, not
+whichever the session happens to hold.
+
+**False positives.** Sources that publish the detail-types unconditionally, with the container
+affecting only enrichment or routing. Rules deliberately pre-armed ahead of a publisher being
+switched on, where that sequencing is written down. Windows in which the underlying activity
+genuinely did not occur — establish the activity independently before calling the silence a
+defect.

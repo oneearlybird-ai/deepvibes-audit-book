@@ -252,3 +252,44 @@ its own audit trail); a control deliberately withheld with a documented, counsel
 provided the terms do not assign the customer responsibility for it; an off state the
 architecture cannot honour (a vendor that transcribes live audio regardless), where the finding
 is the vendor dependency rather than the missing control.
+
+## Y:22 — Storage is configured with a retention lock that no principal can lift, so an erasure duty the same platform has contracted to honour becomes impossible to perform for the life of the lock
+
+**Statement.** An object store, backup vault or archive is placed in the strongest available
+immutability mode, the one whose documented property is that no principal including the account
+root can shorten or remove the retention. The choice is made for a good reason and usually for a
+narrow record class: an audit trail an attacker must not be able to erase. It is then applied by
+default to a whole bucket, and everything written there inherits it. Separately, and usually in a
+different team's document, the platform contracts to delete data on request: a right of erasure
+under a privacy statute, a processing agreement promising return or destruction at termination,
+an enterprise clause promising deletion within N days. The two are never read together. The
+conflict is silent because the immutability is doing exactly what it was configured to do and the
+deletion promise has not yet been exercised. It becomes visible only when the first request
+arrives, at which point the platform cannot comply and cannot remediate: the objects already
+written stay for the full term regardless of any later configuration change, because the mode
+governs the object at write time, not the container. The blast radius therefore grows for every
+day the misconfiguration stands, and the strongest modes name only one escape, destroying the
+whole account. The failure is sharpest where the locked container holds application logs or
+traces rather than a curated audit record, since a log line carries whatever a caller passed it
+and no schema bounds what personal data may have landed there.
+
+**Detect.** Enumerate every storage container with a retention lock across every account, not
+only the ones the infrastructure code declares, and read the mode and the default period from the
+live service rather than from the declaration. Object stores, backup vaults and archive vaults
+each have their own lock mechanism; check all of them. For each container in the irreversible
+mode, identify what actually writes to it and whether the payload is a bounded record type or
+free-form log output. Then read the platform's own commitments — privacy policy, processing
+agreements, enterprise terms — for any promise to delete on request, and record every container
+whose contents fall inside a promise the lock makes unperformable. Confirm the direction of the
+remedy before proposing one: changing a container's default affects future writes only, so
+establish separately what is already locked, for how long, and whether it contains personal data.
+Where the reversible mode is used instead, verify the override permission is actually withheld by
+a policy above the account, rather than merely unassigned today.
+
+**False positives.** A record class a regulator requires to be unalterable, where the statute
+naming it also exempts it from the erasure right, and the container holds only that class. A
+container whose contents are provably free of personal data by construction — a bounded event
+schema, verified at every call site, not merely believed — though the pattern still applies if
+free-form fields exist. The reversible mode paired with a withheld override permission, which
+looks similar in a configuration diff but keeps the escape hatch the rule is about. Short
+retention floors measured in days, where the lock expires long before any deletion deadline.

@@ -1266,3 +1266,33 @@ affecting only enrichment or routing. Rules deliberately pre-armed ahead of a pu
 switched on, where that sequencing is written down. Windows in which the underlying activity
 genuinely did not occur — establish the activity independently before calling the silence a
 defect.
+
+## G:60 — Edge-security alarm whose threshold sits below the volume of hostile traffic the control is built to block, so the control's ordinary success is delivered as an incident several times a day
+
+**Statement.** A perimeter control — a web ACL, an IP-reputation list, a bot ruleset — is placed in
+front of an internet-facing endpoint and given a "blocked requests spiked" alarm, on the reasoning
+that a surge of blocks is worth knowing about. The threshold is chosen from the endpoint's own
+legitimate traffic, which for a machine-to-machine endpoint is tiny. What actually arrives at any
+public address is continuous background scanning, and the managed reputation and bot rules block it
+by the hundred without the workload ever seeing a packet. The alarm therefore measures the control
+working, and crosses its threshold whenever the ambient scanning rate does — several times a day,
+each crossing delivering an ALARM and, minutes later, an OK, to whichever channel the security
+topic feeds. The signal inverts: the metric that would identify a real, targeted flood is the same
+metric that fires on the daily weather, so the one crossing that matters is indistinguishable from
+the thirty that do not, and the channel is trained to be deleted unread. Unlike an over-matching
+detective filter (G:28), nothing here is misconfigured in the filter sense — the rule blocks
+exactly what it should; the defect is that the threshold was calibrated against the served traffic
+rather than the offered traffic.
+
+**Detect.** For each blocked-request alarm, pull the same window's totals for both series: requests
+blocked and requests allowed, broken out per rule. A blocked total that is an order of magnitude
+above the allowed total, dominated by a managed reputation or bot rule, is ambient scanning and not
+an event. Then count the alarm's state transitions over a representative multi-day window: any
+detective alarm transitioning daily is reporting weather. Confirm by attributing the blocks — a
+spread across many source countries and generic scanner signatures is background; a concentration
+on one source or one path is the real thing the alarm was meant for.
+
+**False positives.** Endpoints whose legitimate traffic genuinely exceeds the scanning floor, where
+the threshold does separate the two. Alarms deliberately set as a volume telemetry feed into a
+dashboard rather than a notification channel — check where the actions route before filing.
+Freshly exposed endpoints during the first days of discovery, where the elevated rate is transient.

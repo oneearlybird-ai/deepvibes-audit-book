@@ -709,3 +709,35 @@ status surface before writing a key-policy statement that hands it the plaintext
 **Detect.** For every runtime-derived role name, extract the concrete names actually attempted from logs and ask the identity service whether each one EXISTS, as a separate question from whether the caller may assume it. A denial for a name that returns no-such-entity on lookup is this finding, not a grant defect. Then close the loop on provisioning: compare the population of entities against the population of stamped roles and treat the difference as the real finding, since it names every entity that will fail next. Check the teardown path too — a demolition that removes stamped roles without removing or reprovisioning their dependents produces exactly this state.
 
 **False positives.** Denials where the role exists and the trust policy genuinely excludes the caller — a separate, real defect that must be distinguished by looking the role up rather than by reading the message; roles in another account, where existence cannot be probed from the caller's side and the finding must be evidenced differently; and entities whose failure is correct because they were intentionally deprovisioned, which requires a record naming that decision.
+
+## F:44 — Two same-purpose roles exist for one workload and only one is ever assumed, so a grant correction lands on the unassumed twin and the live principal keeps the stale permission
+
+**Statement.** A workload's execution role gets declared twice, under two names that differ only by
+a prefix or a qualifier, in two stacks written at different times — a rename that landed as an
+addition, a component split that copied the role forward, a per-workload stack created beside an
+older shared one. Both roles are real, both carry the same inline policy names, both look correct
+in isolation. Only one is named in any compute resource's role field, and the other has never been
+assumed since creation. When the workload's API call changes and someone corrects the grant, they
+find the role by name — grep, memory, or the file whose name matches the function's — and the two
+names are close enough that the search lands on the wrong one. The change is written, reviewed,
+planned, applied, and verified: the policy really is fixed, on a role nothing runs as. The live
+principal keeps the stale action, so the workload keeps failing authorization with a corrected
+grant sitting one name away, and any audit that reads policies by role name reports the fix as
+present. It is worse than an ungranted action, because the ledger, the diff and the plan all
+testify that the permission was granted. Where the calling surface treats the operation as an
+optional assist and swallows the denial, nothing pages, and the outage presents to users as a
+feature that quietly returns nothing.
+
+**Detect.** Never resolve a role by name. Start from the compute resource: read the role ARN off
+the live function, task or instance profile, then read the policies attached to THAT role and diff
+the granted actions against the actions the deployed code calls. Separately, enumerate every role
+in the account whose name is a prefix, suffix or qualifier variant of a role in use and read
+last-used: a never-assumed role that carries a workload's inline policy names is a fix magnet
+waiting for the next correction. In the tree, grep for the role's logical name across stacks and
+require exactly one declaration per live principal; two stacks declaring the same logical role
+under two names is the finding whether or not a grant has diverged yet.
+
+**False positives.** Deliberate role pairs with distinct trust policies (a cross-account twin, a
+break-glass variant) where the second role's purpose is written down. Roles mid-migration where the
+cutover is dated and both grants are kept current. A twin that is a genuine orphan already filed
+for pruning (F:12) and whose policies nobody maintains — that is the pruning finding, not this one.

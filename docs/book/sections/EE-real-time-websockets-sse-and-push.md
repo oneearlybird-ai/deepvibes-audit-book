@@ -149,3 +149,34 @@ matcher, never from interpolating the raw string.
 nothing); privacy postures that ban vendor strings AND already log a classification or hash
 derived from them; client libraries that genuinely surface only the code — record the library
 limitation and the upgrade path instead of a finding against the handler.
+
+## EE:14 — The emitting half of a two-part flow-control handshake is implemented without the waiting half, so every unit of work carries the protocol's cost and none of its pacing
+
+**Statement.** Several real-time transports offer a cooperative pacing protocol built from two
+obligations: the sender tags an outbound unit with a marker, and the sender then WAITS for the
+peer's echo of that marker before sending more. The two halves are one mechanism. A bridge that
+adopts only the first half — stamping a marker on every outbound message because the vendor's
+examples show markers, or because a previous author started the protocol and never finished it —
+buys the entire overhead and none of the benefit. Each marker is an extra frame on the wire, extra
+peer-side bookkeeping, and on a media path an extra scheduling boundary inside what should be a
+continuous stream; meanwhile the sender still pushes at source rate, so the very burst the protocol
+exists to prevent still happens. The defect is invisible to review because the code looks like it
+implements the vendor's documented pattern, and invisible to telemetry because the sender's own
+counters — chunks emitted, bytes written, buffer depth — are all unaffected by whether anyone
+waits. It surfaces only as quality: jitter, choppiness, a playout that stutters at exactly the
+marker cadence, on a path where nothing else changed. It is the mirror image of missing
+backpressure (EE:7): there the pacing is absent and cheap, here it is absent and expensive.
+
+**Detect.** For every marker, sequence number, or acknowledgement the sender emits, find the code
+that consumes the peer's matching echo and gates the next send on it. No such consumer, or a
+consumer that only logs, is the finding. Measure the send path directly rather than reading it:
+capture a stream and compare the wall-clock duration of the audio or data sent against the time
+taken to send it — an N-second payload pushed in materially less than N seconds proves nothing is
+waiting. Then count markers per unit sent; one per message with no gate is the signature. Preserve
+the distinction when fixing: removing the marker is correct only if the sender's own telemetry is
+independent of it — check what else reads that echo before deleting.
+
+**False positives.** Markers used purely as a peer-side event trigger the vendor documents for that
+purpose (playback-complete notification, barge-in boundary) where no pacing is claimed. Senders
+that pace by an independent mechanism (a paced writer, a token bucket) and emit markers only as
+telemetry. Protocols where the vendor explicitly states the echo is optional.

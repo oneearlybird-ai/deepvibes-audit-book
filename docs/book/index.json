@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1046,
+ "rule_count": 1050,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 45,
+   "rule_count": 46,
    "rules": [
     {
      "id": "A:1",
@@ -190,6 +190,10 @@
     {
      "id": "A:45",
      "title": "A vendor handler shim in front of every function uses an API the runtime's next major removes, the runtime warns on every cold start fleet-wide, and nothing ties the warning to the runtime bump that will trip it"
+    },
+    {
+     "id": "A:46",
+     "title": "Image lookup whose filter matches several variants published under one timestamp, so the \"newest\" selector is an arbitrary tie-break and a plane silently changes kernel line between bakes"
     }
    ]
   },
@@ -778,7 +782,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "F:1",
@@ -951,6 +955,10 @@
     {
      "id": "F:43",
      "title": "The target of a per-entity assume-role was never provisioned, and because assume-role reports a missing role as a denial, the provisioning gap is investigated as a permissions gap"
+    },
+    {
+     "id": "F:44",
+     "title": "Two same-purpose roles exist for one workload and only one is ever assumed, so a grant correction lands on the unassumed twin and the live principal keeps the stale permission"
     }
    ]
   },
@@ -959,7 +967,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 59,
+   "rule_count": 60,
    "rules": [
     {
      "id": "G:1",
@@ -1196,6 +1204,10 @@
     {
      "id": "G:59",
      "title": "Event-bus rule armed for telemetry the source only emits through an opt-in publisher that was never configured, so the rule is enabled, counts as coverage, and can never fire"
+    },
+    {
+     "id": "G:60",
+     "title": "Edge-security alarm whose threshold sits below the volume of hostile traffic the control is built to block, so the control's ordinary success is delivered as an incident several times a day"
     }
    ]
   },
@@ -3539,7 +3551,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "EE:1",
@@ -3592,6 +3604,10 @@
     {
      "id": "EE:13",
      "title": "The far end names the failure in the WebSocket close frame and the bridge records only the numeric code, so every distinct rejection collapses into the same four digits"
+    },
+    {
+     "id": "EE:14",
+     "title": "The emitting half of a two-part flow-control handshake is implemented without the waiting half, so every unit of work carries the protocol's cost and none of its pacing"
     }
    ]
   },

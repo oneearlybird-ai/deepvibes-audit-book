@@ -450,3 +450,36 @@ for the pinned shim version.
 **False positives.** Warnings that name the function's own handler; shims the vendor has
 already released as runtime-compatible where the tree pins that version; runtime bumps that
 are gated on a fleet-wide canary that exercises INIT before any production function moves.
+
+## A:46 — Image lookup whose filter matches several variants published under one timestamp, so the "newest" selector is an arbitrary tie-break and a plane silently changes kernel line between bakes
+
+**Statement.** A machine-image build or launch template selects its base by a name/owner filter
+plus a "take the most recent" selector. The mental model is chronological: the filter names a
+family, and recency picks this month's build of it. That model holds only while the filter matches
+one image per publication. Distribution vendors routinely publish several variants of the SAME
+release under a SINGLE creation timestamp — different kernel lines, different virtualization or
+architecture flavours, hardened and stock editions — all sharing the release string the filter
+matches on. When two or more candidates tie on the recency key, the selector is not choosing the
+newest; it is breaking a tie by whatever secondary ordering the API or the tool happens to return,
+which is stable only by accident and can flip on any republish. Nothing in the plan, the diff, or
+the build log records that a choice was made, because in the author's model no choice existed. The
+result is a fleet whose members were baked from the same template, at the same release, and are
+running different operating-system kernels — and a bake that "changed nothing" can re-platform a
+latency-sensitive plane onto a kernel with different scheduler, network-stack or timer behaviour.
+The failure surfaces far from its cause: as jitter, as choppy real-time media, as a p99 that moved
+with no code change, investigated for days against the application because the image id is
+different every bake anyway and so carries no signal.
+
+**Detect.** Do not read the filter; enumerate what it matches. Run the image query the template
+performs, unsorted and unlimited, and count results per creation timestamp — any timestamp with
+more than one match is the finding, whether or not it has bitten yet. Then compare siblings that
+share the template: query the live instances of every plane built from it and read the kernel (or
+whichever attribute the variants differ in) off each; two planes on different values from one
+template and one release is the tie-break caught in the act. The IaC signature is a filter whose
+name pattern ends at the release string with no term selecting the variant axis, paired with a
+most-recent flag.
+
+**False positives.** Filters that already pin the variant axis explicitly, where the remaining
+matches genuinely differ only in publication date. Fleets where every candidate variant is
+interchangeable for the workload and that equivalence is written down. Pinned image ids — a
+different posture with its own patching problem (A:34), not this one.

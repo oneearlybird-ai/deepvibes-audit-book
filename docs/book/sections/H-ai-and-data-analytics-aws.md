@@ -107,3 +107,31 @@ where a human boundary exists; systems whose personas are customer-chosen from a
 where a filter on persona names would strip legitimate customer names and the correct control is
 attribution confidence rather than a deny-list; and single-party recordings where there is no
 attribution decision to get wrong.
+
+## H:18 — Managed-model access is an account-level entitlement separate from the IAM grant, so a correctly-scoped invoke policy still fails at runtime, and the denial names permissions the caller does not need
+
+**Statement.** A hosted foundation-model service gates invocation twice: the caller's IAM policy
+must allow the invoke action on the model resource, AND the *account* must hold an entitlement to
+that model (an enablement toggle, a marketplace subscription, a region-specific grant). The two
+checks are independent and only the first is visible in code review. A policy that names the exact
+model ARN, passes every least-privilege gate, and reads as textbook-correct will still fail in an
+account where the entitlement was never granted. The failure is doubly misleading: it arrives as an
+access-denied error naming subscription/marketplace actions, which reads as an IAM defect, so the
+first remediation attempt widens the policy — which cannot help, because the caller is not supposed
+to subscribe on the fly — and the message often closes with a retry suggestion, which frames a
+permanent configuration gap as a transient fault. Consumers that retry therefore burn their whole
+retry budget and land the work in a dead-letter queue, making the outage look like throughput.
+
+**Detect.** For every account that invokes a managed model, list the account's model entitlements
+directly (the service's own enablement/subscription API), not the IAM policy, and intersect with
+the model identifiers the code actually requests — including the region-routing identifiers, which
+can reach models in regions the account never enabled. Read the runtime logs for denials whose text
+names subscription or marketplace actions and treat them as entitlement gaps, not policy gaps.
+Where invocation is centralised into one entitled account, prove the boundary end to end: the
+caller's assume-role grant, the target role's trust policy, and a completed invocation after the
+change — a policy edit alone is not evidence.
+
+**False positives.** A genuine IAM gap that happens to mention the same actions because the caller
+holds no invoke permission at all — check the invoke action first. A model in a region the request
+never routes to. A first-invocation cold-subscribe in an account deliberately given the enablement
+actions, where the denial is genuinely transient.

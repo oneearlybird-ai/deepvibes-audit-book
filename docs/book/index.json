@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1051,
+ "rule_count": 1055,
  "sections": [
   {
    "id": "A",
@@ -605,7 +605,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "E:1",
@@ -774,6 +774,10 @@
     {
      "id": "E:42",
      "title": "A console bring-up left a directly-reachable alternate hostname on the origin service while the sanctioned path fronts it with CDN/WAF — a live second door with none of the front door's protections"
+    },
+    {
+     "id": "E:43",
+     "title": "A schema field is renamed and the consumer sweep is deferred on the assumption the field merely goes missing, but consumers that submit a validated request document lose the whole operation, not the field"
     }
    ]
   },
@@ -1216,7 +1220,7 @@
    "title": "AI & Data Analytics (AWS)",
    "group": "aws-backend",
    "file": "sections/H-ai-and-data-analytics-aws.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "H:1",
@@ -1285,6 +1289,10 @@
     {
      "id": "H:17",
      "title": "Speaker-attribution error in a transcription pipeline promoted into durable customer identity by a downstream extraction step"
+    },
+    {
+     "id": "H:18",
+     "title": "Managed-model access is an account-level entitlement separate from the IAM grant, so a correctly-scoped invoke policy still fails at runtime, and the denial names permissions the caller does not need"
     }
    ]
   },
@@ -1895,7 +1903,7 @@
    "title": "Vercel Infrastructure & Edge Hosting",
    "group": "vercel",
    "file": "sections/O-vercel-infrastructure-and-edge-hosting.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "O:1",
@@ -1944,6 +1952,10 @@
     {
      "id": "O:12",
      "title": "Proxying: Rewrites/proxies forwarding internal headers or exposing origin hostnames to c…"
+    },
+    {
+     "id": "O:13",
+     "title": "A request handler on ephemeral, horizontally scaled hosting uses the host filesystem as the store of record, so tenant records survive locally, vanish globally, and every read path still looks correct"
     }
    ]
   },
@@ -3071,7 +3083,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "AA:1",
@@ -3140,6 +3152,10 @@
     {
      "id": "AA:17",
      "title": "Interaction lanes hand the agent partial views of the domain — attributes and context present in the system never reach the lane where the conversation needs them"
+    },
+    {
+     "id": "AA:18",
+     "title": "The agent's spoken confirmation of a side effect is not gated on the tool call that performs it, and reconciliation is post-hoc from the transcript, so the customer is told the thing happened before anything can contradict it"
     }
    ]
   },

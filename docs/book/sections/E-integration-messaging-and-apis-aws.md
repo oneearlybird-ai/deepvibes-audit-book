@@ -554,3 +554,33 @@ open bypass.
 health checks) — the posture must be written down and the direct path must carry its own
 authentication. A gateway domain that exists only as an ACM-validation artifact with no mapping
 to any stage forwards nothing.
+
+## E:43 — A schema field is renamed and the consumer sweep is deferred on the assumption the field merely goes missing, but consumers that submit a validated request document lose the whole operation, not the field
+
+**Statement.** A producer renames a field on a shared API schema and sweeps the consumers it can
+reach in the same change, deferring the rest with a note of the form "that client drops the value
+today and will keep dropping it until we get to it — no worse, not yet better." That reasoning
+holds only for consumers that receive a response and read it key-by-key: an absent key decodes to
+null and the display loses one value. It is false for any consumer that submits a *document naming
+the fields it wants* — a GraphQL query or mutation, a strictly-validated RPC selection, a
+projection expression checked against a declared schema — because the server validates the whole
+document before executing any of it. One stale field name makes the entire operation fail, so the
+screen loses every field, not the renamed one. The deferral note is therefore not a partial
+degradation but an outage on that surface, and it is written in the commit that causes it, which
+is why review accepts it: the author has already characterised the blast radius and the reader
+checks the characterisation rather than the mechanism.
+
+**Detect.** For every renamed or removed schema field, do not stop at the consumers that read the
+field — enumerate the consumers that NAME it in a request. Grep every client for the old spelling
+inside a query/mutation/selection literal, including hand-written clients and generated artifacts
+that are regenerated on a different cadence than the schema. Then prove the outcome rather than
+reasoning about it: build the deployed schema from the *deployed* artifact (download the running
+package, do not read the repository) and run the client's own document through the server library's
+validator. Zero errors means graceful degradation; one error means the operation is dead. Check the
+directions separately — a rename can be safe for readers and fatal for writers on the same type.
+
+**False positives.** A consumer whose request document is generated from the same schema at build
+time and whose build is gated on the schema — it cannot carry a stale name past a green build. A
+field renamed on a type that the strict consumer never selects (same field name on a different
+type is not the same field). A server configured to skip document validation, which is a different
+and larger finding. A consumer already dead or unreleased at the time of the rename.

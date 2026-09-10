@@ -53,3 +53,32 @@ Spend: No spend management/usage alerts — traffic spikes (or attacks) convert 
 ## O:12 — Proxying: Rewrites/proxies forwarding internal headers or exposing origin hostnames to c…
 
 Proxying: Rewrites/proxies forwarding internal headers or exposing origin hostnames to clients.
+
+## O:13 — A request handler on ephemeral, horizontally scaled hosting uses the host filesystem as the store of record, so tenant records survive locally, vanish globally, and every read path still looks correct
+
+**Statement.** A server-side route needs its writes to outlive a page navigation, and the smallest
+change that appears to achieve it is a file under the working directory or the temp directory,
+often introduced alongside a genuine fix and described as making the data "durable" or "persist
+across refresh". On managed serverless or edge hosting the filesystem is per-instance and
+ephemeral: a second concurrent instance never sees the write, a scale-to-zero or a redeploy
+destroys it, and read-only build outputs may reject it outright — in which case the fallback chain
+lands the store in the temp directory, where it looks even more like it works. The failure mode is
+the worst available: writes are accepted, reads succeed for the instance that wrote them, and the
+data is simply gone for everyone else, so the surface tests green in single-instance development
+and loses records non-deterministically in production. Because the code is tenant-partitioned by
+filename it reads as careful isolation, which raises reviewer confidence in exactly the wrong
+direction.
+
+**Detect.** Grep every server-side route and server module for filesystem writes — file writes,
+directory creation, temp-directory helpers — and classify each: a build-time artifact and a
+request-scoped scratch file are fine; anything holding a record the product later reads back is the
+finding. A fallback chain of candidate directories is a strong tell, as is a filename derived from
+a tenant identifier. Confirm by asking what the next read does when the file is absent: if the
+answer is "the record does not exist" rather than "fetch it from the data plane", the filesystem
+IS the store of record. Check whether a real datastore for the same records already exists — this
+pattern is usually a placeholder that outlived its note.
+
+**False positives.** Caches whose miss path re-fetches from the real store. Build-time generation
+into the output directory. Genuinely request-scoped temp files deleted before the response.
+Long-lived single-instance hosting (a dedicated VM, a stateful container with a mounted volume)
+where the filesystem is a real durable store.

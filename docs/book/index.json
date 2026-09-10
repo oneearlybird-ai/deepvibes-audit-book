@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1056,
+ "rule_count": 1057,
  "sections": [
   {
    "id": "A",
@@ -2134,7 +2134,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "R:1",
@@ -2211,6 +2211,10 @@
     {
      "id": "R:19",
      "title": "A published agent procedure references a runtime-substituted variable that no code path supplies, so the model is handed the raw placeholder and reasons about the business from a token"
+    },
+    {
+     "id": "R:20",
+     "title": "The vendor's per-conversation success verdict is produced by a model reading the transcript, so a call in which every tool failed and the agent invented the answers is marked successful, and any monitoring built on that field is blind to the failures that matter most"
     }
    ]
   },

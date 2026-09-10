@@ -180,3 +180,43 @@ independent of it — check what else reads that echo before deleting.
 purpose (playback-complete notification, barge-in boundary) where no pacing is claimed. Senders
 that pace by an independent mechanism (a paced writer, a token bucket) and emit markers only as
 telemetry. Protocols where the vendor explicitly states the echo is optional.
+
+## EE:15 — A connection is tiered into probationary and established, but the only thing that promotes it is an action the probationary timeout prevents, so every slow-starting real session is collected as if it were abandoned
+
+**Statement.** A server holding long-lived connections in memory defends itself with two idle
+timeouts: a short one for connections that have not yet proven they belong to real work, and a
+long one for those that have. The defence is sound and usually written after a real incident with
+abandoned or scanning clients. The defect is in the promotion rule. Promotion is wired to the
+first *completed unit of work* — a successful call, a first message consumed, a first row written
+— because that is the unambiguous proof the tier system wants. But real clients frequently open a
+connection at the start of a session and do no work on it for some time, because a human is still
+talking, a form is still being filled, or an upstream is still deciding. Those connections are
+holding the short timeout during exactly the window in which they cannot satisfy it. The result
+is circular: a connection cannot earn the long timeout until it does the very thing it is about
+to be collected for not having done. Two further properties turn this from a retry into an
+outage. The reaper's decision is invisible to the client, which keeps presenting the identifier
+it was given; and where the protocol has no server-initiated way to say *your handle is gone,
+open another*, the client cannot recover even in principle, so a single sweep does not cost one
+operation but every remaining operation of that session. The pattern hides in testing because
+synthetic clients do work immediately, and in metrics because the reaper logs a routine
+housekeeping event while the failures surface somewhere else entirely, under a different name.
+
+**Detect.** Find every in-memory registry of connections, sessions, or transports and read its
+eviction policy. Where more than one idle window exists, identify the exact line that moves an
+entry from the short window to the long one, and ask what must happen first and how long that
+realistically takes for a genuine client. Compare that latency against the short window directly
+— if the first promoting event can plausibly arrive after the short window elapses, the defect is
+present regardless of whether it has fired yet. Then check the recovery path with equal
+scepticism: read the client's actual behaviour on the server's rejection rather than the
+comment asserting it re-establishes, because the assumption that a rejection triggers a fresh
+handshake is frequently written and rarely verified. Finally, compare every long window against
+the maximum duration the surrounding system permits a session to run; a window shorter than that
+ceiling is the same defect one tier up. Where the ceiling is configuration, the window must be
+derived from it, not restated.
+
+**False positives.** A promotion wired to an authentication or handshake step that genuinely
+precedes any real client's idle period. A short window long enough to cover the worst observed
+time-to-first-work with margin, where that margin is documented and measured rather than assumed.
+Protocols whose clients reliably re-establish on rejection, verified against the client rather
+than asserted, since there the failure costs one retry rather than the session. Registries whose
+entries are cheap to rebuild and carry no session-scoped state.

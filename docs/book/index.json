@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1060,
+ "rule_count": 1061,
  "sections": [
   {
    "id": "A",
@@ -786,7 +786,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "F:1",
@@ -963,6 +963,10 @@
     {
      "id": "F:44",
      "title": "Two same-purpose roles exist for one workload and only one is ever assumed, so a grant correction lands on the unassumed twin and the live principal keeps the stale permission"
+    },
+    {
+     "id": "F:45",
+     "title": "A grant copies the account-less ARN shape of a sibling resource type onto a resource type whose ARN carries the account, so the declared grant matches nothing — and the wildcard someone adds by hand to make production work is invisible to the plan"
     }
    ]
   },

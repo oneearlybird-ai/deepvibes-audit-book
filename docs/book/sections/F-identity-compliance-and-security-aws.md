@@ -741,3 +741,34 @@ under two names is the finding whether or not a grant has diverged yet.
 break-glass variant) where the second role's purpose is written down. Roles mid-migration where the
 cutover is dated and both grants are kept current. A twin that is a genuine orphan already filed
 for pruning (F:12) and whose policies nobody maintains — that is the pruning finding, not this one.
+
+## F:45 — A grant copies the account-less ARN shape of a sibling resource type onto a resource type whose ARN carries the account, so the declared grant matches nothing — and the wildcard someone adds by hand to make production work is invisible to the plan
+
+**Statement.** Within one service, resource types differ in whether their ARN carries an account
+segment: a model published by the provider has none, a profile or endpoint the account owns has
+one. A policy author who has just written the account-less form for one type carries the same
+shape to the next line, and the resulting ARN — two colons where an account should be — is
+syntactically valid, passes formatting and review, and authorizes a resource that cannot exist. The
+runtime request names the real, account-qualified resource, the exact-match evaluation finds no
+statement, and every call is denied. Under deadline the deny is then cured where it hurts: an inline
+policy with a wildcard resource is added to the live role by hand, the calls succeed, and the
+incident is closed. The infrastructure code still declares the strict grant, the plan reports no
+changes because state can only compare what it manages and it has never heard of the extra policy,
+and every later review of the tree reads least privilege where production runs on `*`. The mistake
+is also copied: the same malformed ARN tends to appear in every policy written for the same model,
+including the consumer's own role in another account, where it is dead for a second reason as well.
+
+**Detect.** For every ARN in a grant, check the resource type's documented shape for an account
+segment and compare; an empty account on a type that requires one is a dead statement regardless of
+how it reads. Prove it with the policy simulator against the account-qualified ARN the runtime
+would present — the declared policy alone must return allowed. Then list the live role's inline and
+attached policies and diff the set against the declaration: any policy the tree does not name is
+the patch that made the dead grant "work", and its resource is usually `*`. Read the change history
+of the role (CloudTrail PutRolePolicy by a human or session identity within hours of the incident)
+to date the patch. A plan that reports the role unchanged is not evidence here.
+
+**False positives.** Resource types whose ARN genuinely omits the account (provider-published
+models, some global resources) — confirm against the service's ARN reference, not by analogy;
+policies that intentionally use a wildcard account segment (`*`) for a cross-account resource,
+which is a different, explicit choice; extra inline policies that the tree declares through an
+exclusive-management resource and that appear in the plan.

@@ -302,3 +302,31 @@ window that did write. Newly deployed sweeps whose first eligible item has not y
 Consumers that parse a field the canonical store still emits in exactly that shape, verified by
 reading a live record rather than the schema. Skip counts driven by an explicit disable flag on the
 item, which is a decision rather than a parse failure.
+
+## V:23 — A consumer pinned to a wall-clock cron reads a producer scheduled by frequency rather than by time, and its empty-result guard turns the ordinary schedule slip into a hard failure
+
+**Statement.** A scheduled job reads the output of an upstream evaluation that the platform runs on a
+declared *frequency* — once per period, at a moment the provider chooses and is free to move — while
+the job itself fires at a fixed clock time chosen when the two were first observed to be minutes
+apart. The ordering holds most days and is never written down as a dependency. When the upstream run
+drifts later, or its evaluation is still in flight, the consumer's read returns nothing. The consumer
+cannot tell "not produced yet" from "genuinely none", and its guard against scoring an empty
+population is a throw, so a timing slip is reported as a data-integrity failure: retries exhaust
+against the same empty window, the invocation records land in a dead-letter queue, and the report for
+that period is never produced. The failure is self-clearing — the next day the ordering holds again —
+which is what keeps it filed as a flake instead of a dependency defect, and what lets it recur for as
+many periods as the drift lasts.
+
+**Detect.** For every scheduled consumer of a provider-evaluated result, put the two schedules side by
+side: a fixed `cron(...)` on the consumer against a frequency or rate window on the producer is the
+finding, and the size of the window is the size of the exposure. Ask the provider what it exposes about
+its own last run — most publish a last-successful-invocation and a last-successful-evaluation time, and
+the gap between those two is the in-flight window the consumer can land in. A consumer that never reads
+that status, and whose empty-result branch throws rather than skipping, is the finding regardless of how
+long it has run clean. Check the dead-letter queue of any such consumer for records whose payload is the
+schedule event itself. Prefer gating the read on the producer's own freshness anchor and treating a
+not-yet-evaluated period as a skip that says so, distinct from a genuinely empty population.
+
+**False positives.** A consumer that triggers the upstream evaluation itself and waits for completion; a
+consumer whose empty branch already distinguishes staleness from emptiness using the producer's status;
+a producer whose schedule is a guaranteed clock time in the same timezone, with the guarantee documented.

@@ -1358,3 +1358,31 @@ condition that lets this survive.
 
 **False positives.** Runs pinned to a committed revision in an isolated worktree; suites
 that snapshot the tree before scanning.
+
+## NN:57 — The gate discovers its subjects by descending into one optional container key, so a subject that states the same fact in the schema's other permitted shape is never checked and the gate reports the ones it found as the whole set
+
+**Statement.** A gate walks a configuration document recursively to find the things it must check,
+and its descent predicate is one key — the richer, newer container the schema added for entries that
+need several variants. Subjects that declare the same fact in the schema's other permitted shape, a
+plain scalar pair on the entry itself, are never appended to the walk. The gate is not hand-listing
+its targets, so it reads as discovery-based and immune to the omission failure; but its discovery
+predicate is narrower than the data model it validates, and the exemption is structural rather than
+accidental. Nothing distinguishes the two populations in the gate's output: it prints the count it
+found, which is the count it could see. Every rule hanging off that walk — registry membership,
+identifier grammar, required-field shape — silently stops applying to the exempt population. The gate
+is usually introduced alongside the container key, which is why the older shape was never wired in,
+and the exemption survives precisely because both shapes stay valid and in active use.
+
+**Detect.** For each gate that discovers subjects by traversal, read its descent predicate and list
+every shape the schema permits for the same fact; a predicate naming one container key while the
+schema also allows an inline form is the finding. Prove it rather than reading it: take the live
+document, plant a value that violates the gate's own rule in the shape the predicate does not reach,
+and run the gate — a pass is the finding, and the count it prints next to that pass is the measure of
+how much it never looked at. Count the subjects in the exempt shape; if the number is comparable to
+or larger than the checked set, the gate's coverage claim is inverted. Prefer normalizing both shapes
+into one list before the rules run, and make the gate report the number of subjects it considered
+against the number present.
+
+**False positives.** A container key that is the schema's only valid shape for the fact, with the
+inline form rejected elsewhere by a required-field rule that runs first; a walk deliberately scoped to
+one shape whose output names the scope and whose complement is covered by a second, named gate.

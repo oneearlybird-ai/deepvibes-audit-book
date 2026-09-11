@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1061,
+ "rule_count": 1064,
  "sections": [
   {
    "id": "A",
@@ -975,7 +975,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 61,
+   "rule_count": 62,
    "rules": [
     {
      "id": "G:1",
@@ -1220,6 +1220,10 @@
     {
      "id": "G:61",
      "title": "A log consumer names events from a structured field the fleet never emits, so its output collapses to one constant fallback label — the table fills, the console renders, and every row says the same thing"
+    },
+    {
+     "id": "G:62",
+     "title": "Findings from a custom detective control are imported on every run but nothing in the pipeline ever transitions one, so a sanctioned posture and an unremediated violation are the same untriaged row and the severity label stops discriminating"
     }
    ]
   },
@@ -2678,7 +2682,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "V:1",
@@ -2767,6 +2771,10 @@
     {
      "id": "V:22",
      "title": "The sweep's per-item eligibility test parses a field shape the canonical store stopped emitting, so every item is skipped and the run reports a well-formed, healthy zero-work completion"
+    },
+    {
+     "id": "V:23",
+     "title": "A consumer pinned to a wall-clock cron reads a producer scheduled by frequency rather than by time, and its empty-result guard turns the ordinary schedule slip into a hard failure"
     }
    ]
   },
@@ -4268,7 +4276,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 56,
+   "rule_count": 57,
    "rules": [
     {
      "id": "NN:1",
@@ -4493,6 +4501,10 @@
     {
      "id": "NN:56",
      "title": "A verifier run that overlaps an edit to the files it scans proves nothing about either tree"
+    },
+    {
+     "id": "NN:57",
+     "title": "The gate discovers its subjects by descending into one optional container key, so a subject that states the same fact in the schema's other permitted shape is never checked and the gate reports the ones it found as the whole set"
     }
    ]
   },

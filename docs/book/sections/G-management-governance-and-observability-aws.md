@@ -1326,3 +1326,31 @@ not understand. Ask whether any alarm on the writer can tell "wrote nothing usef
 shapes it understood; a fleet that genuinely emits the structured field the consumer reads,
 verified per function on live records; a constant label used deliberately as the bucket for a
 bounded, documented class that has its own alarm.
+
+## G:62 — Findings from a custom detective control are imported on every run but nothing in the pipeline ever transitions one, so a sanctioned posture and an unremediated violation are the same untriaged row and the severity label stops discriminating
+
+**Statement.** A first-party compliance rule evaluates the estate on a schedule and imports its
+failures into the organization's findings store as high-severity rows. The import path is complete and
+the re-import keeps each row's timestamp current, so the control looks healthy and its evaluation count
+is cited as evidence that the estate is watched. What was never built is the other half: no step in the
+pipeline, and no human ritual, ever moves a row out of its initial workflow state. Rows accumulate — a
+first bulk import establishes a floor of dozens, and each genuinely new violation joins it as one more
+identical-looking entry. Because the control cannot be told that a given subject's posture is
+deliberate and enforced elsewhere, sanctioned exceptions sit in the same state as real debt, at the
+same severity, with no note. The store's severity labels then measure nothing: the only way to find the
+violation that appeared yesterday is to sort by creation date, which is the query nobody runs on a page
+that has been red since it was turned on. The control's own accuracy is not in question, and that is
+what makes the defect durable — every audit of the rule comes back clean.
+
+**Detect.** For each custom detective control, group its active findings by workflow state and by
+creation date. A single state holding all of them, with no analyst notes, is the finding; a creation-date
+histogram with one large founding spike and a thin tail is its signature, and the tail is the set of
+real events the channel has been unable to surface. Ask what mechanism can ever transition a row —
+a suppression path, an exception register keyed to the subject, a triage step in a runbook — and treat
+its absence as the defect rather than the backlog's size. Cross-check each subject the control flags
+against the codebase's own sanctioned-posture records: any subject whose posture is deliberate and gated
+elsewhere, yet flagged at the same severity as unremediated debt, proves the channel cannot discriminate.
+
+**False positives.** A control deliberately run in observe-only mode during a stated bring-up window,
+with the window's end recorded; a store whose triage genuinely happens in a separate system of record
+that is reconciled on a named cadence.

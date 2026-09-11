@@ -772,3 +772,38 @@ models, some global resources) — confirm against the service's ARN reference, 
 policies that intentionally use a wildcard account segment (`*`) for a cross-account resource,
 which is a different, explicit choice; extra inline policies that the tree declares through an
 exclusive-management resource and that appear in the plan.
+
+## F:46 — A caller-side grant on a table's customer-managed key carries the encrypt half of the cipher, but the service decrypts the table key under the caller's identity, so the first real write is denied at the key — after the step it was recording has already happened
+
+**Statement.** A service that encrypts a data store under a customer-managed key does not ask the
+caller to encrypt anything. The service account generates and wraps the table key once, when the
+table is created, and on every access — read and write alike — the service sends a decrypt request
+for that table key under the identity of the principal making the call. The permission the caller
+needs is therefore decrypt, whichever direction its data moves. A policy author reasoning from the
+direction of the data ("we write, so we encrypt") grants encrypt and generate-data-key instead, and
+the grant reads as exactly what a write needs: least privilege, reviewed, applied. It authorizes
+nothing the service will ever request on the caller's behalf. The denial arrives from the key
+service, wrapped in the data store's error, on the first real call — which is typically a
+failure-recording write that runs after the destructive step it records, so the denial leaves the
+system in precisely the state the record was meant to explain, and unrecorded. The over-grant in
+the other direction (decrypt plus generate-data-key on the caller) is harmless and common, which is
+why the wrong half survives beside working siblings: the fleet's normal shape is decrypt-only, and a
+reviewer who compares the new grant with a sibling that carries both sees a plausible subset rather
+than a mismatch.
+
+**Detect.** For every principal whose policy grants data-plane actions on a table encrypted under a
+customer-managed key, require decrypt on that key — reads and writes alike — and treat encrypt or
+generate-data-key without decrypt as a dead grant regardless of how it reads. A static gate can do
+this from the infrastructure tree alone: resolve each table's key to its alias, resolve the resource
+of each key statement the same way, and fail any data-plane principal whose statements on that alias
+lack decrypt; report a resource the gate cannot resolve (a local, a contract value) as a loose match
+rather than a pass or a failure. Confirm against the key service's audit trail: the decrypt calls
+appear under the caller's role with the data service named as the invoking service, and no encrypt
+or generate-data-key call is ever issued under the caller for the table's key.
+
+**False positives.** Services that genuinely require the caller to hold generate-data-key —
+client-side envelope-encryption libraries, direct object-store puts under a customer-managed key —
+confirmed against that service's own usage notes, not by analogy with the table service; a key
+statement whose resource is deliberately broader than one alias (a wildcard within an account) and
+resolves to the table's key at evaluation time; grants that are a harmless superset (decrypt plus
+generate-data-key), which are an over-grant to note, not this defect.

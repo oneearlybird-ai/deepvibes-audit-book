@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1064,
+ "rule_count": 1065,
  "sections": [
   {
    "id": "A",
@@ -786,7 +786,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 45,
+   "rule_count": 46,
    "rules": [
     {
      "id": "F:1",
@@ -967,6 +967,10 @@
     {
      "id": "F:45",
      "title": "A grant copies the account-less ARN shape of a sibling resource type onto a resource type whose ARN carries the account, so the declared grant matches nothing — and the wildcard someone adds by hand to make production work is invisible to the plan"
+    },
+    {
+     "id": "F:46",
+     "title": "A caller-side grant on a table's customer-managed key carries the encrypt half of the cipher, but the service decrypts the table key under the caller's identity, so the first real write is denied at the key — after the step it was recording has already happened"
     }
    ]
   },

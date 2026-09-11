@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1065,
+ "rule_count": 1069,
  "sections": [
   {
    "id": "A",
@@ -339,7 +339,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "C:1",
@@ -452,6 +452,10 @@
     {
      "id": "C:28",
      "title": "A zone move re-creates the records a generator could see and drops the ones written by hand, so a client-facing host silently loses its record while every check stays green"
+    },
+    {
+     "id": "C:29",
+     "title": "An egress-locked security group that names its endpoint security groups but not the gateway endpoint's prefix list times out on every call to that service; the route is there, the packets die at the group, and the failure reads as an unreachable public address"
     }
    ]
   },
@@ -979,7 +983,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 62,
+   "rule_count": 63,
    "rules": [
     {
      "id": "G:1",
@@ -1228,6 +1232,10 @@
     {
      "id": "G:62",
      "title": "Findings from a custom detective control are imported on every run but nothing in the pipeline ever transitions one, so a sanctioned posture and an unremediated violation are the same untriaged row and the severity label stops discriminating"
+    },
+    {
+     "id": "G:63",
+     "title": "A derived error index keeps the rows its corrected classifier would no longer write, so the console shows the retired fiction for the whole retention window and the decoding catalog still explains it as a real fault"
     }
    ]
   },
@@ -2239,7 +2247,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "S:1",
@@ -2304,6 +2312,10 @@
     {
      "id": "S:16",
      "title": "Tenant-scoped storage keys assembled inline instead of through the one shared key builder"
+    },
+    {
+     "id": "S:17",
+     "title": "A per-user resource is reached through a session scaffold that demands a sub-tenant dimension the resource does not have, so every principal without that dimension is refused at the session layer before any policy is consulted"
     }
    ]
   },
@@ -3261,7 +3273,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 45,
+   "rule_count": 46,
    "rules": [
     {
      "id": "CC:1",
@@ -3442,6 +3454,10 @@
     {
      "id": "CC:45",
      "title": "IaC generated from a live inventory declares everything present at snapshot time as desired state, so the residue of things already deleted is laundered into intent and every later audit of the tree reads it as deliberate"
+    },
+    {
+     "id": "CC:46",
+     "title": "A configuration document is validated at deployment against a registry that lives in code, so a document and the registry entry it needs can land together and still be rejected live when the document publishes before the validator deploys"
     }
    ]
   },

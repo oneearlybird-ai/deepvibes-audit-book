@@ -270,3 +270,23 @@ as a failed renewal.
 
 **False positives.** Names that are documented as retired with the delegation move, and whose
 consumers were updated first. Validation records for certificates that are themselves retired.
+
+## C:29 — An egress-locked security group that names its endpoint security groups but not the gateway endpoint's prefix list times out on every call to that service; the route is there, the packets die at the group, and the failure reads as an unreachable public address
+
+**Statement.** Gateway endpoints for the object store and the key-value store work through the
+route table: a managed prefix list of the service's public ranges routes to the endpoint, and the
+destination addresses stay public. A security group written for a no-internet posture — egress
+only to the interface endpoints' groups and the VPC range — silently drops that traffic unless it
+also allows the gateway prefix list. The symptom is a connect timeout to a public address in the
+service's range, retried on every visibility timeout for as long as the message lives, and it is
+routinely misread as a NAT, route, or DNS fault because the route table is correct.
+
+**Detect.** Diff the group's egress prefix-list ids against the gateway endpoints attached to the
+subnet's route table; every attached gateway whose prefix list is absent from the group is
+unreachable. In the logs, a `connect ETIMEDOUT <address>:443` whose address falls in the service's
+published range names it. Reachability analysis from the instance to the service confirms the
+drop at the group.
+
+**False positives.** Workloads that reach the service through a NAT by design; groups that carry a
+customer-managed prefix list which includes the gateway's ranges; a subnet with no gateway route,
+which is C:5, not this.

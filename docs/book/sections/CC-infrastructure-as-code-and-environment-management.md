@@ -1088,3 +1088,22 @@ together.
 records that serve a consumer outside the accounts audited — a vendor-verified domain, a
 partner's identity — where the owner is external by design; a generated file that was pruned
 against ownership at adoption time and says which classes it dropped.
+
+## CC:46 — A configuration document is validated at deployment against a registry that lives in code, so a document and the registry entry it needs can land together and still be rejected live when the document publishes before the validator deploys
+
+**Statement.** A deploy-time validator that refuses unknown shapes is a sound guard, and its
+registry lives in code so a new shape is a deliberate act. But the document and the code deploy on
+different paths: the document publishes to the configuration service, the validator ships with the
+compute stack. One commit can carry both and the live system still sees them in either order; when
+the document goes first, the validator rejects it, the deployment fails, and the platform rolls
+back to the previous document until someone works out that the registry simply had not arrived.
+The guard did its job and still cost a failed release.
+
+**Detect.** For every deploy-time validator with a source-side registry, look for a land-time twin
+that reads the document and the registry from the same tree and refuses a shape the registry does
+not carry. Search deployment history for rejections whose reason names the registry; each one is a
+release the twin would have stopped at land.
+
+**False positives.** Registries the document itself carries, where both halves publish as one; a
+validator that rejects on a property of the document alone (schema, grammar) with no code-side
+registry; pipelines that apply the compute stack strictly before publishing the document.

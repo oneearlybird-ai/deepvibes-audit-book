@@ -136,3 +136,23 @@ declares — a second "shared" builder is the same defect one level up.
 **False positives.** The key-builder module's own internals; migration/backfill tooling that
 deliberately targets a retired shape (must name it); log/diagnostic strings that echo a key's
 shape without constructing one for storage I/O.
+
+## S:17 — A per-user resource is reached through a session scaffold that demands a sub-tenant dimension the resource does not have, so every principal without that dimension is refused at the session layer before any policy is consulted
+
+**Statement.** Session scaffolds bind the tags an assumed role receives — tenant, sub-tenant
+(business unit, profile), user — and the session layer refuses to mint a session that lacks a tag
+the scaffold requires. A scaffold that requires the sub-tenant dimension is correct for resources
+keyed by it and wrong for resources keyed only by tenant and user: a device registration, a user
+preference, a notification token. Applied to those, it locks out exactly the principals the
+resource exists for — a founder before their first sub-tenant exists, a user whose sub-tenant was
+rolled back — and it does so client-side of IAM, with a message that reads as a security violation,
+while the role's own trust and grant (which admit an absent dimension) never get a say.
+
+**Detect.** For every function bound to a scaffold that requires dimension X, list the key families
+it touches: if none carries X in its partition key, the scaffold is wrong. Search the logs for the
+layer's "X required for scaffold" refusal. Test with a session that legitimately lacks X (a fresh
+tenant with no sub-tenant) against each per-user endpoint.
+
+**False positives.** Functions that read sub-tenant data on the user's behalf, where the dimension
+is genuinely required; flows where the platform guarantees the dimension exists before the call
+can be made.

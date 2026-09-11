@@ -1354,3 +1354,25 @@ elsewhere, yet flagged at the same severity as unremediated debt, proves the cha
 **False positives.** A control deliberately run in observe-only mode during a stated bring-up window,
 with the window's end recorded; a store whose triage genuinely happens in a separate system of record
 that is reconciled on a named cadence.
+
+## G:63 — A derived error index keeps the rows its corrected classifier would no longer write, so the console shows the retired fiction for the whole retention window and the decoding catalog still explains it as a real fault
+
+**Statement.** An index derived from logs — or any materialized view of a stream — is corrected by
+changing the code that derives it, and the correction is judged by what that code writes from then
+on. The rows the old code already wrote are untouched: they carry the old names, they age out only
+with their retention, and the console that reads them keeps counting and ranking them as if they
+were current faults. The catalog that decodes names for staff was written for the old vocabulary,
+so the retired fallback name still decodes to a confident root cause ("uncaught runtime exception")
+that nearly none of the rows ever were. The engineer who fixed the classifier sees a green test and
+a clean run; the operator opening the console the next morning sees thousands of errors under a
+name the code can no longer produce, and cannot tell which of them was real.
+
+**Detect.** After any change to the deriving code, list the distinct names in the store and diff
+them against the names the new code can emit: every name the code can no longer produce is residue,
+and its rows are dated before the change. Check the decoding catalog for entries describing names
+the code no longer emits. The correction is complete only when the residue is purged or re-derived
+from the source with the new code, and the catalog's vocabulary matches the emitter's.
+
+**False positives.** Rows written during the overlap window while old and new code both ran; a
+name still emitted by a second producer the change did not touch; a store whose retention is shorter
+than the time it takes anyone to look.

@@ -237,3 +237,41 @@ and never carries a figure. Estimates the business has explicitly authorised the
 from a written range that is itself supplied by a tool. Procedure language that suppresses
 narration of internal detail ("do not read the error text aloud") while still requiring the
 failure itself to be stated.
+
+## AA:20 — A recurring agent's standing instructions live outside the tree they operate on, so the tree's own hygiene never reaches them — the prompt keeps naming a purged document as its contract, a retired lane as its shipping path and a demolished account as its sender, and the agent improvises around each
+
+**Statement.** Recurring autonomous agents — a daily ops check, a reconciler, a digest sender —
+are driven by a prompt that is configuration in every sense except where it lives: it sits in a
+personal or scheduler-owned directory, is not version-controlled with the system it operates on,
+and is read by no gate, verifier or grep that runs against that system. The prompt accumulates
+pointers into the tree — follow this runbook, ship with this recipe, send from this identity,
+assume this account — and each pointer is correct on the day it is written. The tree then moves
+on without it: a documentation purge deletes the runbook, a pipeline rework retires the recipe,
+a demolition removes the account's resources. Nothing fails at the moment of change, because
+nothing evaluates the prompt at that moment. The failure arrives at the next scheduled run, and
+it arrives quietly, because a capable agent handed a dead pointer does not stop — it improvises
+a replacement (sends from whatever identity works, commits through whatever path is open,
+defines the check from the summary it was given) and reports success. The system keeps running
+on an unwritten contract, the written one is fiction, and the improvisation is invisible until
+someone reads the prompt against the live estate. The retired-lane case is the sharp one: a
+shipping instruction that names a path the repository has since forbidden turns the agent into
+exactly the actor the new rule was written to stop.
+
+**Detect.** Inventory every recurring automation that carries a prompt or instruction file —
+scheduler directories, cron entries, task runners, agent registries — and treat each file as a
+consumer of the tree. For every concrete pointer in it (a path, a recipe or command name, an
+account id, an identity, a bucket, a role) resolve the target against the live system and the
+current repository: does the file exist, is the recipe still defined, does the identity still
+exist in that account. Compare the prompt's shipping instructions to the repository's current
+rules line by line; a prompt that names a retired lane has been improvising since the
+retirement. Read the automation's recent outputs for the signs of improvisation — a sender, a
+path or an account that differs from the one the instructions name — and date the divergence
+from the sending or commit statistics rather than from the prompt. Finally ask whether any gate
+in the tree would have caught the divergence; if the prompt is in no repository, or in one no
+verifier reads, the answer is no and the mechanism is present whether or not it has fired yet.
+
+**False positives.** Prompts versioned alongside the system and covered by a link or reference
+check; pointers written deliberately as "the current X, whatever it is" rather than as a literal
+name; automations that are stopped rather than running on stale instructions; an agent that
+halts and reports a dead pointer instead of improvising around it, which is the correct behaviour
+and turns the finding into a plain stale-pointer note.

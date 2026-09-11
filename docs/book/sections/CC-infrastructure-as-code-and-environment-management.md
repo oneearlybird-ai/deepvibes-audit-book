@@ -1057,3 +1057,34 @@ read its maturity against the pinned provider version before planning a migratio
 **False positives.** Attributes the provider recomputes from other declared fields and that
 have no independent existence; removals that do plan a deletion (the ordinary case, which
 proves the attribute is not computed); a no-op plan whose edit was genuinely cosmetic.
+
+## CC:45 — IaC generated from a live inventory declares everything present at snapshot time as desired state, so the residue of things already deleted is laundered into intent and every later audit of the tree reads it as deliberate
+
+**Statement.** Adopting an existing estate into code often starts from a dump: list every record
+in the zone, every rule, every object, render them into resource blocks, commit. The generator
+has no notion of ownership — it cannot tell a record that serves a live consumer from one whose
+consumer was deleted months earlier — so both become declarations of equal standing. From that
+commit on, the residue is no longer residue. It is desired state, defended by the plan (which
+recreates it if anyone removes it by hand), tidy in review (a generated file is read for shape,
+not for each entry's justification), and invisible to the estate's own drift and orphan checks,
+which compare live against declared and find them equal. Verification and signing records are
+the common case — DNS tokens and selectors that only ever belonged to the identity that minted
+them — but the same laundering happens to firewall rules, grants, subscriptions and any other
+family a generator dumps. The cost is not the entries themselves but what they hide: with dead
+and live selectors declared side by side nobody can tell from the tree which identity is real,
+and the next migration copies all of them again.
+
+**Detect.** For every generated or bulk-imported file, establish the provenance rule it was
+built from ("everything the old zone answered") and then, family by family, name the live owner
+each entry must have — the identity behind a verification token, the endpoint behind an alias,
+the principal behind a grant — and resolve that owner across every account and region it could
+live in. An entry with no owner anywhere is residue with a declaration around it. Read the
+generator's own exclusion list against what it excluded: it names the residue classes its author
+knew about (expired certificate validations, zone-owned records) and no others. Treat a mirror
+or cutover copy of the same inventory as a second copy of the same residue, to be pruned
+together.
+
+**False positives.** Entries kept deliberately for a pending cutover and said so in the tree;
+records that serve a consumer outside the accounts audited — a vendor-verified domain, a
+partner's identity — where the owner is external by design; a generated file that was pruned
+against ownership at adoption time and says which classes it dropped.

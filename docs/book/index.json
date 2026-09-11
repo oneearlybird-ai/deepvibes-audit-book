@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1057,
+ "rule_count": 1059,
  "sections": [
   {
    "id": "A",
@@ -3087,7 +3087,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "AA:1",
@@ -3164,6 +3164,10 @@
     {
      "id": "AA:19",
      "title": "The prompt layer that governs what the agent may assert carries no grounding rule, and a procedure step instructs it to conceal tool failure, so the model fills every gap with fluent invention and the caller hears prices, times and classifications that nothing looked up"
+    },
+    {
+     "id": "AA:20",
+     "title": "A recurring agent's standing instructions live outside the tree they operate on, so the tree's own hygiene never reaches them — the prompt keeps naming a purged document as its contract, a retired lane as its shipping path and a demolished account as its sender, and the agent improvises around each"
     }
    ]
   },
@@ -3237,7 +3241,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "CC:1",
@@ -3414,6 +3418,10 @@
     {
      "id": "CC:44",
      "title": "A provider treats a nested collection attribute as computed, so deleting its block from the declaration plans nothing: the file says the member is gone, the live resource still has it, and the green plan is what hides the gap"
+    },
+    {
+     "id": "CC:45",
+     "title": "IaC generated from a live inventory declares everything present at snapshot time as desired state, so the residue of things already deleted is laundered into intent and every later audit of the tree reads it as deliberate"
     }
    ]
   },

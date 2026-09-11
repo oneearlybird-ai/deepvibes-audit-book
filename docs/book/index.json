@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1059,
+ "rule_count": 1060,
  "sections": [
   {
    "id": "A",
@@ -971,7 +971,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 60,
+   "rule_count": 61,
    "rules": [
     {
      "id": "G:1",
@@ -1212,6 +1212,10 @@
     {
      "id": "G:60",
      "title": "Edge-security alarm whose threshold sits below the volume of hostile traffic the control is built to block, so the control's ordinary success is delivered as an incident several times a day"
+    },
+    {
+     "id": "G:61",
+     "title": "A log consumer names events from a structured field the fleet never emits, so its output collapses to one constant fallback label — the table fills, the console renders, and every row says the same thing"
     }
    ]
   },

@@ -953,6 +953,8 @@ first-party property and use the substring list only for ranking or dashboards, 
 tidiness rather than a false alarm. Layers that emit every fault under one stable prefix the vendor
 documents as its contract, where the enumeration is the vendor's own namespace and not a sample of it.
 
+**Repair order (lesson, 2026-09).** The exclusion list is usually the residue of a catch-all that had to exist because the positive vocabulary was incomplete: on the instance that reopened this rule, a level-based catch-all survived two fixes because 137 first-party messages in 48 functions were logged at the error level but enumerated nowhere, so deleting the catch-all first would have silently uncounted them. Repair in this order - measure the gap between what the code logs at the error level and what the filter enumerates, close it, make completeness a gate the tree cannot pass without (every literal handed to an error-level log call must be in the list; free text at that level is refused), and only then delete the catch-all in favour of a positive anchor the injected layer cannot produce, such as the runtime's own error-record shape. Deleting the catch-all first trades a loud false alarm for a silent blind spot.
+
 ## G:50 — Alerting is wired for the breach transition only, so the channel reports what broke and never what recovered
 
 **Statement.** Alarms are created with a notification action on the breach transition and no action on
@@ -1296,3 +1298,31 @@ on one source or one path is the real thing the alarm was meant for.
 the threshold does separate the two. Alarms deliberately set as a volume telemetry feed into a
 dashboard rather than a notification channel — check where the actions route before filing.
 Freshly exposed endpoints during the first days of discovery, where the elevated rate is transient.
+
+## G:61 — A log consumer names events from a structured field the fleet never emits, so its output collapses to one constant fallback label — the table fills, the console renders, and every row says the same thing
+
+**Statement.** A derived signal — an error index, a triage table, a "what is failing for this
+customer" view — is built to read a name from a structured field of the log record: an event
+key inside a JSON message, an error code. The producers, meanwhile, write their errors through
+a formatter that joins arguments into one string (a token followed by an inspected object,
+under a JSON log envelope). The field never exists, so the consumer's fallback runs on every
+record, and when the fallback is a constant ("unhandled_error", "unknown") every row carries
+it. The artifact then looks healthy in every way that does not involve reading it: rows are
+written, counts increase, the console renders, the writer's own health alarm stays quiet
+because writing succeeded. The signal carries no information and reads as coverage. When the
+fallback is also a level-based catch-all, anything the runtime or an injected layer logs at
+that level — a wrapper's diagnostic, an export failure — becomes a row with the same constant
+name, so the noise floor and the real errors are indistinguishable in the one place staff look.
+
+**Detect.** Put the consumer's parsing code beside a live sample of the producers' records —
+sampled from the log groups, not inferred from the shared logger's intent — and check that the
+field the consumer reads is present in the sample; if it is not, read the table the consumer
+writes and count distinct names, and treat a dominant constant as the finding. Find the
+fallback branch whose output is a fixed string; every record it names is one the consumer did
+not understand. Ask whether any alarm on the writer can tell "wrote nothing useful" from
+"wrote" — invocation errors and throughput cannot.
+
+**False positives.** A consumer whose fallback is to drop the record, so rows exist only for
+shapes it understood; a fleet that genuinely emits the structured field the consumer reads,
+verified per function on live records; a constant label used deliberately as the bucket for a
+bounded, documented class that has its own alarm.

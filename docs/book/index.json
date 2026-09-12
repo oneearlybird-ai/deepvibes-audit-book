@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1069,
+ "rule_count": 1073,
  "sections": [
   {
    "id": "A",
@@ -2158,7 +2158,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "R:1",
@@ -2239,6 +2239,10 @@
     {
      "id": "R:20",
      "title": "The vendor's per-conversation success verdict is produced by a model reading the transcript, so a call in which every tool failed and the agent invented the answers is marked successful, and any monitoring built on that field is blind to the failures that matter most"
+    },
+    {
+     "id": "R:21",
+     "title": "A voice agent's model emits the platform's tool-call markup as speech instead of calling the tool, then invents the result and confirms it; only the platform's simulator with every tool mocked measures a candidate model's real call rate, and a model is chosen there, never from a spec sheet"
     }
    ]
   },
@@ -3119,7 +3123,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "AA:1",
@@ -3200,6 +3204,10 @@
     {
      "id": "AA:20",
      "title": "A recurring agent's standing instructions live outside the tree they operate on, so the tree's own hygiene never reaches them — the prompt keeps naming a purged document as its contract, a retired lane as its shipping path and a demolished account as its sender, and the agent improvises around each"
+    },
+    {
+     "id": "AA:21",
+     "title": "The post-call summary is generated from the transcript alone, so it repeats a booking or a send the system's own detector has already marked as never executed"
     }
    ]
   },
@@ -3908,7 +3916,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 41,
+   "rule_count": 43,
    "rules": [
     {
      "id": "JJ:1",
@@ -4073,6 +4081,14 @@
     {
      "id": "JJ:41",
      "title": "Pooled resource assignment takes the first free candidate in storage order, so one member absorbs every job whenever they are free while the rest of the pool idles"
+    },
+    {
+     "id": "JJ:42",
+     "title": "One booking script serves every industry, so a caller in a dispatched trade is asked for a preferred technician and where they would like the work done, questions the industry's own booking model has already answered"
+    },
+    {
+     "id": "JJ:43",
+     "title": "A dashboard fills a blank domain attribute with a fixed default that contradicts the industry's rule, so records created before the rule existed silently take the wrong value the first time anyone edits them"
     }
    ]
   },

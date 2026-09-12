@@ -850,3 +850,35 @@ manual override) do not mask the defect by fixing individual cases.
 **False positives.** Pools with a single member; assignment rules that intentionally prefer
 a primary member with the rest as overflow, documented as such and visible in the product; a
 solver that sorts candidates by an explicit score before backtracking.
+
+## JJ:42 — One booking script serves every industry, so a caller in a dispatched trade is asked for a preferred technician and where they would like the work done, questions the industry's own booking model has already answered
+
+**Statement.** A procedure written for one service model — a salon, where a client chooses a
+stylist and comes to the shop — is reused for every industry because the tools behind it are
+shared. In a dispatched trade the pool assigns the technician and the work happens at the customer's
+address, so the script's opening questions ("do you have a preferred staff member?", "would you like
+to come in or have us come to you?") have no answer the caller can give, and the ones they improvise
+sound absurd. The tools already support the pool path; the script never lets the caller reach it
+cleanly.
+
+**Detect.** Read the procedure steps against the industry pack's service model and booking type:
+every question the script asks whose answer the industry fixes in advance is a defect. Listen to a
+call in the industry with the least choice — the questions stand out immediately.
+
+**False positives.** Industries where the choice is real (a mobile groomer who also has a shop, a
+clinic with named providers); a name the caller volunteers unprompted, which the tools should honor.
+
+## JJ:43 — A dashboard fills a blank domain attribute with a fixed default that contradicts the industry's rule, so records created before the rule existed silently take the wrong value the first time anyone edits them
+
+**Statement.** An industry rule stamps a service's location from the industry's service model at
+creation. Records created before the rule carry no value. The dashboard's edit form defaults a blank
+to a fixed choice — the one that fits the first industry it was built for — and the first edit
+persists it. The agent then reads a trade's diagnostic visit as happening at the shop and asks the
+caller to bring the equipment in.
+
+**Detect.** For every attribute an industry rule stamps, list records where it is null or differs
+from what the rule would stamp today; check every form default against the rule; the defect shows
+as a value whose creation date predates the rule and whose update date is a dashboard edit.
+
+**False positives.** A value the owner set deliberately after the rule existed; attributes the
+industry genuinely leaves open.

@@ -275,3 +275,18 @@ check; pointers written deliberately as "the current X, whatever it is" rather t
 name; automations that are stopped rather than running on stale instructions; an agent that
 halts and reports a dead pointer instead of improvising around it, which is the correct behaviour
 and turns the finding into a plain stale-pointer note.
+
+## AA:21 — The post-call summary is generated from the transcript alone, so it repeats a booking or a send the system's own detector has already marked as never executed
+
+**Statement.** A summariser reads the conversation and writes what the agent said happened. A
+separate detector compares what the agent claimed with which tools ran and stamps the call as
+confirmed-without-execution. The two never meet: the summary on the operator's dashboard says
+"appointment booked for Monday" over a record whose attention flags say no booking tool ran. The
+operator trusts the summary, and the caller's problem is discovered days later or never.
+
+**Detect.** Join summaries with the detector's flags: any summary asserting an outcome on a call
+flagged for that outcome's absence. Feed the detector's verdict into the summariser's input, or
+overwrite the summary's outcome sentence from the verdict.
+
+**False positives.** Calls where the tool ran and failed after the claim, which are a different
+defect; summaries that already quote the flag.

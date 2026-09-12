@@ -286,3 +286,29 @@ consumed only for that purpose, alongside a first-party outcome signal built fro
 Conversations where the failed tools were genuinely irrelevant to the caller's request. Evaluation
 rubrics the team authored specifically to check tool outcomes, where a green verdict on a failed
 call is a rubric bug rather than the structural inversion described here.
+
+## R:21 — A voice agent's model emits the platform's tool-call markup as speech instead of calling the tool, then invents the result and confirms it; only the platform's simulator with every tool mocked measures a candidate model's real call rate, and a model is chosen there, never from a spec sheet
+
+**Statement.** A conversational-agent platform renders earlier tool calls into the model's context in
+its own bracketed syntax. Under a long, multi-tool turn sequence some models reproduce that syntax in
+the text channel: the platform treats the text as speech, the voice reads the markup aloud, no tool
+runs, and the model, seeing no result, fabricates one and confirms it warmly. The failure is
+intermittent (one call in ten), model-specific, invisible to configuration parity checks, and
+invisible to a live probe that asks one question and gets one real call. Temperature does not cure
+it. The operator hears a receptionist reading identifiers aloud and then promising a booking that
+does not exist.
+
+**Detect.** In the post-call transcript the agent's spoken messages contain the platform's tool
+markup, the per-turn tool-call arrays are empty while the text claims a result, and the tool server
+logged no invocation for the call. To choose a replacement, use the platform's simulator: scratch
+copies of the production agent with the same prompt, tools and procedures, every tool mocked so
+nothing real is written, a caller persona that insists on the outcome and rules out side branches,
+six or more runs per candidate, scored on booked-through-tool, claimed-without-tool,
+narrated-without-call, numbers not present in any tool result, and the platform's own first-byte
+latency metric. Delete the scratch agents afterwards. Roll out through the platform's own
+reconciler and end with the live probe.
+
+**False positives.** A tool surface that is genuinely empty (R:16) — the narration is then the
+platform's, not the model's; a single narration turn followed by a real call; candidates that route
+to a different legitimate branch (emergency intake, a callback) under an after-hours prompt — score
+the branch taken, not the absence of a booking.

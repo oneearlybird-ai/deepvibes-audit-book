@@ -602,3 +602,34 @@ copy, and by refusing on a miss.
 **False positives.** A second store that is a pure derived selector over the first with no fetch
 of its own; server-rendered initial state that the query cache replaces before any action can
 run.
+
+## K:40 — One writer widens a stored field from a scalar to a structured value while every other reader still hands it straight to the renderer, so the surface breaks for exactly the records the new form has touched
+
+**Statement.** A field that began life as a free-text scalar — an address, a name, a phone, a
+location — gains a structured form: a picker, an autocomplete, or a validated form now writes an
+object with parts. The writer, its own screen, and its types move together and read as one
+coherent change. What nobody sweeps is the set of OTHER readers of the same field: list columns,
+detail drawers, summary cards, admin consoles, exports, each of which interpolates the value
+directly into markup. Those readers were correct for every record in the store on the day they
+were written, and they stay correct until the first record is saved through the new form. From
+that moment the surface faults for that record only — in React, an object passed as a child is a
+hard render error that takes the whole tree down, not a blank cell — so the blast radius is a
+crashed page, not a cosmetic defect. The timing is what hides it: the widening ships green
+because no stored record has the new shape yet, and the breakage arrives later, on an ordinary
+save by an ordinary user, at a surface nobody edited. It is the mirror of the classic type-change
+poison-row case, and strictly worse to diagnose: there the stale rows fail and the new code is
+right, here the new rows fail and the untouched code was right yesterday.
+
+**Detect.** For every field whose write path gained structure, enumerate every read of that field
+across every surface — grep the field name, not the component — and classify each as
+render-directly or normalize-first. Any reader that interpolates the raw value is the finding,
+whether or not a record of the new shape exists yet. Prove the shape is actually reachable by
+reading a stored record written since the form shipped, not by reading the type declaration:
+types that still say `string` while the writer emits an object are themselves a finding. Fix with
+ONE reader function that accepts both shapes and returns the rendered form, called by every
+surface, and with the stored type widened to say what a record can really carry.
+
+**False positives.** Readers that already normalize or branch on the observed shape — the
+normalization must be read, not inferred from a comment; fields whose structured form is written
+only to a new, separately-keyed attribute, leaving the original scalar untouched; and surfaces
+proven unreachable, where the reader is dead code.

@@ -84,3 +84,36 @@ client.
 **Detect.** For every sending identity, read its default configuration set name and then confirm that a set by that name EXISTS; the two facts are stored separately and a listing of configuration sets is the only way to close the gap. Do not accept identity verification status, sending-enabled flags, or account health as evidence that sending works — send a real message, or find one delivered recently. Establish the outage's start from the last message actually delivered rather than from the last one attempted: where sends are archived or self-copied, the gap in that archive dates it. Finally, check whether the configuration set is declared in infrastructure at all; a set that only ever existed by hand will be removed by any demolition that sweeps unmanaged resources, and will not come back with an apply.
 
 **False positives.** Identities whose default set exists and is merely misconfigured, which is a different and usually milder defect; environments where sends legitimately fail for sandbox or suppression reasons that must be excluded by reading the actual error; and identities that are verified deliberately for receiving only, where no send path exists to break.
+
+## FF:11 — A subdomain's signing-key record is published with the parent domain's public key, so every "is signing configured" check passes and every signature fails
+
+**Statement.** A second mail domain is stood up alongside the primary — a subdomain for sales,
+support, billing, or a regional brand — and the provider issues it its OWN key pair. Publishing
+the key is a copy-paste step into DNS, and the record that is already in the zone for the parent
+domain is the nearest thing to copy. The result is a record that is present, syntactically valid,
+correctly named, and wrong: the selector resolves, the tag list parses, the key is a well-formed
+public key, and it is not the key the subdomain's messages are signed with. Every check that asks
+"is signing configured for this domain?" — the provider's dashboard, a zone audit, an
+infrastructure gate comparing declared records to live ones, a spot-check that a TXT record exists
+at the selector — answers yes, because each is testing for presence, not for correspondence to the
+private key actually signing. Receivers do the only test that matters and fail it, silently from
+the sender's side: the messages are not bounced, they are downgraded, and under an enforcing
+policy on that subdomain they are quarantined or discarded while the parent domain's mail flows
+normally. The failure therefore presents as "our sales mail goes to spam", weeks after the record
+was published, with a zone file that looks correct to everyone who reads it.
+
+**Detect.** Do not compare the record against the zone declaration; compare it against the
+PROVIDER's currently issued key for that exact domain, fetched from the provider. A subdomain
+selector whose published key is byte-identical to the parent domain's is the finding on sight —
+grep the zone for duplicated key material across names. Then verify end to end by sending a real
+message from each domain and reading the receiver's authentication results, and read each
+domain's own policy record: a subdomain with an enforcing policy and a mismatched key is
+actively losing mail, which sets the severity. Where a provider rotates keys, confirm which key
+is current rather than which one was correct when the record was written.
+
+**False positives.** Providers that deliberately sign a subdomain with the parent's key under a
+relaxed alignment policy, where the private key genuinely is shared — this must be confirmed
+from the provider's configuration, not assumed from the records matching; selectors deliberately
+carrying an old key during a documented rotation overlap, where the new selector exists and
+carries the new key; and records whose key differs only in formatting (quoting or line splitting
+of the same base64 body), which is a presentation difference, not a key mismatch.

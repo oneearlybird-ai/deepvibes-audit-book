@@ -1386,3 +1386,38 @@ against the number present.
 **False positives.** A container key that is the schema's only valid shape for the fact, with the
 inline form rejected elsewhere by a required-field rule that runs first; a walk deliberately scoped to
 one shape whose output names the scope and whose complement is covered by a second, named gate.
+
+## NN:58 — A repository runs its checks in two lanes, one that discovers them by pattern and one that names them by hand, so a new check joins the discovering lane automatically and is absent from the lane that actually admits work
+
+**Statement.** Mature repositories end up with two verification lanes: a broad one run before a
+release or a deployment, which enumerates its checks by glob, and a narrow fast one run at the
+moment work is admitted to the trunk, which enumerates its checks as a hand-written list because
+it must stay seconds long. A new check dropped into the checks directory therefore joins the
+broad lane the instant it is committed, and joins the narrow lane never. Every signal says it is
+wired: it exists in the enumerated directory, it runs, it passes, it has a self-test, the broad
+lane names it in its output, and the commit that added it says the guarantee now holds. What does
+not hold is the guarantee's TIMING — the check cannot refuse the change that would break it,
+because it does not run at the moment of refusal. The window is the gap between admissions and
+releases, and it is longest exactly when it matters most: teams that have accumulated a backlog
+of un-run release passes are the ones whose broad lane is stale, so a defect the new check would
+catch sits on the trunk for days behind a green build, which is the same failure the check was
+written to end. Documentation entrenches it — the rationale for the narrow lane's hand-list is
+usually well written and correct, and reads as an explanation of what runs there rather than as
+the exhaustive definition it is.
+
+**Detect.** List the checks each lane runs by reading the lane's own definition — expand the
+globs, read the hand-list — and diff the two sets; every check in the broad set and not the
+narrow one is a candidate. For each candidate ask which lane must refuse the defect: a check that
+reads only committed files, needs no live credentials, and finishes in about a second belongs in
+the admitting lane, and its absence there is the finding. Read the ledger or commit message that
+introduced the check: a claim that it runs "at land time", "on every push", or "at the gate" that
+the hand-list does not carry is the finding stated in the project's own words. Quantify the
+exposure by measuring how far behind the broad lane currently is. Fix by adding the check to the
+admitting lane, or better by making that lane derive its list from the same pattern plus an
+explicit, documented exclusion list, so omission becomes a deliberate act.
+
+**False positives.** Checks that genuinely cannot run in the fast lane — ones needing live
+credentials, network reads, or minutes of runtime — where the slow lane is the correct home and a
+tracking row says so; checks whose subject cannot change between admissions (generated artifacts
+built by the release lane itself); and repositories with a single lane, where the glob is the
+whole contract.

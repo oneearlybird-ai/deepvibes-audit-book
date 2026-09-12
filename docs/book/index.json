@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1073,
+ "rule_count": 1076,
  "sections": [
   {
    "id": "A",
@@ -1519,7 +1519,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "K:1",
@@ -1676,6 +1676,10 @@
     {
      "id": "K:39",
      "title": "A server-owned list is held in two client stores, one written by the fetch the screen renders from and one by the context that acts on a row, so an action on a freshly created row reads the store that does not yet hold it and its fallback picks the wrong target"
+    },
+    {
+     "id": "K:40",
+     "title": "One writer widens a stored field from a scalar to a structured value while every other reader still hands it straight to the renderer, so the surface breaks for exactly the records the new form has touched"
     }
    ]
   },
@@ -3696,7 +3700,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 10,
+   "rule_count": 11,
    "rules": [
     {
      "id": "FF:1",
@@ -3737,6 +3741,10 @@
     {
      "id": "FF:10",
      "title": "The sending identity's DEFAULT configuration set names a set that no longer exists, so every send fails on a resource the caller never mentioned while the identity still reports itself verified and enabled"
+    },
+    {
+     "id": "FF:11",
+     "title": "A subdomain's signing-key record is published with the parent domain's public key, so every \"is signing configured\" check passes and every signature fails"
     }
    ]
   },
@@ -4312,7 +4320,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 57,
+   "rule_count": 58,
    "rules": [
     {
      "id": "NN:1",
@@ -4541,6 +4549,10 @@
     {
      "id": "NN:57",
      "title": "The gate discovers its subjects by descending into one optional container key, so a subject that states the same fact in the schema's other permitted shape is never checked and the gate reports the ones it found as the whole set"
+    },
+    {
+     "id": "NN:58",
+     "title": "A repository runs its checks in two lanes, one that discovers them by pattern and one that names them by hand, so a new check joins the discovering lane automatically and is absent from the lane that actually admits work"
     }
    ]
   },

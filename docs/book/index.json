@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1076,
+ "rule_count": 1079,
  "sections": [
   {
    "id": "A",
@@ -983,7 +983,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 63,
+   "rule_count": 64,
    "rules": [
     {
      "id": "G:1",
@@ -1236,6 +1236,10 @@
     {
      "id": "G:63",
      "title": "A derived error index keeps the rows its corrected classifier would no longer write, so the console shows the retired fiction for the whole retention window and the decoding catalog still explains it as a real fault"
+    },
+    {
+     "id": "G:64",
+     "title": "A noisy alarm is recalibrated by subtracting the background series inside metric math, and the subtrahends name the rules by their resource names rather than their telemetry labels, so every subtraction is of an empty series and the correction is a no-op that reads as done"
     }
    ]
   },
@@ -3478,7 +3482,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "DD:1",
@@ -3623,6 +3627,10 @@
     {
      "id": "DD:36",
      "title": "A reference-data model is replaced by adding the new shape beside the old one, so every reader, seed, verifier and monitor keeps whichever half it was written against and each later fix moves one consumer while the system runs on both"
+    },
+    {
+     "id": "DD:37",
+     "title": "The configuration document names a provider-side object whose creation requires a third-party credential the deployment pipeline may not hold, so no unit declares it, nothing ever asserts it exists, and its permanent absence surfaces only as a per-item error inside a path that reports success"
     }
    ]
   },
@@ -4320,7 +4328,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 58,
+   "rule_count": 59,
    "rules": [
     {
      "id": "NN:1",
@@ -4553,6 +4561,10 @@
     {
      "id": "NN:58",
      "title": "A repository runs its checks in two lanes, one that discovers them by pattern and one that names them by hand, so a new check joins the discovering lane automatically and is absent from the lane that actually admits work"
+    },
+    {
+     "id": "NN:59",
+     "title": "A test pins the rendering of a hard-coded past instant into a relative-time bucket, so the calendar alone crosses the bucket boundary on a future date and a suite nobody touched fails as somebody else's regression"
     }
    ]
   },

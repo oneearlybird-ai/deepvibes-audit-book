@@ -833,3 +833,36 @@ finding before it has drifted.
 **False positives.** A deliberate versioned migration with an expiry — both shapes read for a
 bounded window, a tracking row naming the removal date, and a gate that fails after it;
 read-only archives kept for provenance that no runtime reads.
+
+## DD:37 — The configuration document names a provider-side object whose creation requires a third-party credential the deployment pipeline may not hold, so no unit declares it, nothing ever asserts it exists, and its permanent absence surfaces only as a per-item error inside a path that reports success
+
+**Statement.** Most resources a workload names are created by the same pipeline that names them, so
+a typo or an ordering mistake is caught by the plan, the apply or a drift check. One class is
+different: objects whose creation requires a credential issued by a third party and held by a human
+— a mobile-push platform application built from a vendor signing key, a sender identity built from a
+carrier registration, a partner app registration. The pipeline cannot mint these, and correctly does
+not hold the credential, so they are created by hand once and thereafter referenced by name. The
+reference itself is usually well-formed and even validated: the configuration document carries a
+short path, the client composes a syntactically perfect provider identifier from it, and a format
+check passes. Nothing in that chain asks the provider whether the object is there. When it is not —
+never created, created in another account, created under a different name, expired with the
+credential — the composed identifier resolves to nothing, and the call that uses it fails as an
+ordinary per-item error. The enclosing job catches it, records a delivery failure for that one item,
+and returns success with a count of zero delivered. The result is a channel that is structurally
+absent while every layer above it reports normal operation: configuration valid, deployment green,
+job successful, only the recipients missing. Because the object is out of IaC, the usual inventory
+sweeps do not miss it either — there is nothing in the tree for them to compare against.
+
+**Detect.** Enumerate the configuration document's resource references and partition them by who
+creates each one. For every reference with no creating declaration anywhere in the infrastructure
+tree, call the provider and assert the object exists — listing the class and finding it EMPTY is the
+cheapest version of this check and catches the whole family at once. Add that existence assertion to
+the same gate that validates the configuration, so a named-but-absent object fails the document
+rather than the first delivery. At runtime, make the fleet-wide cause distinguishable from the
+per-item one: a job that could not deliver because the channel does not exist must not report the
+same shape as one that skipped an ineligible recipient.
+
+**False positives.** Objects deliberately absent in non-production environments where the feature is
+off — the reference should then be absent too, not dangling. Classes the provider creates lazily on
+first use. References to objects owned by another account or team, where existence is that owner's
+gate.

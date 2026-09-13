@@ -1421,3 +1421,34 @@ credentials, network reads, or minutes of runtime — where the slow lane is the
 tracking row says so; checks whose subject cannot change between admissions (generated artifacts
 built by the release lane itself); and repositories with a single lane, where the glob is the
 whole contract.
+
+## NN:59 — A test pins the rendering of a hard-coded past instant into a relative-time bucket, so the calendar alone crosses the bucket boundary on a future date and a suite nobody touched fails as somebody else's regression
+
+**Statement.** Code that speaks time to humans buckets an interval into words — "yesterday", "three
+days ago", "last month". A test that feeds such a renderer a literal instant and asserts the WORD
+has written down a fact with an expiry date: the distance from that literal to now grows every day,
+and on the day it crosses a bucket boundary the assertion becomes false with no change to any code.
+This is not flakiness and it is not caught by re-running: it fails deterministically, permanently,
+from that date forward. Two properties make it expensive out of proportion to the one-line cause.
+First, the assertion is usually incidental — the test exists to prove something else (that no raw
+identifier leaked into human-facing text, that a payload has the right shape), and the bucket word
+was merely a convenient literal to match on, so the failure surfaces in a file whose name has
+nothing to do with the renderer. Second, because it fires on a calendar date rather than on a
+change, it lands on whoever pushes next: a red suite blocks their unrelated work, and the natural
+first hypothesis — that their change broke it — is wrong, so the debugging starts in the wrong
+place. The literal is almost always there BECAUSE the renderer has no boundary tests of its own:
+the function usually already accepts an injected clock precisely so its buckets can be pinned, and
+nothing uses it.
+
+**Detect.** Grep tests for date and timestamp literals and, for each, ask whether the assertion
+depends on the distance between that literal and now; any that does is a dated fuse — compute the
+date it burns. Where a renderer takes an injectable clock, check that some test actually passes one,
+and that the boundaries are pinned from BOTH sides (a one-sided check passes just as happily when
+the comparison is off by one) along with the contract edges: a future instant, an unparseable one.
+Then weaken the incidental assertion to what the test is really for — the shape of a relative
+phrase, not which bucket it landed in — so it can never again fail for the passage of time while
+still failing the moment a raw instant reaches a human.
+
+**False positives.** Tests whose subject IS the calendar (DST, leap day, month-end arithmetic) and
+that pin the clock explicitly. Literals used as opaque identifiers or sort keys rather than as
+inputs to a relative-time computation. Fixtures regenerated on every run.

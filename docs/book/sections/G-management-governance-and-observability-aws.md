@@ -1376,3 +1376,37 @@ from the source with the new code, and the catalog's vocabulary matches the emit
 **False positives.** Rows written during the overlap window while old and new code both ran; a
 name still emitted by a second producer the change did not touch; a store whose retention is shorter
 than the time it takes anyone to look.
+
+## G:64 — A noisy alarm is recalibrated by subtracting the background series inside metric math, and the subtrahends name the rules by their resource names rather than their telemetry labels, so every subtraction is of an empty series and the correction is a no-op that reads as done
+
+**Statement.** A detective alarm that fires on ambient traffic is not usually retired; it is
+refined, by replacing the raw counter with an expression that subtracts the sub-counters the
+operator has agreed are background — per-rule, per-status, per-route series drawn from the same
+namespace as the total. The refinement depends entirely on each subtrahend resolving to the series
+the operator meant, and in several telemetry models the dimension that selects a sub-counter is NOT
+the sub-resource's own name: it is a separate publishing label the resource declares for its
+metrics (a visibility or monitoring block, a metric-name field, an observability alias), and the two
+are commonly different strings for the same object. Naming the sub-resource instead selects a series
+that was never published. Nothing objects: the expression is syntactically valid, the provider does
+not resolve dimension values at plan time, and the arithmetic treats a subtrahend with no datapoints
+as zero rather than as an error — so the expression silently evaluates to the uncorrected total.
+The alarm keeps producing datapoints, keeps crossing on exactly the traffic it did before, and its
+description, its comment and its change record all state that the background is now excluded. The
+defect is durable because the natural verification confirms it: reading the alarm back from the
+control plane shows the five-query shape that was intended, and the shape is right. Only the values
+are wrong, and only against the corrected expression does that show.
+
+**Detect.** Never accept the shape of a metric-math alarm as evidence that it works. For every
+subtrahend, fetch that exact series for a period the alarm actually crossed and require it to be
+non-empty; then evaluate both expressions — the deployed one and one built from the sub-resources'
+declared telemetry labels — over the same window and compare. If the deployed expression equals the
+uncorrected total at every timestamp, the correction is absent. Read the sub-resource declarations
+for the field that names their published metrics and diff those strings against the dimension values
+the alarm uses. The same check applies to any consumer that filters by a sub-resource dimension:
+dashboards, anomaly detectors, cost allocation.
+
+**False positives.** A window in which the background genuinely did not fire, so an empty subtrahend
+is correct — distinguish it by finding any window where the sub-resource's real series is non-empty
+and confirming the deployed expression drops there too. Platforms where the dimension really is the
+resource name. An expression whose subtrahends are deliberately optional because the sub-resources
+are conditionally created.

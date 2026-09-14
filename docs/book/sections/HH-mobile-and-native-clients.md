@@ -136,3 +136,33 @@ embedded to fetch the rest, and that one name must be treated as permanent and o
 routing layer explicitly. Hosts that are genuinely immutable by contract with a third party (a
 vendor's fixed API domain). A development or test target that points at a fixture server and is
 never shipped.
+
+## HH:12 — A later-added orientation or onboarding overlay is guarded on its own readiness only, so it presents over a pre-existing gate screen and makes the gate unreachable on exactly the installs the gate exists for
+
+**Statement.** Two features are added months apart to the same launch path. The first is a GATE: a
+screen shown when the session lacks something the app needs chosen before it can proceed — a
+workspace, a profile, a location, a role. The second is an ONBOARDING overlay, presented on first
+run and guarded on a condition about ITSELF (not yet seen, not in some other mode) with no
+reference to the gate. Each is correct alone, and the overlay presents over the gate, with a
+dimming scrim, on every fresh install. The gate is still rendered and still functional underneath;
+the user simply cannot see it, and reaches it only by finding a skip or close control. Reported,
+this reads as "sign-in took me nowhere" or "the picker is gone", which sends the investigation to
+authentication and to the gate's own recent history, where it finds nothing, because neither is
+broken. The overlay is also usually meaningless at that moment — it orients the user to a thing
+they have not selected yet — so the harm is doubled: the useful screen is hidden behind a useless
+one. It survives review because it is invisible to anyone whose install is already past the gate,
+which includes everyone who tested the overlay when it shipped.
+
+**Detect.** Enumerate every modal, sheet or full-screen overlay presented automatically on launch
+and list the conditions each is guarded on; then enumerate every gate screen the launch path can
+show. Any overlay whose guard does not reference the gate states is this defect. Verify on a CLEAN
+install in each gated state rather than on a developer account, since the gate states are exactly
+the ones a long-lived install never re-enters. The remedy is to make the overlay wait for the
+precondition its own content assumes, and — because a launch-time presentation usually runs once —
+to also offer it at the moment the gate clears, so the user who arrives gated is not silently
+skipped instead of merely delayed.
+
+**False positives.** Overlays that must precede the gate by design (a legal acceptance, a
+version-required notice, a security prompt); gates that are themselves presented modally above the
+overlay by the same coordinator; and apps where the launch presentation is centrally sequenced and
+the ordering is asserted in one place.

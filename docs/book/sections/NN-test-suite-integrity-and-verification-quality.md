@@ -1452,3 +1452,33 @@ still failing the moment a raw instant reaches a human.
 **False positives.** Tests whose subject IS the calendar (DST, leap day, month-end arithmetic) and
 that pin the clock explicitly. Literals used as opaque identifiers or sort keys rather than as
 inputs to a relative-time computation. Fixtures regenerated on every run.
+
+## NN:60 — The guard's accept command conflates registering a new item with accepting the outstanding exceptions, so the frequent routine act silently discharges the rare deliberate one
+
+**Statement.** A drift guard tracks pairs of things that must stay in step — a source and its twin,
+a contract and its consumer, a fixture and the shape it stands for — by storing a stamp per pair,
+and reports the pairs whose stamps no longer match. It offers one command to write stamps, used
+for two acts that are not alike. The first is routine and frequent: a new pair is added and must
+start being tracked. The second is rare and substantive: an outstanding drift is read, judged
+still acceptable, and accepted. Spelled with one flag, the routine act performs the substantive
+one on every invocation — adding a single new pair re-stamps every drifted pair on the way past —
+so drift is discharged by someone who never saw it, in a command they ran for an unrelated reason.
+The second loss is the one that matters more and is easier to miss: where the guard deliberately
+does not fail the build on drift, the AGE of an unresolved stamp is its entire escalation signal,
+and a blanket re-stamp resets every age to now, erasing the evidence of neglect along with the
+drift. Nothing appears in any log, because writing stamps is what the command is for.
+
+**Detect.** For every guard with an accept, bless, update or baseline-write mode, read what the
+write applies to: if it writes the entries that are currently reported as drifted, this is the
+defect. The remedy is two words for two claims — the plain mode stamps only undrifted entries and
+NAMES the ones it left, with the date each was last reviewed; taking drift requires a distinct
+flag asserting the substantive claim. Exercise all four paths against deliberately corrupted
+stamps and confirm drift survives the plain accept. Then check history for damage already done:
+compare each accept run's stamp changes against the drift reported immediately before it, since a
+run that only added entries did no harm and a run that rewrote existing hashes did.
+
+**False positives.** Guards that fail the build on drift, where an accept cannot be performed
+absent-mindedly because the build stopped; single-purpose baseline regenerators whose only
+documented use is accepting a reviewed diff; and stamps carrying no age or review semantics, where
+a blanket rewrite loses nothing beyond the drift itself — which is still this defect if the drift
+was unreviewed.

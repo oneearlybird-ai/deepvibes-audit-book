@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1079,
+ "rule_count": 1085,
  "sections": [
   {
    "id": "A",
@@ -1692,7 +1692,7 @@
    "title": "Frontend: Browser Security Surfaces",
    "group": "frontend",
    "file": "sections/L-frontend-browser-security-surfaces.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "L:1",
@@ -1785,6 +1785,10 @@
     {
      "id": "L:23",
      "title": "A dependency's capability probe calls the Function constructor inside a try/catch, so a strict CSP reports a violation on every page load while the app keeps working"
+    },
+    {
+     "id": "L:24",
+     "title": "The public product-update page is generated from engineering change history, so it inherits that history's vocabulary and publishes the stack's internal component names to an unauthenticated surface"
     }
    ]
   },
@@ -3131,7 +3135,7 @@
    "title": "AI Agent Infrastructure & Vector Database Operations",
    "group": "saas-core",
    "file": "sections/AA-ai-agent-infrastructure-and-vector-database-operations.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "AA:1",
@@ -3216,6 +3220,10 @@
     {
      "id": "AA:21",
      "title": "The post-call summary is generated from the transcript alone, so it repeats a booking or a send the system's own detector has already marked as never executed"
+    },
+    {
+     "id": "AA:22",
+     "title": "The per-call variable that says whether a capability exists is computed and delivered correctly, and the procedure step that offers the capability never consults it, so the agent offers what the account cannot do"
     }
    ]
   },
@@ -3806,7 +3814,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "HH:1",
@@ -3851,6 +3859,10 @@
     {
      "id": "HH:11",
      "title": "A client build embeds a service hostname the platform treats as movable, so an infrastructure move strands every installed build"
+    },
+    {
+     "id": "HH:12",
+     "title": "A later-added orientation or onboarding overlay is guarded on its own readiness only, so it presents over a pre-existing gate screen and makes the gate unreachable on exactly the installs the gate exists for"
     }
    ]
   },
@@ -4198,7 +4210,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 15,
+   "rule_count": 17,
    "rules": [
     {
      "id": "LL:1",
@@ -4259,6 +4271,14 @@
     {
      "id": "LL:15",
      "title": "Collection views keyed by positional index over a mutable collection: deleting a row re-evaluates a surviving row's binding against a stale position and traps"
+    },
+    {
+     "id": "LL:16",
+     "title": "A child view's directional drag gesture wins arbitration against the enclosing scroll view, so a touch that begins on the child is denied to the page's own scroll axis"
+    },
+    {
+     "id": "LL:17",
+     "title": "A layout deliberately built not to scroll, with fixed-height text controls, becomes unusable at accessibility text sizes rather than merely cramped"
     }
    ]
   },
@@ -4328,7 +4348,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 59,
+   "rule_count": 60,
    "rules": [
     {
      "id": "NN:1",
@@ -4565,6 +4585,10 @@
     {
      "id": "NN:59",
      "title": "A test pins the rendering of a hard-coded past instant into a relative-time bucket, so the calendar alone crosses the bucket boundary on a future date and a suite nobody touched fails as somebody else's regression"
+    },
+    {
+     "id": "NN:60",
+     "title": "The guard's accept command conflates registering a new item with accepting the outstanding exceptions, so the frequent routine act silently discharges the rare deliberate one"
     }
    ]
   },

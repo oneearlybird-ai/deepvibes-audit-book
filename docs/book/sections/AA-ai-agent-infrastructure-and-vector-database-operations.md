@@ -290,3 +290,37 @@ overwrite the summary's outcome sentence from the verdict.
 
 **False positives.** Calls where the tool ran and failed after the claim, which are a different
 defect; summaries that already quote the flag.
+
+## AA:22 — The per-call variable that says whether a capability exists is computed and delivered correctly, and the procedure step that offers the capability never consults it, so the agent offers what the account cannot do
+
+**Statement.** A conversational agent's capabilities vary per call: a given account has texting
+or it does not, has a second location or it does not, accepts card payment or it does not. The
+platform answers this correctly — the capability is read from configuration, converted to a
+per-call variable and delivered in the session payload — and the defect is one layer above, in
+the free-form procedure documents that tell the agent what to do. A step that offers the
+capability carries no reference to the variable, so the agent offers it on every call, including
+the calls where the payload says it is unavailable. The variable's correctness is what makes this
+hard to see: telemetry shows the capability flag present and correct on every session, so an
+investigation that starts at the data plane finds nothing wrong and stops. A weaker form is worse
+than the absent form: the condition is present but as one bullet among several, above a line that
+hands the agent a sentence to say. A model resolving a soft conditional against a hard script
+follows the script, so a step that both states a condition and dictates an utterance is offering
+unconditionally most of the time.
+
+**Detect.** Enumerate the capability variables the session payload carries, then enumerate every
+procedure step that offers or performs the matching capability, and require an explicit reference
+in each. Distinguish the two shapes before flagging: a REACTIVE step, reached because the caller
+asked for the capability by name, needs no gate — the request itself is the evidence — while a
+PROACTIVE offer the agent volunteers must be conditioned. Derive the tool-to-capability mapping
+from the capability catalog rather than a hand-maintained list in the checker, so a capability
+added later is covered on arrival. Confirm the negative branch says what happens when the
+capability is absent: a step that only says "skip" leaves the agent with a gap to improvise into.
+Check the telemetry for the variable's delivered values before concluding the data plane is at
+fault — a correct flag on every session points the investigation at the prompt layer.
+
+**False positives.** Capabilities that are universal by construction and carry no per-call
+variable to gate on — a checker that demands a gate keyed on a variable nothing sends is a
+verifier requiring the impossible, and the correct remedy is the missing variable, not the
+missing condition; steps reached only through a tool result that already proves availability;
+and offers whose unavailability the platform handles downstream by refusing the tool call, where
+the agent's offer is recoverable rather than false.

@@ -201,3 +201,34 @@ with a static gate that refuses a direct import of the dependency.
 **False positives.** Development builds that deliberately add `'unsafe-eval'` for hot reload;
 a dependency that has no probe and only fails under CSP when actually asked to compile — that is a
 functional break, not this rule.
+
+## L:24 — The public product-update page is generated from engineering change history, so it inherits that history's vocabulary and publishes the stack's internal component names to an unauthenticated surface
+
+**Statement.** A public changelog, release-notes or status page is written from the same material
+as the engineering change log, often by the same people in the same sitting. The engineering
+register names things precisely — the service names, the instance families, the runtime and kernel
+versions, the queue and table names, the internal hostnames — and that vocabulary travels intact
+onto a page with no login. The result is a maintained, dated, well-structured inventory of the
+platform's internals, published deliberately, which is a reconnaissance aid of a quality no
+scanner produces: it names what exists, and the dates say when each part changed. The same process
+publishes two further harms. Entries describe internal work with no external effect, so the page
+misrepresents what the product gained. And entries advertise their own incompleteness — a title
+naming a report-only mode, a body stating that a chart reads from sample arrays or that an
+integration card has nothing behind it — which is a public statement that a shipped surface is a
+shell. Repeated hand passes do not hold the line, because the defect is reintroduced by the next
+author working from the same source, and nothing between the author and the page disagrees.
+
+**Detect.** Read the public page as an outsider and extract every proper noun: count the distinct
+service, component, instance-family, runtime and version names it contains. Any nonzero count on
+an unauthenticated surface is the finding. Cross-check the entry inventory against the change
+history it was written from and classify each entry by whether a customer can observe the change
+at all; internal categories should be absent by construction rather than by review. The remedy is
+a publication gate rather than a reviewer's attention: an explicit allowlist of publishable change
+categories, a denylist of internal identifier vocabulary, a check that no entry describes itself
+as incomplete, and a required customer-effect sentence per entry. Render that required sentence on
+the page — a required field nothing reads back becomes paperwork and its quality drifts.
+
+**False positives.** Pages whose audience is explicitly technical and whose architecture is
+deliberately public (developer changelogs for a published API, open-source release notes); version
+names the product's own users must know to act on; and status pages naming a component the
+customer already sees named in the product.

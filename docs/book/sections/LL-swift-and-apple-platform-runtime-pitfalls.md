@@ -225,3 +225,61 @@ on a second target, the fix must land on both.
 **False positives.** Static collections that never mutate for the view's lifetime; positional keys
 over value snapshots where the row body captures the element by value and holds no binding; and
 lists whose deletion path rebuilds the entire container identity, which sidesteps the diff.
+
+## LL:16 — A child view's directional drag gesture wins arbitration against the enclosing scroll view, so a touch that begins on the child is denied to the page's own scroll axis
+
+**Statement.** A small interactive element inside a scrolling page — a chart scrubber, an audio
+seek bar, a sideways carousel — attaches a drag gesture to read movement along its own axis. The
+declarative UI framework resolves the conflict between that child gesture and the enclosing scroll
+view in the child's favour once the child's gesture begins, and it takes the WHOLE touch, not the
+component along the child's axis. The page then cannot scroll while a finger rests on the child,
+which users report as the page being stuck or locked rather than as a gesture fault, because
+nothing looks wrong and the same flick works one row higher. Sequencing the drag behind a long
+press makes it worse in the most common motion: a brief pause before a flick satisfies the press,
+so the drag claims a gesture the user intended as a scroll. Declaring the gesture as simultaneous
+does not help — simultaneity governs the child's siblings, not the scroll view's recognizer — so
+no spelling available inside the declarative layer resolves it, and attempts to fix it there
+produce several rounds of no change.
+
+**Detect.** Inventory every drag or pan gesture attached to a view inside a scrollable container
+and compare the gesture's axis to the container's. Any child reading one axis inside a container
+scrolling the other is this defect until proven otherwise; verify by resting a touch on the child
+and then moving along the container's axis, which must scroll the container. The remedy is a
+platform gesture recognizer that fails itself when the first movement of a touch is dominant along
+the container's axis, handing the touch back untouched; once the child's interaction has genuinely
+begun, later movement along the container's axis belongs to the child and must not re-arbitrate.
+Sweep every sibling of the same shape in the same pass — a scrubber, a seek bar and a swipe row
+are one defect in three files, and fixing the reported one leaves the others.
+
+**False positives.** Children that intentionally capture the container's axis for the duration of
+a deliberate interaction (a reorder drag, a slider the user has already engaged); containers that
+do not scroll on the contested axis; and gestures behind an explicit mode the user entered, where
+capturing the touch is the point.
+
+## LL:17 — A layout deliberately built not to scroll, with fixed-height text controls, becomes unusable at accessibility text sizes rather than merely cramped
+
+**Statement.** A screen is centred by design with no scroll container, often with a comment
+recording the choice, and its controls are sized with a fixed height so the composition holds.
+Both decisions are correct at the default text size and both fail at the accessibility sizes, and
+they fail together: the content grows past the viewport with nowhere to overflow, so the whole
+stack rides upward until the top elements sit over the system status area and the bottom elements
+fall off the screen entirely, while the fixed heights clip their own labels mid-word because a
+fixed height is a ceiling on text that a minimum height is not. The result is not a degraded
+layout but an unreachable one — controls off-screen, labels cut to fragments — and it lands
+hardest on the first screens a user meets, sign-in and sign-up, which are the screens most often
+built as deliberately centred single cards and the screens where a user has no prior state to fall
+back on. It survives review because every screenshot in the design system is taken at the default
+size and the build itself is silent.
+
+**Detect.** Render every screen at the largest supported accessibility text size, not one step up,
+and assert three things: no control is clipped, no content sits under the system status area, and
+every interactive element is reachable. In code, flag fixed heights on any container holding text
+(the remedy is a minimum height, which floors the composition without capping the text) and flag
+any deliberately non-scrolling screen — the remedy there is a scroll container whose content is
+pinned to at least the viewport height, which is pixel-identical to the centred layout until the
+content genuinely does not fit. Treat multi-element horizontal rows of text and links as a
+separate case: they must be allowed to wrap as a group rather than compress.
+
+**False positives.** Surfaces that legitimately opt out of text scaling by platform convention
+(a video player's transport, a camera viewfinder); controls whose label is a fixed-width glyph;
+and screens already covered by a scaling-specific alternate layout.

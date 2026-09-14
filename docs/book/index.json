@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1085,
+ "rule_count": 1086,
  "sections": [
   {
    "id": "A",
@@ -609,7 +609,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "E:1",
@@ -782,6 +782,10 @@
     {
      "id": "E:43",
      "title": "A schema field is renamed and the consumer sweep is deferred on the assumption the field merely goes missing, but consumers that submit a validated request document lose the whole operation, not the field"
+    },
+    {
+     "id": "E:44",
+     "title": "The front-door verification secret is checked inside the request-authorization component, so it covers exactly the authenticated routes and structurally cannot cover the unauthenticated ones, and a coverage check that asks whether the origin validates the token answers yes"
     }
    ]
   },

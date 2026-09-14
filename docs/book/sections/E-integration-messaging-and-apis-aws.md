@@ -584,3 +584,41 @@ time and whose build is gated on the schema — it cannot carry a stale name pas
 field renamed on a type that the strict consumer never selects (same field name on a different
 type is not the same field). A server configured to skip document validation, which is a different
 and larger finding. A consumer already dead or unreleased at the time of the rename.
+
+## E:44 — The front-door verification secret is checked inside the request-authorization component, so it covers exactly the authenticated routes and structurally cannot cover the unauthenticated ones, and a coverage check that asks whether the origin validates the token answers yes
+
+**Statement.** An edge layer stamps a secret header on every origin request and the origin is
+required to refuse requests that lack it. The check is implemented in the component that already
+runs on every request needing authorization — the custom authorizer, the auth middleware, the
+session resolver — which is the natural home, is easy to review, and is wrong in one specific way:
+that component runs only on routes that DECLARE it. Routes configured to skip authorization skip
+the origin check with it, and those routes are never a random subset. They are the pre-authentication
+surface by definition — sign-in, token refresh, one-time-code request and redeem, password reset
+start and confirm, second-factor enrolment, account creation, inbound webhooks — which is precisely
+the set the edge's rate limiting, bot control and managed rule groups exist to protect. The result
+inverts the intended posture: every route a session already protects is double-protected, and every
+route protected by nothing but the edge is reachable without it. It survives review twice over.
+The infrastructure reads as correct, because the verification function exists, is cryptographically
+sound, and is wired to a real secret. And the obvious audit question — does the origin validate the
+front door's token? — returns yes, because on the routes anyone spot-checks it does.
+
+**Detect.** Do not ask whether the origin validates the header; ask which requests reach the code
+that validates it. Enumerate every route with its authorization configuration and partition it:
+any route that does not invoke the component holding the check is uncovered unless its own handler
+repeats the check, so grep every handler backing an uncovered route for the header by name, case-
+insensitively. Then establish that the bypass door is actually open — the origin service's default
+or direct endpoint still enabled, no resource policy restricting source, no web ACL on the stage —
+and confirm empirically from trace or access data that outside traffic already arrives on it,
+which is usually visible as opportunistic scanner paths against the raw endpoint hostname. Record
+what mitigation genuinely remains (stage-level throttling, per-handler CSRF, device attestation)
+rather than claiming none, since that is what separates this from a total bypass. Remediate by
+moving the check to a layer every route traverses — a request-level authorizer applied to all
+routes, a gateway-level policy conditioned on the header, or a web ACL on the stage — and close
+the door itself by disabling the direct endpoint.
+
+**False positives.** Origins where the direct endpoint is disabled or restricted by a resource
+policy, which closes the door regardless of who checks the header; unauthenticated routes that
+genuinely must accept third-party callers who cannot be given the secret (provider webhooks
+authenticated by their own signature), which need the signature verified rather than the header;
+and estates where the edge is not the only sanctioned client, where the correct finding is the
+undocumented second client rather than the missing check.

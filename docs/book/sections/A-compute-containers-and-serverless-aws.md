@@ -483,3 +483,36 @@ most-recent flag.
 matches genuinely differ only in publication date. Fleets where every candidate variant is
 interchangeable for the workload and that equivalence is written down. Pinned image ids — a
 different posture with its own patching problem (A:34), not this one.
+
+## A:47 — The production dependency factory supplies a constant or empty function where a real implementation was intended, so a fully built, granted and monitored feature is unreachable and every health signal agrees it is fine
+
+**Statement.** A handler is written against an injected dependency set: the test suite passes doubles,
+and one factory — the "real" or "live" deps builder — supplies the production implementations. During
+development a seam is filled with a placeholder that satisfies the type and the tests: a predicate that
+returns a constant false, a recorder that is an empty async function. The feature beneath that seam is
+then completed and shipped in full — a transport client, its credentials, a template, a budget or rate
+limit, an inbound callback route, and the IAM grants for all of it — and the placeholder is never
+replaced. Nothing fails. The build is green because the tests inject their own doubles and never read
+the real factory. The deploy is clean, the grants are valid, the alarms are quiet, and any verifier
+that checks the feature's *parts* finds every part present and correct. Only the seam decides whether
+the parts ever run, and it has been answering the same constant since the day it was typed. This is the
+inverse of an uninvoked function (A:47's sibling A:44, where the caller never lands): here the caller,
+the callee and the whole apparatus exist, and a single constant in the wiring holds the door shut. It
+survives review because a one-line arrow function reads as configuration, not as an unimplemented
+feature, and it survives operation because a capability that never runs produces no errors.
+
+**Detect.** Read the production dependency factory line by line and classify every entry: does it name
+a real implementation, or does it return a literal? Any seam whose production value is a constant, an
+empty body, or an immediately-resolved literal is the finding unless that is the documented intent.
+Diff the real factory against the test double factory — they should differ in *implementation*, never
+in *arity of behaviour*; a seam that behaves identically in both is a seam that was never wired. Then
+invert the search: for each shipped sub-system (client, template, quota, callback route, grant), trace
+upward to the predicate that gates it and prove that predicate can return more than one value in
+production. Absence of traffic is corroboration, not proof: a feature with grants, alarms and zero
+invocations since it shipped should be read as unreachable until a value-changing path is shown.
+
+**False positives.** Deliberately disabled capabilities behind a documented kill switch, where the
+constant is the switch and a decision record names it. Seams whose production implementation genuinely
+is a constant because the answer is static in this deployment (a single-region resolver, a fixed tier).
+Newly merged scaffolding explicitly landed as inert ahead of its enabling change, where the enabling
+change is tracked and the inert state is named in the code.

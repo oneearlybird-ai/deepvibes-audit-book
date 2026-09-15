@@ -117,3 +117,33 @@ from the provider's configuration, not assumed from the records matching; select
 carrying an old key during a documented rotation overlap, where the new selector exists and
 carries the new key; and records whose key differs only in formatting (quoting or line splitting
 of the same base64 body), which is a presentation difference, not a key mismatch.
+
+## FF:12 — The outbound confirmation is composed independently of the write it describes, so a recipient who is owed an error is actively told the thing happened
+
+**Statement.** A handler performs a write and then notifies someone that it happened. The notification
+is authored as a fixed sentence at the call site — "recorded", "sent", "updated" — rather than from the
+write's return value, so the message is a statement about *intent*, not about *outcome*. As long as the
+write is real and rarely fails, the two agree and nothing surfaces. They come apart in three ways, and
+all three ship silently: the write is behind a seam that is a no-op in this build, so it never happened
+at all; the write is real but returns a refusal the caller does not inspect (a precondition failed, the
+target was closed, the row had moved); or the write throws into a catch that logs and continues to the
+same fixed sentence. This is strictly worse than a silent failure. A silent failure leaves the
+recipient uncertain and likely to check; a false confirmation spends their trust, ends their attention,
+and moves the discovery of the problem to the far side of someone acting on it — a reply believed
+delivered, a record believed updated. Because the sentence is a literal, no test that asserts on the
+outgoing message can detect the divergence: the assertion and the code agree, and both are wrong.
+
+**Detect.** For every outbound message that asserts a completed side effect, find the write it claims
+and follow the value: is the message selected from the write's result, or is it a literal on a path the
+write's outcome cannot influence? Any confirmation reachable on both the success and failure branch of
+its own write is the finding. Check the seam behind the write in the production dependency factory
+(A:47) — a no-op writer under a fixed confirmation is this defect's most complete form. Read the
+refusal cases specifically: a writer that returns a reason code nobody destructures is the same defect
+one step less obvious. The fix shape is an outcome function that maps the write's actual result to the
+sentence, so a new refusal reason cannot reach the recipient as a success.
+
+**False positives.** Acknowledgements that are explicitly about receipt rather than completion, where
+the wording says so ("we have your request"). Fire-and-forget notifications whose contract is
+at-least-once delivery of an event that already happened upstream. Confirmations sent after a write
+whose failure modes all throw, where the send is genuinely unreachable on failure and the catch does
+not fall through to it.

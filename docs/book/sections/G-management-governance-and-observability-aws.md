@@ -1410,3 +1410,32 @@ is correct — distinguish it by finding any window where the sub-resource's rea
 and confirming the deployed expression drops there too. Platforms where the dimension really is the
 resource name. An expression whose subtrahends are deliberately optional because the sub-resources
 are conditionally created.
+
+## G:65 — The operations console draws its population from a store that mixes pre-provisioned internal inventory with real customer entities, so every count, list and bulk action silently includes things that are not customers
+
+**Statement.** To make onboarding instant, a system pre-creates entities ahead of demand — shells,
+tenants, seats, numbers — and parks them in the same store, with the same schema, as the entities that
+real customers occupy. The distinction lives in a status attribute, and often in a stale one: an idle
+spare carries whatever state the provisioner left when it finished, which frequently reads as
+in-progress rather than as available-unclaimed. The operations console is then built the obvious way —
+list the store, render the rows — and from that moment the operator's picture of the business is wrong
+in a specific direction: the population is overstated, the ratio of healthy to stuck entities is
+meaningless, and anything the console offers to do across the list reaches inventory that no human is
+behind. The danger is not the miscount, it is the action: a surface that lists spares as customers
+invites someone to contact, bill, migrate, or remediate them, and the first time that happens it is
+indistinguishable from reaching real customers. Because the spares are genuinely healthy, nothing ever
+errors; the console is most convincing exactly where it is most wrong.
+
+**Detect.** For every operational list, read the query behind it and ask what populations the store
+holds — then check whether the query names the one it wants or merely takes everything. Compare the
+console's own count against an independently derived count of real customers (billing subjects,
+authenticated principals, signed agreements); a gap is the finding. Inspect the status vocabulary the
+provisioner writes on completion and confirm an unclaimed-but-ready entity is distinguishable from an
+in-flight one — a terminal state that still reads as transitional is the usual root. Then enumerate
+every bulk or per-row action the surface exposes and determine, for each, what it would do to an
+unclaimed entity.
+
+**False positives.** Consoles explicitly scoped to fleet or inventory management, where seeing spares
+is the purpose and the view is labelled so. Stores where the internal population is separated by a
+partition the query already pins. Environments with no pre-provisioning, where every row is by
+construction a real entity.

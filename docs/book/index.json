@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1086,
+ "rule_count": 1091,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "A:1",
@@ -194,6 +194,10 @@
     {
      "id": "A:46",
      "title": "Image lookup whose filter matches several variants published under one timestamp, so the \"newest\" selector is an arbitrary tie-break and a plane silently changes kernel line between bakes"
+    },
+    {
+     "id": "A:47",
+     "title": "The production dependency factory supplies a constant or empty function where a real implementation was intended, so a fully built, granted and monitored feature is unreachable and every health signal agrees it is fine"
     }
    ]
   },
@@ -987,7 +991,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 64,
+   "rule_count": 65,
    "rules": [
     {
      "id": "G:1",
@@ -1244,6 +1248,10 @@
     {
      "id": "G:64",
      "title": "A noisy alarm is recalibrated by subtracting the background series inside metric math, and the subtrahends name the rules by their resource names rather than their telemetry labels, so every subtraction is of an empty series and the correction is a no-op that reads as done"
+    },
+    {
+     "id": "G:65",
+     "title": "The operations console draws its population from a store that mixes pre-provisioned internal inventory with real customer entities, so every count, list and bulk action silently includes things that are not customers"
     }
    ]
   },
@@ -1333,7 +1341,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "I:1",
@@ -1442,6 +1450,10 @@
     {
      "id": "I:27",
      "title": "Per-vertical shells re-declare the product's shared navigation by hand, so labels, order and chrome controls drift per host"
+    },
+    {
+     "id": "I:28",
+     "title": "Interface elements assert system state that nothing computes: a status indicator with no data source, an identity panel filled from a literal, a delivery promise behind an empty function"
     }
    ]
   },
@@ -3720,7 +3732,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 11,
+   "rule_count": 12,
    "rules": [
     {
      "id": "FF:1",
@@ -3765,6 +3777,10 @@
     {
      "id": "FF:11",
      "title": "A subdomain's signing-key record is published with the parent domain's public key, so every \"is signing configured\" check passes and every signature fails"
+    },
+    {
+     "id": "FF:12",
+     "title": "The outbound confirmation is composed independently of the write it describes, so a recipient who is owed an error is actively told the thing happened"
     }
    ]
   },
@@ -4129,7 +4145,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "KK:1",
@@ -4206,6 +4222,10 @@
     {
      "id": "KK:19",
      "title": "A dependency declared by relative filesystem path is left dangling by a directory move, and the installer links it to a missing target without failing"
+    },
+    {
+     "id": "KK:20",
+     "title": "A conditionally-loaded object is read downstream through optional chaining and a `||` default, so a control-flow gap is laundered into a sentinel lookup and reported forever as missing data"
     }
    ]
   },

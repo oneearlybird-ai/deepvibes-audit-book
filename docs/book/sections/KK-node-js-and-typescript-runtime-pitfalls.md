@@ -350,3 +350,35 @@ changes depth and touches no manifest is the signature.
 guards for absence. Manifests in a template or scaffold directory that are never installed. Package
 managers whose workspace protocol resolves by declared workspace name rather than by literal path —
 those are name-resolved and immune to depth changes, and should not be counted with them.
+
+## KK:20 — A conditionally-loaded object is read downstream through optional chaining and a `||` default, so a control-flow gap is laundered into a sentinel lookup and reported forever as missing data
+
+**Statement.** A handler loads an expensive object inside a branch — `if (mode === 'primary') { [a, b,
+anchor] = await Promise.all([...]) }` — because only that branch was thought to need it. Code after the
+branch, outside it, then reads `anchor?.field || DEFAULT` and passes the result to a resolver. On the
+other branch the variable is still its initial null, so the optional chain yields undefined, the `||`
+supplies the sentinel, and the resolver is handed a key that was never a real value. Two failures
+compound. The lookup runs against a sentinel key that no seed writes and no store contains, so it
+always misses — and the miss is logged where the *resolver* lives, at error severity, naming the
+sentinel it was handed. Every diagnostic therefore describes a data problem ("row missing for code 0")
+in the wrong subsystem, while the actual defect is a variable that was never loaded on this path. The
+`||` is what makes it invisible: it converts "I was not given this" into "I was given this specific
+value", erasing the distinction the caller needed, and it does so for `0` and `""` as well as for null,
+so a legitimate falsy value takes the same road. If the resolver's error token is wired to an alarm,
+the alarm now fires on a routine, correct operating state, and the team learns to ignore it.
+
+**Detect.** For every variable assigned inside a conditional branch, find its readers outside that
+branch; any reader is a candidate. At each reader, ask what the expression yields when the branch did
+not run, and follow that value into the call it feeds — a sentinel arriving at a key-value lookup is
+the finding. Grep the pairing directly: `?.` followed by `||` or `??` with a literal default, where the
+default is then used as an identifier rather than as a display value. Confirm from the other end by
+reading the store: a lookup whose default key has no row in live data, in any seed, and in any IaC, is
+a key that was never meant to be looked up. Cross-check the log site — a not-found logged at error
+severity, carrying the sentinel rather than the caller's real state, is the same defect seen from the
+observability side (G:51).
+
+**False positives.** Sentinels that are real, seeded rows serving as a documented generic default —
+verify the row exists rather than assuming either way. Branches that provably cannot be taken together
+with the downstream read. Defaults used purely for display or formatting, where nothing looks the value
+up. Unconditional loads whose result is legitimately absent for the subject, which is a data gap and
+should be reported as one.

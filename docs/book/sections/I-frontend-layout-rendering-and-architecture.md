@@ -258,3 +258,35 @@ fails when a shared id is re-labeled or a shared control moves.
 **False positives.** A vertical's own tabs (dispatch, listings, menu) — they belong to it. A
 product decision, recorded next to the registry, that a specific host renames a specific shared
 tab.
+
+## I:28 — Interface elements assert system state that nothing computes: a status indicator with no data source, an identity panel filled from a literal, a delivery promise behind an empty function
+
+**Statement.** A surface is built before the systems it describes, and the honest placeholders it needs
+are written as confident assertions instead of as absences. A connection dot is rendered green from a
+constant rather than from a health signal. An identity panel names a role from a hardcoded string
+beside an endpoint that exists but is never called. A composer tells the author their message will be
+delivered by two channels, and the dispatcher behind it is an empty function. Each is individually
+trivial and none of them fails, which is precisely the problem: a control that is wired to nothing can
+never enter the state that would reveal it, so it reads as permanently healthy, permanently correct and
+permanently delivered. The compounding cost is that these elements are the surface's own claims about
+itself, and operators calibrate on them — the dot is what someone checks before deciding an incident is
+elsewhere, the delivery promise is why nobody follows up. When one is finally discovered to be
+decorative, it retroactively devalues every other indicator on the page, because a reader now has no
+way to tell which claims are computed and which are drawn. This is the interface twin of a
+decision-bearing comment that contradicts live wiring (OO:1): authored text asserting a state that no
+code establishes.
+
+**Detect.** Enumerate every element on the surface that asserts a state — status dots, badges, "last
+synced" text, role and identity chrome, success copy describing downstream delivery — and for each one
+demand the expression that produces it. Trace that expression to a value that can change: a fetch, a
+subscription, a prop derived from real data. Any element whose value is a literal, or is derived only
+from literals, is the finding. For promises about downstream effects, follow the named channel to its
+sender and prove the sender has a body. A fast signature is an element with no corresponding state
+variable and no branch that can render its negative case — if there is no "unhealthy" or "not
+delivered" rendering anywhere in the component, the positive one is not computed.
+
+**False positives.** Static chrome that is not a state claim (product name, section labels, icons that
+do not encode status). Deliberately static demo, storybook, or fixture surfaces that are not reachable
+in production. Elements whose single value is genuinely invariant for this deployment and is labelled
+as such. Loading skeletons and optimistic states that are explicitly transitional and reconcile to a
+real value.

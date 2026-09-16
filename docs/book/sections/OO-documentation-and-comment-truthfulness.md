@@ -91,3 +91,40 @@ and that count is the finding's blast radius.
 change holds the description. Mechanical vendoring or generated-artifact updates governed by a
 convention that says so. Repositories where the normative record is elsewhere — an entry store or a
 review record — and the convention is documented where authors read it.
+
+## OO:5 — A resource identifier names a vendor or a scope, which are claims, and unlike a wrong comment a wrong identifier is copied into every derived name rather than sitting still
+
+**Statement.** Identifiers are the documentation with the widest readership: every engineer meets a
+component's name before its code, and many never read anything else. A name that encodes a vendor —
+the mapping provider, the payment processor, the mail service — or a scope — which entity owns the
+data, which tier the component belongs to — is making two assertions that can each be false
+independently, and both go stale by ordinary means. The vendor assertion dies the first time the
+implementation is switched, which is common, because the switch is a code change and nobody
+renames a live resource to follow it. The scope assertion dies when a component originally built for
+one caller is reused by others, which is the normal life of anything useful. What makes this worse
+than a stale comment is propagation: a comment is wrong in one place, while an identifier is
+reproduced mechanically into the execution role, the log group, the metric namespace, the alarm, the
+dashboard, the test filename, the artifact key and the ticket title. By the time anyone notices,
+correcting it is not an edit but a migration, because for most infrastructure the name IS the
+resource's identity and changing it destroys and recreates. So the cost of the wrong name rises
+continuously while the chance of fixing it falls, and the usual outcome is a permanent, load-bearing
+lie that every new engineer is taught as fact and that eventually reaches someone who acts on it.
+
+**Detect.** Read the name as two testable claims and check each against the code. For the vendor
+claim, list the component's actual dependencies and calls: an identifier naming a provider that
+appears in no import, no endpoint and no credential is false, and the giveaway is often a comment
+elsewhere in the estate that already records the contradiction because someone hit it and wrote it
+down instead of renaming. For the scope claim, check whether the scoping identifier the name asserts
+is ever used: a component named for an entity whose id it never reads, never filters by and never
+passes on is not scoped to it, and its real scope is whatever its authentication actually requires.
+Then enumerate the derived names before proposing a fix, because the rename is only complete when
+the role, the log group, the alarm, the tests and the artifact key move with it — and check for
+`prevent_destroy` or its equivalent, which turns the rename into a deliberate recreate rather than
+an edit.
+
+**False positives.** A name that describes the component's own protocol or shape rather than a
+vendor — one naming the standard it implements, not the company that hosts it — is durable and not
+this defect. A scope in the name that matches the component's authorization boundary is correct even
+if the component does not read the id itself, provided the boundary genuinely rejects other scopes.
+And a deliberately provisional name inside a migration that is still running is not a finding while
+the migration has a stated end; it becomes one when the migration is declared done.

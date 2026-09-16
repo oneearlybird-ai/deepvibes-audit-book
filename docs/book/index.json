@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1102,
+ "rule_count": 1103,
  "sections": [
   {
    "id": "A",
@@ -4665,7 +4665,7 @@
    "title": "Documentation & Comment Truthfulness",
    "group": "cross-cutting",
    "file": "sections/OO-documentation-and-comment-truthfulness.md",
-   "rule_count": 4,
+   "rule_count": 5,
    "rules": [
     {
      "id": "OO:1",
@@ -4682,6 +4682,10 @@
     {
      "id": "OO:4",
      "title": "A change lands with no statement of intent — its message carries only metadata — so the sole record of why it happened is the diff"
+    },
+    {
+     "id": "OO:5",
+     "title": "A resource identifier names a vendor or a scope, which are claims, and unlike a wrong comment a wrong identifier is copied into every derived name rather than sitting still"
     }
    ]
   },

@@ -147,3 +147,38 @@ the wording says so ("we have your request"). Fire-and-forget notifications whos
 at-least-once delivery of an event that already happened upstream. Confirmations sent after a write
 whose failure modes all throw, where the send is genuinely unreachable on failure and the catch does
 not fall through to it.
+
+## FF:13 — The sending service's account-level verification state is a separate gate from the identity grant, and its refusal names the recipient rather than the sender, so the refusal reads as a policy defect and policy is widened while the real blocker is untouched
+
+**Statement.** Managed sending services impose two independent gates on a send: the caller's
+identity permissions, and the account's own sending state — a probation, sandbox, or trial mode in
+which the service delivers only to addresses that have been explicitly verified. The two gates fail
+through the same channel. The refusal arrives as an authorization error, in the vocabulary of
+permissions, and it names a resource: the identity it evaluated. In sandbox mode that identity is
+the RECIPIENT's, because the recipient's verification is what was missing — and a recipient is
+exactly the resource an operator's policy has no reason to name. The error therefore reads as a
+grant that is too narrow, and the natural response is to widen it: add the resource the message
+named, or loosen the action, or drop the condition that looked responsible. Each attempt produces
+the same refusal, because neither attempt touches the gate that is closed, and each one leaves a
+permanent widening behind in exchange for nothing. The pattern is self-reinforcing: the closer the
+operator reads the error, the more precisely they widen the wrong policy, and a service whose
+account-level state is invisible from the call site can absorb an unbounded number of these before
+anyone questions the diagnosis. The residue is the real cost — a policy carrying resources and
+actions that were added by a misreading and that no later reviewer can distinguish from intent.
+
+**Detect.** Before changing any policy in response to a send refusal, read the account's sending
+state from the service's own API — sandbox or production, and the list of verified identities — and
+check whether the named resource is a recipient rather than the sender. A refusal naming an
+identity the caller never intended to act upon is the signature, and it means the gate is
+verification, not permission. Declare the recipients the account must reach, so the verification
+that lifts the gate is requested by the provisioning that depends on it rather than performed by
+hand and forgotten. Then audit the policy for residue: read the history of every grant on the
+sending role and remove the resources and actions that were added chasing a refusal, since each one
+is a widening that bought nothing. Where the grant is genuinely wrong, constrain what the role may
+send AS rather than which identity the service happens to evaluate — the sender is the thing worth
+pinning and is stable across the service's internal choices.
+
+**False positives.** Accounts already out of sandbox, where the same refusal genuinely is a grant
+defect. Services that name the sender in the refusal, where the message is not misleading. And
+policies deliberately naming recipient identities for a documented reason, such as a fixed
+allow-list of destinations enforced at the permission layer as a second control.

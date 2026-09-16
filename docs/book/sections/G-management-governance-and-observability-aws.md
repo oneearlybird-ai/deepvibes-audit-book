@@ -1439,3 +1439,42 @@ unclaimed entity.
 is the purpose and the view is labelled so. Stores where the internal population is separated by a
 partition the query already pins. Environments with no pre-provisioning, where every row is by
 construction a real entity.
+
+## G:66 — A monitoring invariant enforced by one central loop over a resource set is lost when the set is redistributed to per-domain ownership, and nothing detects the loss because no gate asserts the two sets are the same set
+
+**Statement.** A fleet-wide monitoring rule — every dead-letter queue has a depth alarm, every
+function has an error alarm, every bucket has a replication check — is commonly implemented once,
+as a single loop over an enumerated set of resources. This is the good version: one declaration,
+one owner, and adding a resource to the set adds its monitor automatically. The invariant, however,
+lives in the loop, not in the repository, and the loop's authority extends exactly as far as the
+set it iterates. When the architecture is later reorganised — the estate split into per-domain
+stacks, the monolith decomposed, the resources moved into the teams that own them — the resources
+are relocated one domain at a time, and each domain's move is reviewed on its own terms: the queue
+is declared, its permissions are declared, its consumers are wired, and the change looks complete
+because everything the domain needs is present. What the domain does not know is that a monitor it
+never declared was being contributed on its behalf by a loop in another stack, and that loop's set
+shrinks to nothing as the last resource leaves. No plan shows a deletion, because the alarms were
+never in the domain's state; no reviewer misses a line, because the line was never in the domain's
+files. The estate ends with the resources fully owned and the invariant owned by nobody, and the
+first evidence is a queue holding real messages that no one has been told about. Reorganisations
+that improve ownership are therefore the specific event that destroys cross-cutting coverage, and
+they destroy it silently, in proportion to how thoroughly they succeed.
+
+**Detect.** Do not read the monitoring code; enumerate both sets from the live account and compare
+them. List every resource of the governed kind, list every monitor of the governing kind, and print
+the resources with no monitor — the answer is a number, and the only acceptable number is zero.
+Run this against the account, not the provisioning tree, because a monitor that was destroyed by a
+removed loop and a monitor that was never written look identical in code and different in the
+account. Then find the invariant's new home: a rule that was true because of one loop must become
+true because of a gate, so add a check that asserts set-equality between resources and monitors and
+fails the build on any resource without one, and be aware that adding this gate to an estate that
+has already drifted will fail immediately — fix the coverage first, then land the gate, or the gate
+gets weakened to green. Treat the dates as evidence: resources created in a single burst on the
+migration date, with monitors whose creation dates cluster before it, is the signature.
+
+**False positives.** Resources deliberately exempt from the invariant, where the exemption is
+registered by name with a reason and the gate reads that register. Sets where the monitor is
+genuinely intrinsic to the resource declaration — a module that emits both together, so relocation
+carries the monitor with it. And transitional states inside a migration that is still running,
+where the loop and the per-domain declarations coexist by design; that is only this defect once the
+central loop is removed, and the window between the two is where the fix belongs.

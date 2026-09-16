@@ -1482,3 +1482,37 @@ absent-mindedly because the build stopped; single-purpose baseline regenerators 
 documented use is accepting a reviewed diff; and stamps carrying no age or review semantics, where
 a blanket rewrite loses nothing beyond the drift itself — which is still this defect if the drift
 was unreviewed.
+
+## NN:61 — A verifier resolves its subjects by literal match and treats an unresolvable reference as out of scope, so every subject named through a variable is exempt by accident
+
+**Statement.** A coverage gate has to decide which subjects it governs before it can check them,
+and it usually does this by reading the declaration that names each one. Where that name is a
+literal, the gate resolves it and checks it. Where the name is an indirection — a variable, a
+local, a computed or interpolated reference, an unquoted symbol the gate's reader was written to
+skip — resolution returns nothing, and the gate has two honest choices: fail, naming the subject it
+could not resolve, or record it as unresolved and report the shortfall. Almost every gate written
+in haste takes a third: it silently drops the subject from its working set. The subject is now
+exempt, but no exemption list names it, no decision granted it, and no review can find it, because
+the gate's output says only that everything it checked passed. The count of covered subjects reads
+as the count of subjects, and the two diverge quietly as the codebase adopts indirection — which
+the codebase does precisely as it matures and stops repeating literals. The failure is therefore
+strongest in the code most likely to be refactored well, and the gate's coverage number moves in
+the wrong direction while looking stable.
+
+**Detect.** Make the gate state its denominator: have it print every subject it resolved and every
+declaration it read but could not resolve, and compare the first list against an independent
+enumeration of the subjects that exist — the provisioning tree, the deploy manifest, the live
+account. Any gap is exempt-by-accident. Then read the resolver itself and ask what inputs return
+empty: a regex anchored to quotation marks, a parser that takes only the right-hand side when it
+is a string literal, a lookup that does not follow one level of variable or local indirection. Fix
+by failing closed on any subject the resolver cannot follow, so an unresolvable name is a build
+error that must be answered rather than an omission that cannot be seen; then confirm the fix by
+watching the covered count go UP, which is the signature that the gate was previously exempting
+rather than passing. A gate whose covered count is unchanged after the resolver is taught a new
+indirection either had none, or is still dropping them somewhere else.
+
+**False positives.** Gates with an explicit, reviewed exemption register, where the unresolved
+subject appears in the register with a reason — that is a decision, not an accident. Resolvers that
+report the shortfall without failing, as a deliberate staged rollout, provided the shortfall count
+is asserted against a ratchet that cannot silently grow. And subjects that are genuinely out of the
+gate's scope by construction rather than by resolution failure, where the gate can say so by name.

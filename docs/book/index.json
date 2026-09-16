@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1091,
+ "rule_count": 1094,
  "sections": [
   {
    "id": "A",
@@ -991,7 +991,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 65,
+   "rule_count": 66,
    "rules": [
     {
      "id": "G:1",
@@ -1252,6 +1252,10 @@
     {
      "id": "G:65",
      "title": "The operations console draws its population from a store that mixes pre-provisioned internal inventory with real customer entities, so every count, list and bulk action silently includes things that are not customers"
+    },
+    {
+     "id": "G:66",
+     "title": "A monitoring invariant enforced by one central loop over a resource set is lost when the set is redistributed to per-domain ownership, and nothing detects the loss because no gate asserts the two sets are the same set"
     }
    ]
   },
@@ -3732,7 +3736,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "FF:1",
@@ -3781,6 +3785,10 @@
     {
      "id": "FF:12",
      "title": "The outbound confirmation is composed independently of the write it describes, so a recipient who is owed an error is actively told the thing happened"
+    },
+    {
+     "id": "FF:13",
+     "title": "The sending service's account-level verification state is a separate gate from the identity grant, and its refusal names the recipient rather than the sender, so the refusal reads as a policy defect and policy is widened while the real blocker is untouched"
     }
    ]
   },
@@ -4372,7 +4380,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 60,
+   "rule_count": 61,
    "rules": [
     {
      "id": "NN:1",
@@ -4613,6 +4621,10 @@
     {
      "id": "NN:60",
      "title": "The guard's accept command conflates registering a new item with accepting the outstanding exceptions, so the frequent routine act silently discharges the rare deliberate one"
+    },
+    {
+     "id": "NN:61",
+     "title": "A verifier resolves its subjects by literal match and treats an unresolvable reference as out of scope, so every subject named through a variable is exempt by accident"
     }
    ]
   },

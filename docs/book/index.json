@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1094,
+ "rule_count": 1102,
  "sections": [
   {
    "id": "A",
@@ -991,7 +991,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 66,
+   "rule_count": 73,
    "rules": [
     {
      "id": "G:1",
@@ -1256,6 +1256,34 @@
     {
      "id": "G:66",
      "title": "A monitoring invariant enforced by one central loop over a resource set is lost when the set is redistributed to per-domain ownership, and nothing detects the loss because no gate asserts the two sets are the same set"
+    },
+    {
+     "id": "G:67",
+     "title": "A compliance analyzer that matches call syntax rather than the callee's contract reports the named-constant refactor as an omission, and its finding text teaches a false model of the library to everyone who reads it"
+    },
+    {
+     "id": "G:68",
+     "title": "Static analysis scoped to the deployment unit cannot see code delivered by a runtime layer, so a component whose data access lives in shared code reads as having none and its grant reads as unexplained"
+    },
+    {
+     "id": "G:69",
+     "title": "An evaluator that derives its scope from a catalog stops checking whatever the catalog omits, so an uncatalogued resource is not reported as unknown, it is silently exempt"
+    },
+    {
+     "id": "G:70",
+     "title": "Detection routed to a destination that must be visited accumulates unread, and a detector nobody pulls from is indistinguishable from a detector that was never installed"
+    },
+    {
+     "id": "G:71",
+     "title": "A detector identifies the governed library by an unanchored substring of its module path, so a sibling module whose name merely contains it is admitted and every downstream check then runs against a component that never imported the library"
+    },
+    {
+     "id": "G:72",
+     "title": "An isolation check tests whether a broad grant exists rather than what the grant permits, so the read-only lookup that a resolve-then-scope design requires is reported identically to a grant that can write every customer's rows"
+    },
+    {
+     "id": "G:73",
+     "title": "A detective control is registered against one compute resource type while the risk it looks for is carried by a permission any principal can hold, so every other principal holding that permission is not passing the check, it is outside it"
     }
    ]
   },
@@ -2283,7 +2311,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "S:1",
@@ -2352,6 +2380,10 @@
     {
      "id": "S:17",
      "title": "A per-user resource is reached through a session scaffold that demands a sub-tenant dimension the resource does not have, so every principal without that dimension is refused at the session layer before any policy is consulted"
+    },
+    {
+     "id": "S:18",
+     "title": "The store that maps an external identifier to its owner must be keyed by that identifier, which makes the platform's per-customer key condition inexpressible, so the one store that routes inbound traffic is the one store with no enforced isolation"
     }
    ]
   },

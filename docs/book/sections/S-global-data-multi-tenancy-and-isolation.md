@@ -156,3 +156,44 @@ tenant with no sub-tenant) against each per-user endpoint.
 **False positives.** Functions that read sub-tenant data on the user's behalf, where the dimension
 is genuinely required; flows where the platform guarantees the dimension exists before the call
 can be made.
+
+## S:18 — The store that maps an external identifier to its owner must be keyed by that identifier, which makes the platform's per-customer key condition inexpressible, so the one store that routes inbound traffic is the one store with no enforced isolation
+
+**Statement.** Platforms that isolate customers through a key-prefix condition on the credential —
+the row-level mechanism offered by most managed key-value stores — get a strong guarantee for every
+store whose partition key begins with the customer identifier. One store usually cannot be built
+that way. Inbound traffic arrives bearing an external identifier and nothing else: a dialled number,
+a sender address, a provider account id, a webhook token. To resolve it, the platform needs a store
+whose partition key IS that external identifier, because a lookup by it must be a direct key read
+rather than a scan. The moment that key shape is chosen, the customer identifier moves to an
+attribute or a secondary index, and the key-prefix condition has nothing to bind to — it is not
+omitted, it is impossible. The conflict is real and the key shape is usually the right answer for
+the access pattern, so the decision passes review; what is missing is the second half, the
+recognition that isolation for this one store must now be enforced somewhere else. Instead the
+customer-scoped credentials keep the same broad write grant they hold everywhere, and every customer
+can now overwrite or delete any other customer's routing row. The consequence is the worst available
+one, because this is the routing table: a rewritten row does not leak data, it redirects the other
+customer's inbound traffic — calls, messages, callbacks — to the attacker, and it does so through a
+credential the platform issued and considers scoped. Checkers make it invisible: one that looks for
+a missing condition reports nothing useful, because the condition it would demand cannot be written,
+and the store looks the same as every correctly scoped one.
+
+**Detect.** List the stores whose partition key is an externally supplied identifier rather than the
+customer identifier — the routing, registry and lookup stores are where they always are — and for
+each, read what the customer-scoped credential is permitted to do on it. Any write action there is
+the finding, and the severity comes from what the row controls, not from the row's size. Do not
+accept the presence of a customer attribute or a secondary index as isolation: an index constrains
+queries, never writes, and a write is addressed by the base key. Then look for the compensating
+control and require it to be a mechanism rather than a habit — a platform-owned writer that checks
+ownership before every write, a conditional expression on the existing owner attribute, or a key
+redesign that puts the customer first and keeps the external lookup in a projection. Finally, test
+it: with one customer's credential, attempt a write to a row owned by another. The answer must be a
+refusal from the store, not an absence of callers who would try.
+
+**False positives.** A store customer-scoped credentials can only read is not this defect, however
+externally keyed — resolution is a read. A routing store written exclusively by a platform-owned
+provisioning path, where the customer-scoped credentials hold no write action on it at all, is the
+correct design and is what the fix looks like. And a store whose rows are conditioned on an owner
+attribute at write time, enforced by the store rather than by the caller, is genuinely protected
+even though the key prefix condition is absent; verify the condition is on the write itself and
+cannot be omitted by a caller that simply does not include it.

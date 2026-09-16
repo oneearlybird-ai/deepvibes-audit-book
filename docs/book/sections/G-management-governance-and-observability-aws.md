@@ -1478,3 +1478,252 @@ genuinely intrinsic to the resource declaration — a module that emits both tog
 carries the monitor with it. And transitional states inside a migration that is still running,
 where the loop and the per-domain declarations coexist by design; that is only this defect once the
 central loop is removed, and the window between the two is where the fix belongs.
+
+## G:67 — A compliance analyzer that matches call syntax rather than the callee's contract reports the named-constant refactor as an omission, and its finding text teaches a false model of the library to everyone who reads it
+
+**Statement.** A guardrail that inspects source to confirm a safe call was made almost always does
+it by pattern: the option name, a colon, a quoted value. That works against the code it was written
+for, because the first implementation of anything spells its arguments out. It stops working the
+moment a codebase does the ordinary thing and lifts a repeated value into a named constant — the
+call site now holds an identifier rather than a literal, the value at runtime is identical, and the
+pattern sees nothing. The analyzer reports the option as absent. Because the change that breaks it
+is a quality improvement, the guardrail's false reports concentrate in the better-maintained code
+and land on the engineers who removed the duplication. The second and more damaging half is the
+finding text: having decided the option is missing, the guardrail explains the consequence — the
+familiar shape is "missing X permits unsafe fallback Y". If the callee actually defaults that
+option to the safe value, or overrides it unconditionally after merging the caller's options, the
+stated consequence is not merely unproven, it is structurally impossible, and the guardrail is
+publishing a false model of the library's contract to every engineer who reads a finding. That
+model outlives the finding. It is repeated in review, copied into new code as defensive
+boilerplate, and cited as the reason for changes that were never needed, so the cost keeps
+accruing long after the analyzer is corrected.
+
+**Detect.** Never accept an analyzer's verdict about a call without reading the callee. Open the
+function being called and establish two things from its own source: what happens when the option is
+absent — a default in the destructure, a throw, a silent fallback — and whether the caller's value
+survives to the point of use or is overwritten, because an options spread followed by a literal
+assignment of the same key means the caller never controlled it at all. Then resolve the caller's
+argument: where it is an identifier, follow it to its declaration and read the value. A finding
+survives only if the resolved value is genuinely absent or genuinely unsafe. Separately, test the
+analyzer against a file that passes the option through a constant and confirm it reports compliant;
+where it does not, the defect is in the analyzer, every finding of that shape is suspect, and the
+finding text must be re-read as a claim about the callee that was never checked.
+
+**False positives.** A guardrail matching literals is not wrong to exist — the literal form is the
+common one and the pattern catches genuine omissions cheaply. Do not file the analyzer as defective
+merely because a constant exists somewhere in the file; confirm the constant is the value actually
+passed at the flagged call site. Equally, a callee that defaults an option safely today may not
+have when the guardrail was written, so check whether the default was added after the rule: that is
+a stale guardrail rather than a wrong one, and the correct fix is to retire the check rather than
+rewrite it.
+
+## G:68 — Static analysis scoped to the deployment unit cannot see code delivered by a runtime layer, so a component whose data access lives in shared code reads as having none and its grant reads as unexplained
+
+**Statement.** Serverless and container platforms let a component's dependencies arrive separately
+from its own artifact — layers, shared runtimes, sidecars, base images. An analyzer that fetches
+"the component's code" fetches the artifact, because that is what the platform's API returns, and
+the artifact contains only the files the component itself ships. Every behaviour contributed by the
+shared delivery is invisible to it. This produces a specific and confusing class of verdict: the
+analyzer observes from the permissions that the component can reach a data store, observes from the
+artifact that the component contains no data-store code at all, and concludes that the access must
+therefore be happening outside whatever safe path the rule governs. The truth is usually the
+opposite — the access is in the shared library, which is the sanctioned path, and the analyzer has
+simply never read it. The verdict is maximally misleading because both of its observations are
+correct and only their combination is wrong, so an engineer who checks the component's own source
+confirms the second observation and is left believing the first one implies a defect. The same
+blindness hides the genuine case, because an unused grant and a grant satisfied by a layer are
+indistinguishable to a reader who cannot see the layer.
+
+**Detect.** Establish the analyzer's source horizon before trusting any verdict that reasons about
+absent code: read the fetch, and check whether it resolves the component's layers, its base image,
+or any dependency delivered outside the artifact. Where it does not, treat "this component contains
+no such code" as "no such code in this artifact" and go and find the real call — enumerate the
+attached layers and search them for the access the permissions imply. A grant with no in-artifact
+usage is a question, never a conclusion: the two honest answers are "the access lives in shared
+code" and "the grant is unused", they call for opposite fixes, and only reading the shared code
+distinguishes them.
+
+**False positives.** A grant with no corresponding code in the artifact OR in any attached layer is
+a real finding — an unused permission — and should be filed as one, under least privilege rather
+than under whatever heading the blind analyzer used. Do not assume a layer explains every such
+case; confirm the call exists before dismissing the grant. Equally, a component that legitimately
+holds a grant for a future or conditional path is not defective if that path is declared somewhere
+a reviewer can find.
+
+## G:69 — An evaluator that derives its scope from a catalog stops checking whatever the catalog omits, so an uncatalogued resource is not reported as unknown, it is silently exempt
+
+**Statement.** Replacing a hard-coded resource list inside a guardrail with a read of a central
+catalog is a genuine improvement, and it is usually made in response to the hard-coded list having
+gone stale. It also moves the failure somewhere worse. The guardrail's checks are written as
+membership tests — is this table one of the governed ones, is this bucket in the protected set —
+and a resource the catalog does not mention answers no to all of them. Answering no means the check
+does not run, and a check that does not run reports nothing, so the resource passes. The system now
+carries a silent exemption whose trigger is an omission in a document maintained by a different
+team, on a different cadence, for a different purpose. This is strictly worse than the stale list
+it replaced, because the list's staleness was visible in the guardrail's own source where its
+reviewers would see it, whereas the catalog's omission is visible nowhere: the guardrail is
+current, the catalog is authoritative, and the resource is unchecked. The window opens exactly when
+a resource is new, which is when it is least reviewed and most likely to be wrong, and it closes
+only if someone happens to add the entry.
+
+**Detect.** Do not audit the guardrail against the catalog; audit both against the live account.
+Enumerate every resource of the governed kind that actually exists, enumerate the catalog's
+entries, and print the difference — every live resource absent from the catalog is an unchecked
+resource, and the only acceptable count is zero. Then confirm the guardrail's behaviour on an
+uncatalogued resource directly rather than by reading it: it must return a distinct and loud
+verdict — unknown, unclassified, non-compliant — and never silence. A guardrail that returns
+compliant for a resource it has no classification for is inverted, and the fix belongs in the
+guardrail's default, not in the catalog, because a catalog will be incomplete again.
+
+**False positives.** A catalog deliberately scoped to a subset — governed environments only,
+production only, one data classification — is not incomplete, and resources outside that scope are
+correctly absent; read the catalog's own declaration of what it covers before counting omissions. A
+resource created shortly before the audit may be legitimately ahead of the catalog's update cycle,
+so judge by whether a mechanism exists that closes the gap rather than by a single instance.
+
+## G:70 — Detection routed to a destination that must be visited accumulates unread, and a detector nobody pulls from is indistinguishable from a detector that was never installed
+
+**Statement.** Findings, alerts and audit output are frequently routed to a place that stores them
+well: a ticket queue, a console view, an object store, a dashboard. Each is a defensible
+destination, each preserves the record, and each is usually chosen precisely because it is more
+durable and more structured than a notification. What they share is that nothing about them
+arrives — the record waits for a person to go and look at it. Where the routing is the artefact
+under review, this passes review easily: the detector is enabled, the rule is correct, the
+destination is provisioned, and the wiring is complete end to end. The gap is not in the pipe but
+in the assumption that somebody opens it, and that assumption decays silently because the
+destination does not report its own depth to anyone. Backlogs of this kind are discovered by
+accident, are always older than anyone expects, and routinely contain at least one item whose
+window for acting has already closed. The most dangerous property is that the arrangement looks
+strictly better than having no detector at all, while delivering the same protection as having
+none, and consuming the budget and the confidence of real coverage while it does so.
+
+**Detect.** Count what is waiting. For every detector, find its destination and read the current
+backlog depth and the age of the oldest item — a queue with a non-trivial count whose oldest entry
+predates the current week has no reader, whatever the routing diagram says. Then ask for the push:
+trace whether anything leaves that destination unprompted — a notification, a digest, a page, a
+scheduled summary — and confirm its recipient is a person or a rota that exists rather than an
+address that merely resolves. Where the only exit is a human opening a console, treat the detector
+as unmonitored regardless of its own health, and read its backlog specifically for items whose
+deadline has already passed, because those are the finding rather than the depth.
+
+**False positives.** A destination with a named consumer that runs on a schedule — a daily triage
+rota, an automated summariser that does report outward — is genuinely monitored, and depth alone
+does not condemn it; a large backlog there may be accepted triage debt that someone decided to
+carry. A store used deliberately as an archive rather than a work queue is also not this defect,
+provided the work queue exists elsewhere and is the thing actually being read.
+
+## G:71 — A detector identifies the governed library by an unanchored substring of its module path, so a sibling module whose name merely contains it is admitted and every downstream check then runs against a component that never imported the library
+
+**Statement.** Detectors that ask "does this component use the governed library" almost always
+answer by searching the source for the library's path. The path is written as a bare substring
+because that is the shortest thing that works — it survives relative and absolute spellings, import
+and require, single and double quotes. It also matches every longer path that happens to contain
+it, and module ecosystems produce those constantly: a scoped or hyphenated sibling, a local
+directory of the same name one level down, a vendored copy. The match is not a near miss; the
+detector concludes the component uses the governed library, and that conclusion is the gate for
+everything after it. Each downstream check then asks a question that has no meaning for this
+component — which of the library's options did it pass, is it on a current version of the library,
+does its declared scope cover the tables it touches — and each answers in the negative, because the
+component never called the library at all. The output is a component reported as violating a
+contract it is not party to, described in the vocabulary of a library it does not import, and the
+engineer sent to fix it finds nothing to fix. The failure compounds with every check that depends
+on the gate, so a single loose alternation branch is not one false positive but a whole false
+profile, and it lands hardest on components that are correctly built — the ones that use a narrow,
+purpose-named sibling module instead of the general one.
+
+**Detect.** Read the detector's module-identity test as a string, not as an intention, and ask what
+else in the tree it matches: run it against the whole repository and list every file it selects,
+then subtract the files that genuinely import the governed library — the remainder is the false
+population, and it is usually a named handful you can check by eye. Anchor the test to the things
+that actually delimit a module path: a quote or the start of a specifier on the left, a quote,
+slash or extension on the right, rather than the bare name. Where a file already guards one
+matcher against this exact hazard — a trailing delimiter on a versioned identifier, a comment
+explaining that some near-name must not false-match — treat that as evidence the hazard was
+discovered once and fixed only where it bit, and audit every other matcher in the same file, which
+is where the unfixed instances will be. Finally, confirm downstream: a component the detector
+admits must have a real call site, so require one before any option-level check is allowed to
+report.
+
+**False positives.** A wrapper or re-export that genuinely forwards to the governed library is
+correctly admitted even though the component never names the library directly, and tightening the
+match must not exclude it — follow the wrapper rather than the string. A vendored or duplicated
+copy of the library is also a real user of it, and often a real finding of its own, so do not
+silence it as a name collision. And a detector deliberately written loose, to over-collect and then
+filter, is not this defect provided the filter exists and runs before anything is reported.
+
+## G:72 — An isolation check tests whether a broad grant exists rather than what the grant permits, so the read-only lookup that a resolve-then-scope design requires is reported identically to a grant that can write every customer's rows
+
+**Statement.** Designs that serve an unauthenticated or externally-triggered entry point cannot know
+which customer an event belongs to until they have read something: a telephone number, a provider
+account id, a callback token. The correct shape is two-phase — a narrow, read-only lookup across the
+registry that resolves the customer, then a scoped credential for everything after it. The first
+phase necessarily holds a grant that carries no scoping condition, because there is no resolved
+identity yet to condition on. A checker built to find isolation bypasses will usually test exactly
+one thing: does this principal hold a grant on a customer-scoped store without the scoping
+condition. That test cannot distinguish the resolve-phase read from a full read-write grant that
+lets the principal mutate any customer's rows at will, so it reports both, in the same words, at the
+same severity. The consequences run in both directions. The correctly built component is told to fix
+something that is load-bearing, and the usual response — widening the condition, or routing the
+lookup through the scoped path that cannot exist yet — breaks the entry point. Meanwhile the
+genuinely dangerous grants sit in the same undifferentiated list, so the finding that matters is
+indistinguishable from the finding that does not, and the population is too large to triage by hand.
+A checker that cannot separate these is not merely noisy: it makes the real bypasses harder to find
+than having no checker at all, because it supplies a plausible reason to dismiss the whole category.
+
+**Detect.** Read the grant, not its existence. For every principal flagged, pull the statements and
+split them on the action set: a grant whose actions are read-only is a candidate lookup grant, and
+one carrying any write action on a customer-scoped store is a candidate bypass — those are different
+findings with different fixes and must never share a queue. Then test the lookup grants against what
+resolution actually needs: the registry store and the specific index the lookup queries, read-only,
+and nothing else. A lookup grant that also names the customer's data stores, or spans indexes by
+wildcard, is over-broad even though its phase is legitimate, and that is the finding to file.
+Finally, confirm the second phase exists: find the credential the component assumes after resolving,
+and confirm the writes go through it. Where the design documents itself — statement identifiers
+naming the phase, a separate policy for the lookup — treat that as the author's claim and verify it
+rather than as proof.
+
+**False positives.** A read-only grant genuinely confined to the registry and its lookup index, with
+every write going through the scoped credential, is the correct implementation and is not a finding
+at any severity. A broad grant on a component whose whole purpose spans customers — an
+administrative aggregate, a lifecycle worker, an export or deletion job — is also not an isolation
+defect, though it remains subject to ordinary least-privilege review. And a checker that
+deliberately reports both shapes because a human triages them is acceptable provided the report
+carries the distinction; it is the undifferentiated verdict, not the broad collection, that is the
+defect.
+
+## G:73 — A detective control is registered against one compute resource type while the risk it looks for is carried by a permission any principal can hold, so every other principal holding that permission is not passing the check, it is outside it
+
+**Statement.** Continuous-compliance services evaluate resources, and a custom control must name the
+resource type it evaluates. For a rule about what code is allowed to do with a data store, the
+natural choice is the compute type where most of that code runs — the serverless function, the
+container task — and for a while the choice is invisibly correct, because that is where the code is.
+The risk, though, does not live in the compute type; it lives in the permission, and a permission
+can be attached to any principal: an instance profile, a task role, a cross-account role assumed by
+a sibling service, a role a human assumes from a console, a role held by a scheduled job. Each of
+those can hold exactly the grant the rule exists to find, and none is the resource type the rule is
+registered for, so none is ever evaluated. The output is not a false negative in the ordinary sense,
+because the rule never looked — the principal is not compliant and not non-compliant, it is absent,
+and absence renders identically to safety on every dashboard, in every count and in every report
+that says how many resources were assessed. The gap widens exactly as an architecture matures: work
+moves off the original compute type onto instances and containers, integrations arrive as
+cross-account roles, and each migration quietly removes its subject from the control's population
+while the control's own health stays green.
+
+**Detect.** Do not audit the control's findings; audit its population. Enumerate every principal in
+the account that holds the permission the control exists to police — read it from the identity
+service, not from the provisioning tree — then enumerate the principals the control actually
+evaluated, and print the difference. Anything in the first list and not the second is unexamined,
+and the count must be zero or explained principal by principal. Expect the difference to be
+concentrated in instance and task roles and in roles whose trust policy names another account,
+because those are the ones no compute-type-scoped rule reaches. Then fix the axis rather than the
+list: a control whose subject is a permission belongs on the identity object or in a scheduled
+account-wide sweep, not on one compute type, and where the platform forces a resource type, register
+the control against every type that can hold the permission and say so explicitly.
+
+**False positives.** A control deliberately and documentedly scoped to one compute type, where a
+separate named control covers the other principal types, is complete — check that the sibling exists
+and runs before filing. Principals that hold the permission but cannot exercise it, because a
+permission boundary or service control policy denies it, are genuinely out of scope, though the
+denial must be verified rather than assumed. And a break-glass or administrative role intended to
+hold broad permissions is not a finding of this rule; it is an accepted posture that should be named
+as one.

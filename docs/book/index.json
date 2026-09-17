@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1103,
+ "rule_count": 1104,
  "sections": [
   {
    "id": "A",
@@ -3349,7 +3349,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "CC:1",
@@ -3534,6 +3534,10 @@
     {
      "id": "CC:46",
      "title": "A configuration document is validated at deployment against a registry that lives in code, so a document and the registry entry it needs can land together and still be rejected live when the document publishes before the validator deploys"
+    },
+    {
+     "id": "CC:47",
+     "title": "A component is filed into a deployment unit by word-adjacency rather than by what it serves, and the unit's name becomes a compound that then justifies the next mistake"
     }
    ]
   },

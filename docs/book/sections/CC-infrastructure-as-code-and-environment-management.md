@@ -1107,3 +1107,36 @@ release the twin would have stopped at land.
 **False positives.** Registries the document itself carries, where both halves publish as one; a
 validator that rejects on a property of the document alone (schema, grammar) with no code-side
 registry; pipelines that apply the compute stack strictly before publishing the document.
+
+## CC:47 — A component is filed into a deployment unit by word-adjacency rather than by what it serves, and the unit's name becomes a compound that then justifies the next mistake
+
+**Statement.** Decomposing an estate into per-component units is a bulk exercise: some number of
+existing things must each be assigned a home, usually in one change, usually by one person or
+process working quickly. Most assignments are obvious. The few that are not get resolved by the
+cheapest available signal, and the cheapest signal is the name — a component whose name shares a
+word with a candidate unit lands in that unit, and the assignment is never revisited because nothing
+about it looks wrong afterwards. The unit's name then becomes a compound of two unrelated concerns,
+and because a compound name reads as a deliberate scope rather than an accident, it starts doing
+work: new components that share either word are filed there too, reviewers treat the pairing as
+intentional, and the blast radius of every change to the unit now covers things that never interact.
+The cost is not correctness — everything still runs — but everything downstream of the boundary is
+wrong in a small way. Permissions, alarms and deploy lanes are drawn around a set that was never a
+set. A change to one concern plans, and can destroy, the other. And the compound name is the first
+thing every newcomer reads, so the accidental grouping is taught as architecture.
+
+**Detect.** Do not read the unit's name; read what its members actually serve, and use the
+routing surface as the test because it is the least forgeable. List the routes, queues, topics or
+event sources each member answers, and a unit whose members answer more than one top-level prefix is
+a candidate — one whose members answer prefixes that do not appear in the unit's own name is a
+finding. Then check the second signal: whether the members share anything at all. Members of a real
+unit reference each other's resources, share an execution role, a table, a queue or a local; members
+that share only the unit's file layout are co-located, not coupled. Where a compound name exists,
+assume it records the accident rather than a decision until a design record says otherwise, and
+check what else has since been filed there on the strength of it.
+
+**False positives.** A unit deliberately grouping several concerns behind one deployment boundary
+because they genuinely deploy together — a versioned API surface, a vertical that ships as a unit —
+is cohesive even when the members differ, provided the coupling is real and stated. A shared
+platform primitive answering many prefixes by design is not a finding either. And during a
+decomposition that is still running, provisional homes are expected; this becomes a finding when the
+decomposition is declared complete and the provisional assignment is still there.

@@ -898,3 +898,40 @@ as failed with its name, so a frozen check is red within minutes instead of sile
 **False positives.** A long-running check that streams progress and is documented as long; a call
 whose client applies a default deadline the code does not spell out — verify the client's default
 before flagging.
+
+## U:51 — Every freshness gate grades the shared dependency's published artifact, none grades what its consumers pin, so a fix inside it reports as deployed while most consumers still run the previous bytes
+
+**Statement.** A shared runtime dependency — a layer, a base image, a vendored bundle — is
+published as an immutable version and consumed by pinning one. Publishing a new version moves no
+consumer; each moves only when its own deployment is next applied. Freshness gates are written
+against the artifact: is the published version built from current source, does its hash match the
+build, is its publication newer than its inputs. Every one of those can be green while the
+overwhelming majority of consumers still pin the previous version, because none of them asks what
+the consumers pin. In the ordinary case the lag is harmless rollout latency. In exactly one case it
+is decisive: a correctness or security fix made inside the shared dependency. The author lands it,
+the build publishes it, every gate passes, the deployment record says the dependency deployed — and
+the fix is running only in however many consumers happen to have been applied since. Nothing in the
+pipeline distinguishes "the fix is published" from "the fix is running," and the two are reported in
+the same words. The distribution is usually worse than it looks, because the consumers least
+recently applied are the stable, rarely-touched ones, and stability is not correlated with being
+unaffected — a rarely-deployed service is a rarely-deployed service, not a safe one.
+
+**Detect.** Ask the runtime, not the build. Enumerate every consumer of the shared dependency and
+the version each one actually pins, and compare that set to the published version; most platforms
+expose both directly, and the query is cheap enough that its absence is a choice. Read the answer as
+a distribution rather than a boolean — how many consumers are on the current version, and how old is
+the oldest pin — because a single consumer on the current version is enough to turn every
+artifact-side gate green. When the change inside the shared dependency is security- or
+correctness-relevant, do not accept a deployment record as evidence that it is live: name the
+specific consumers whose behaviour the change was meant to alter, verify each one's pinned version
+individually, and then read the deployed artifact itself rather than the source you believe it was
+built from. Where a gradual rollout is intended, the gate should still report the divergence and its
+age, because an unreported lag and a deliberately accepted one look identical to everyone downstream.
+
+**False positives.** A staged rollout where the lag is the mechanism and its extent is reported
+somewhere a reader will find it. A dependency whose consumers resolve a mutable alias at load time
+rather than pinning a version — verify the indirection really resolves at load, since such aliases
+are commonly captured at deploy time and only look dynamic. A change confined to code paths no
+lagging consumer executes, established by reading those consumers rather than reasoning about them.
+And an estate where every consumer is redeployed on a cadence short enough to close the lag on its
+own, provided that cadence exists, runs, and is not merely intended.

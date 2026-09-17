@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1106,
+ "rule_count": 1107,
  "sections": [
   {
    "id": "A",
@@ -2561,7 +2561,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 50,
+   "rule_count": 51,
    "rules": [
     {
      "id": "U:1",
@@ -2762,6 +2762,10 @@
     {
      "id": "U:50",
      "title": "A gate bounds one class of its outbound calls and leaves another unbounded, and the suite that runs it has no per-check deadline, so the one unbounded call freezes the whole lane silently and reads as slow rather than dead"
+    },
+    {
+     "id": "U:51",
+     "title": "Every freshness gate grades the shared dependency's published artifact, none grades what its consumers pin, so a fix inside it reports as deployed while most consumers still run the previous bytes"
     }
    ]
   },

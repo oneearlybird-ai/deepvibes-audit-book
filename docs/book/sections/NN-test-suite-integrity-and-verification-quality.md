@@ -1516,3 +1516,37 @@ subject appears in the register with a reason — that is a decision, not an acc
 report the shortfall without failing, as a deliberate staged rollout, provided the shortfall count
 is asserted against a ratchet that cannot silently grow. And subjects that are genuinely out of the
 gate's scope by construction rather than by resolution failure, where the gate can say so by name.
+
+## NN:62 — A debt baseline keyed by file path and line number invalidates on every refactor, and the wall of false positives it then reports is the pressure that gets a real finding re-baselined away
+
+**Statement.** Adopting a checker against an estate that already violates it requires a baseline:
+the existing violations are recorded, the gate fails only on additions, and the debt is paid down
+over time. The recording needs a key, and the cheapest key is where the violation was found — the
+file path, often with the line number. That key is stable only while nobody moves anything. Rename a
+directory and every entry beneath it is orphaned; delete a block and every entry below it in the same
+file shifts by the number of lines removed. The checker cannot tell a moved violation from a new one,
+so a refactor that introduced nothing reports as a wall of additions — and the larger and more
+careful the refactor, the larger the wall. That is the dangerous part, because the engineer facing
+sixty-seven "new" violations they know they did not write has one obvious remedy, the blanket
+re-baseline, and it will make the wall disappear whether or not a genuine violation is hiding inside
+it. The gate does not fail at that moment; it succeeds, silently, having absorbed anything that was
+mixed in. So the defect is not the false positives. It is that a key which breaks under ordinary
+maintenance manufactures, on a predictable schedule, exactly the situation in which switching the
+gate off looks like the reasonable thing to do.
+
+**Detect.** Read what the baseline is keyed on before trusting any "new violations" count that
+follows a move or a rename. A key containing a path is fragile; a key containing a line number is
+fragile on every edit above it, which is most edits. Where you must re-baseline, prove the re-key
+rather than assert it: snapshot the baseline first, re-generate, and diff on the CONTENT with the
+positional parts stripped out — the offending text, the rule and the subject, never the path or line.
+Zero added is the only acceptable result; anything added is a finding the re-key was about to absorb,
+and removals should each correspond to code you actually deleted. Where the checker supports it,
+prefer a key the refactor cannot move: a hash of the offending text, the resource's own name, or the
+rule plus the logical subject.
+
+**False positives.** A baseline deliberately keyed by path because the path IS the subject — a policy
+about which directories may contain a thing — is correctly positional and not this defect. A
+short-lived baseline created to adopt a checker and burned down within a release never meets a
+refactor and does not need re-keying. And a genuinely new violation surfacing alongside a rename is
+not a false positive just because it appeared in the same change; the content diff is what tells the
+two apart, which is the whole reason to do it.

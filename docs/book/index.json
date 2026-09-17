@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1104,
+ "rule_count": 1105,
  "sections": [
   {
    "id": "A",
@@ -4416,7 +4416,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 61,
+   "rule_count": 62,
    "rules": [
     {
      "id": "NN:1",
@@ -4661,6 +4661,10 @@
     {
      "id": "NN:61",
      "title": "A verifier resolves its subjects by literal match and treats an unresolvable reference as out of scope, so every subject named through a variable is exempt by accident"
+    },
+    {
+     "id": "NN:62",
+     "title": "A debt baseline keyed by file path and line number invalidates on every refactor, and the wall of false positives it then reports is the pressure that gets a real finding re-baselined away"
     }
    ]
   },

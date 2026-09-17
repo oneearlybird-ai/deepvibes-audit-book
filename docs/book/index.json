@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1105,
+ "rule_count": 1106,
  "sections": [
   {
    "id": "A",
@@ -468,7 +468,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "D:1",
@@ -605,6 +605,10 @@
     {
      "id": "D:34",
      "title": "A conditional write's fallback path reuses the guarded attempt's expression-attribute maps after dropping the attribute they were built for, and the store rejects every fallback for unused expression attributes"
+    },
+    {
+     "id": "D:35",
+     "title": "A cascading delete enumerates its children through a secondary index, and a key family deliberately kept out of that index is exempt from every sweep that index drives"
     }
    ]
   },

@@ -239,3 +239,41 @@ expression is built in the real-dependency factory, below the seam the tests rep
 deletion from the first. Stores whose API ignores unreferenced expression attributes rather
 than rejecting them. A fallback that is genuinely unreachable because the condition cannot fail
 (a key written exactly once by construction) — though the dead branch is then its own finding.
+
+## D:35 — A cascading delete enumerates its children through a secondary index, and a key family deliberately kept out of that index is exempt from every sweep that index drives
+
+**Statement.** Deleting a parent record means finding its children first, and the cheapest way to find
+them is the secondary index that already exists for the read path — it is keyed by the parent, it is
+already maintained, and iterating it reads as a complete enumeration. It is complete only over the rows
+the index contains. Secondary indexes on most stores are sparse: a row that omits the indexed attribute
+is simply not in the index, with no error and no diagnostic. So a key family that omits that attribute
+is exempt from the sweep, and it is usually exempt for a good reason — someone kept it out so the index
+would return only the one kind of row its readers expect, and often wrote that intent down. The deletion
+path and the index design are then each individually correct and jointly wrong, which is why review does
+not catch it: whoever reads the sweep sees an index scoped to the parent and stops, whoever reads the
+index design sees a documented exclusion and stops, and nothing owns the intersection. The surviving
+rows are the ones nobody lists, so a later audit of the parent does not find them either — the parent is
+gone. They accumulate for the life of the store, and because such a family usually exists precisely to
+resolve an external identifier back to the parent, the rows carry the credentials, account ids or
+subscriber references of the thing that was torn down: the least visible residue and the most sensitive.
+
+**Detect.** For every cascading delete, write down the set it enumerates and the set that exists, and
+prove they are equal rather than assuming it. Read the table's key families from the data model, not
+from the delete path, and for each one ask whether it carries the attribute the sweep's index is keyed
+on — an absent attribute is an exemption, and a model that documents the absence as deliberate is the
+strongest signal that one exists, not a reassurance that it is handled. Then confirm the two escapes
+that would make the residue harmless, rather than assuming either: a time-to-live on the table, read
+from the live table's TTL status, which is disabled far more often than a schema comment implies; and
+some other path that deletes the same rows, searched for by the key prefix rather than the table name,
+because a distinct key family almost always has a distinct writer and will not appear in a search for
+the sweep's own symbols. Where the exemption is real, the remedy is rarely to add the row to the index —
+that changes what every existing reader of it sees, which is the thing the exclusion was protecting —
+but to delete the row by the identifier the parent already holds.
+
+**False positives.** A key family that is deliberately immortal — an audit or ledger row the deletion is
+required to preserve — is not residue, provided the retention is stated. A store whose TTL genuinely
+reaps the exempt family, verified against the live table rather than the schema. A sweep that enumerates
+the base table by the parent's own partition rather than through an index, where index membership is
+irrelevant to completeness. And a two-phase design in which a later reconciliation job is the documented
+owner of the exempt family — confirm that job exists and runs, because a planned reconciler is the most
+common thing to find missing.

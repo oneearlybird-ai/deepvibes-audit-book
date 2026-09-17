@@ -143,6 +143,12 @@ the loop never silently skips a finding.
   `evidence.path`/`line`/`snippet` prove it; `fix` is one sentence.
 - **Close** it (`closed` + history `closed-fixed` / `closed-not-an-issue`) only after re-reading the
   live code and confirming the fix — cite the new evidence in a history `note`.
+  **Live means the running system, not the merge.** For infrastructure and deployed code the
+  closing evidence is the applied resource, the function version its consumers actually run, the
+  live attribute and its modification time. This estate deploys on request per stack, so a fix
+  that has merged but not been applied or deployed gets `fix-landed` and the entry STAYS OPEN — a
+  mail loop once fired 161 messages in the gap between a closure at merge and the apply that made
+  it true.
 - **Accept** it (`accepted`) only for intentional, documented postures (e.g. a sanctioned dev-stage
   choice) — the history note names the sanctioning document/decision.
 - **Reopen** (`reopened`) when a fresh trace shows the defect returned. Never delete entries.

@@ -60,6 +60,22 @@ for (const [i, f] of ledger.entries()) {
     ids.add(f.id);
   }
 }
+// Status must agree with the history beside it. Derive the status the last
+// status-changing event implies (note and fix-landed change nothing) and refuse a
+// contradiction: 223 closed rows once carried a trailing machine-written "opened"
+// event, and every consumer that read state from the last event saw them as fresh.
+const STATUS_OF_EVENT = {
+  "opened": "open", "reverified-open": "open", "reopened": "open",
+  "closed-fixed": "closed", "closed-not-an-issue": "closed", "accepted": "accepted",
+};
+for (const [i, f] of ledger.entries()) {
+  if (f.status === "cant_verify") continue;
+  let implied = null;
+  for (const h of f.history ?? []) { const s = STATUS_OF_EVENT[h.event]; if (s) implied = s; }
+  if (implied !== null && implied !== f.status) {
+    errors.push(`ledger[${i}] ${f.id}: status '${f.status}' but the last status-changing history event implies '${implied}'`);
+  }
+}
 for (const [i, f] of ledger.entries()) {
   for (const rid of f.related_findings ?? []) {
     if (!ids.has(rid)) errors.push(`ledger[${i}] ${f.id}: related_findings '${rid}' does not exist`);

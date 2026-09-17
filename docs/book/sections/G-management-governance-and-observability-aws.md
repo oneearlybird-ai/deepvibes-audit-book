@@ -1727,3 +1727,43 @@ permission boundary or service control policy denies it, are genuinely out of sc
 denial must be verified rather than assumed. And a break-glass or administrative role intended to
 hold broad permissions is not a finding of this rule; it is an accepted posture that should be named
 as one.
+
+## G:74 — A fleet-wide re-evaluation of a compliance rule exhausts the control-plane rate limit with its own reads, so the sweep manufactures the blind spots it then reports as violations
+
+**Statement.** A custom compliance rule evaluates one resource per invocation and, for each, makes
+several control-plane describe calls to assemble the evidence behind its verdict. That is
+affordable at the trickle rate of ordinary change events. It is not affordable during a full
+re-evaluation, which the provider triggers whenever the rule itself is updated, its scope changes,
+or an operator requests one — and which fans the whole population out at once. The rule's own sweep
+then becomes the heaviest consumer of an account-wide control-plane quota that is shared, low, and
+not sized per rule, so a large fraction of its evidence reads are throttled. Where the rule has
+already been hardened so that an unreadable dependency is never scored as clean — the correct fix
+for the opposite and more dangerous defect — every throttled read now becomes a violation instead.
+A single administrative act therefore publishes a burst of verdicts in which the great majority name
+no real defect, and individual resources oscillate between states several times within the sweep as
+their retries land differently. The population that is genuinely violating is unchanged and still
+present, but it is now a small minority inside its own alarm, which is the condition under which the
+control stops being read at all. Retry budgets do not save this: a handful of attempts with
+sub-second backoff is sized for an isolated throttle, not for a self-inflicted stampede that lasts
+as long as the sweep does.
+
+**Detect.** Separate the rule's verdicts by WHY they were reached, not by what they are: count how
+many of the window's violating verdicts carry the annotation the rule emits for unreadable evidence
+versus one naming an actual rule breach, and treat a large ratio of the former as the finding
+regardless of the total. Chart the rule's invocation count per day against its throttle count per
+day over a period long enough to contain at least one quiet day — the signature is a day with an
+order-of-magnitude invocation spike and every throttle in the window inside it, while ordinary days
+carry none. Count how many distinct resources changed state more than once during the sweep;
+repeated oscillation within hours is not a property of the resources and can only come from the
+evaluator. Correlate the spike with the rule's own deployment history, since the commonest trigger
+is the rule being updated. When counting any of this from a log-query API, page the results fully
+and count client-side: a truncated first page silently reports a fraction, and several of these
+quantities are only meaningful as totals.
+
+**False positives.** A burst of genuine violations after a real change — a permissions migration, a
+new resource family arriving non-compliant — is the control doing its job, and the annotations will
+name concrete breaches rather than unread evidence. Throttling that appears on every day at a steady
+low rate is ordinary contention and belongs to capacity, not to this pattern, which is specifically
+self-inflicted and correlated with a sweep. And a rule that correctly declines to publish any
+verdict at all when its evidence is unavailable is not this defect: the finding requires that the
+unreadable state be published as a violation.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1107,
+ "rule_count": 1112,
  "sections": [
   {
    "id": "A",
@@ -995,7 +995,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 73,
+   "rule_count": 74,
    "rules": [
     {
      "id": "G:1",
@@ -1288,6 +1288,10 @@
     {
      "id": "G:73",
      "title": "A detective control is registered against one compute resource type while the risk it looks for is carried by a permission any principal can hold, so every other principal holding that permission is not passing the check, it is outside it"
+    },
+    {
+     "id": "G:74",
+     "title": "A fleet-wide re-evaluation of a compliance rule exhausts the control-plane rate limit with its own reads, so the sweep manufactures the blind spots it then reports as violations"
     }
    ]
   },
@@ -2561,7 +2565,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "U:1",
@@ -2766,6 +2770,10 @@
     {
      "id": "U:51",
      "title": "Every freshness gate grades the shared dependency's published artifact, none grades what its consumers pin, so a fix inside it reports as deployed while most consumers still run the previous bytes"
+    },
+    {
+     "id": "U:52",
+     "title": "A defect is recorded as fixed when its change merges, but the running system keeps the defect until a separate deploy, so the record asserts a safety the estate does not yet have"
     }
    ]
   },
@@ -3886,7 +3894,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 12,
+   "rule_count": 13,
    "rules": [
     {
      "id": "HH:1",
@@ -3935,6 +3943,10 @@
     {
      "id": "HH:12",
      "title": "A later-added orientation or onboarding overlay is guarded on its own readiness only, so it presents over a pre-existing gate screen and makes the gate unreachable on exactly the installs the gate exists for"
+    },
+    {
+     "id": "HH:13",
+     "title": "A setting the other clients present as administrator-owned and read-only is left editable on one client, so the weakest surface becomes the way to change it"
     }
    ]
   },
@@ -4286,7 +4298,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "LL:1",
@@ -4355,6 +4367,10 @@
     {
      "id": "LL:17",
      "title": "A layout deliberately built not to scroll, with fixed-height text controls, becomes unusable at accessibility text sizes rather than merely cramped"
+    },
+    {
+     "id": "LL:18",
+     "title": "A duplicate type name inside one module fails at every point the name is READ, so the compiler's error list names files nobody edited and buries the one real cause"
     }
    ]
   },
@@ -4681,7 +4697,7 @@
    "title": "Documentation & Comment Truthfulness",
    "group": "cross-cutting",
    "file": "sections/OO-documentation-and-comment-truthfulness.md",
-   "rule_count": 5,
+   "rule_count": 6,
    "rules": [
     {
      "id": "OO:1",
@@ -4702,6 +4718,10 @@
     {
      "id": "OO:5",
      "title": "A resource identifier names a vendor or a scope, which are claims, and unlike a wrong comment a wrong identifier is copied into every derived name rather than sitting still"
+    },
+    {
+     "id": "OO:6",
+     "title": "The record-keeping tool stamps a lifecycle event the subject never underwent, so a durable record ends by contradicting its own status field"
     }
    ]
   },

@@ -935,3 +935,39 @@ are commonly captured at deploy time and only look dynamic. A change confined to
 lagging consumer executes, established by reading those consumers rather than reasoning about them.
 And an estate where every consumer is redeployed on a cadence short enough to close the lag on its
 own, provided that cadence exists, runs, and is not merely intended.
+
+## U:52 — A defect is recorded as fixed when its change merges, but the running system keeps the defect until a separate deploy, so the record asserts a safety the estate does not yet have
+
+**Statement.** In an estate where merging and deploying are deliberately decoupled — infrastructure
+applied per stack on request, functions updated only when their own stack next runs, artifacts
+published but not adopted until a consumer moves — merging a fix changes what the code says and
+nothing about what is running. The tracking record, however, is closed at merge, because merge is
+the moment the author is present, the diff is in hand and the evidence is easy to cite. From then
+on the record states the defect is resolved while the live system keeps producing it, for a lag
+measured in days or weeks that nobody is counting. Three costs follow. The estate is exposed for the
+whole lag with its own tracking system asserting it is not, so the exposure is invisible to exactly
+the review that would find it. Any later reconciliation reads the record as settled and does not
+re-verify, which makes the error permanent at the moment it is most cheaply correctable. And when
+the defect recurs during the lag it is misread as a regression of a fixed thing rather than the
+original, still-live defect, sending the investigation to the wrong place. The pattern is strongest
+for fixes whose blast radius is a shared artifact many consumers pin, because there the lag is not
+one deploy but one deploy per consumer, and the record closes on the first.
+
+**Detect.** Make the closing evidence a property of the running system, never of the repository.
+For any record closed in the window, re-read the live attribute the fix was supposed to change —
+the deployed configuration value, the version actually pinned, the policy actually attached — and
+compare its last-modified time against the merge time; a live value still holding the pre-fix
+shape, or a modification timestamp earlier than the merge, means the record closed early. Sweep the
+record store for entries whose status is resolved but whose own final note says the change landed
+and was not deployed, which is the author documenting this defect in the act of committing it. Where
+the fix lives in a shared artifact, do not stop at the artifact: enumerate the consumers and count
+how many have actually moved to the fixed version, because a published fix with few adopters is
+mostly undeployed. Correlate any incident in the window against the merge-to-deploy interval of the
+fix that was supposed to prevent it.
+
+**False positives.** A pipeline where merge triggers deploy synchronously and the record closes
+after the deploy reports success does not have this gap. A record deliberately closed at merge under
+a stated convention that a separate deployment record tracks rollout is not this defect, provided
+that second record exists and is itself reconciled. And a lag that is bounded and monitored — a
+freshness signal that reports which consumers still run the old artifact, and is read — converts
+this from a silent exposure into managed rollout, which is ordinary and not a finding.

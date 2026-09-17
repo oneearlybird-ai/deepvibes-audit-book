@@ -166,3 +166,38 @@ skipped instead of merely delayed.
 version-required notice, a security prompt); gates that are themselves presented modally above the
 overlay by the same coordinator; and apps where the launch presentation is centrally sequenced and
 the ordering is asserted in one place.
+
+## HH:13 — A setting the other clients present as administrator-owned and read-only is left editable on one client, so the weakest surface becomes the way to change it
+
+**Statement.** A configuration value belongs to an administrator and determines how the rest of the
+product behaves for that account — the template it renders, the workflow it runs, the vertical shell
+it presents. The web client and one native client express that ownership by showing the value as a
+locked badge with the owner named. A second native client, built later or from an older screen,
+still carries the full editing control it inherited from the creation flow, because the restriction
+was implemented as a per-screen presentation choice rather than as a property of the value. No
+server rule contradicts it, since the endpoint was always permitted to accept the write from an
+account member. The result is not a cosmetic inconsistency but an authorization boundary that exists
+on two surfaces and not the third: the account can change its own governing setting through the one
+client that forgot to lock it, and the change is legitimate at every layer it passes through. The
+blast radius is disproportionate to the control's size, because a value that selects a whole
+behavioural mode reconfigures features the person editing it never saw and did not intend to touch.
+The defect is systematically underweighted in review, because each client's screen reads as correct
+on its own and only the comparison across clients shows the hole.
+
+**Detect.** Enumerate governing settings by consequence rather than by widget: any value that
+selects a template, a workflow, a pricing mode or a vertical is one, whatever it is called in the
+model. For each, list every client that renders it and record the affordance each one offers —
+locked badge, disabled control, or live editor — and treat any disagreement between clients about
+the same value as the finding, with the most permissive client naming the real boundary. Then test
+whether the restriction is presentation-only by checking the server: if the write endpoint accepts
+the change from an ordinary account member, the lock exists solely in whichever screens remembered
+to draw it, and adding the badge to the third client narrows the gap without closing it. Creation
+flows are a deliberate exception and must be separated from post-creation editing surfaces, because
+the value is legitimately chosen once.
+
+**False positives.** A client that shows the control to users who genuinely hold the administrative
+role is correct, and the comparison must hold the viewer's role constant before it means anything. A
+value that is merely a display preference, with no downstream behavioural consequence, does not
+carry this blast radius even where clients disagree about it. And a client deliberately shipping an
+editing surface the others lack as a stated, role-gated administrative tool is a design decision
+rather than an omission, provided the gate is enforced server-side.

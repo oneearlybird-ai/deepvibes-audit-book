@@ -128,3 +128,38 @@ this defect. A scope in the name that matches the component's authorization boun
 if the component does not read the id itself, provided the boundary genuinely rejects other scopes.
 And a deliberately provisional name inside a migration that is still running is not a finding while
 the migration has a stated end; it becomes one when the migration is declared done.
+
+## OO:6 — The record-keeping tool stamps a lifecycle event the subject never underwent, so a durable record ends by contradicting its own status field
+
+**Statement.** A durable record store — an audit ledger, an issue history, a compliance journal —
+is written by a tool that appends a birth event to every record it ingests. The tool was written for
+the common case, where a record is born in the open state, so the append is unconditional. But the
+same store also ingests records that arrive already resolved: work that shipped before the store saw
+it, imported from another system, or retro-recorded by a reconciliation pass. Those records carry
+their own history, including the event that resolved them, and the tool appends the birth event
+after it. The permanent, append-only record therefore ends with an event asserting the subject was
+opened, sitting beside a status field that says resolved. Both halves cannot be true. The damage is
+not cosmetic, because an append-only history is consulted precisely when the status field is in
+doubt, and every consumer that derives state by reading the last event — a report, a dashboard, a
+later reconciliation — now derives the opposite of the truth. The tell that this is a defect and not
+a convention is usually visible in the same function: some other branch nearby already handles the
+resolved arrival correctly, proving the author knew the case existed and missed this one path.
+
+**Detect.** Do not read the writer's intent, read its output: scan the store for records whose
+status field disagrees with their final history event, and separately for records where a birth
+event is dated at or after a terminal one. Derive the population twice by those two different
+queries and reconcile the difference, because the shapes are not identical and the gap between them
+is itself informative. Then fingerprint the suspect events by their exact key set — a tool-written
+event carries precisely the fields the writer emits and no others, so a population of events sharing
+one key set and lacking the free-text field a human would have filled is machine-authored, not a
+record of anything. Confirm by reading the ingest path for an unconditional append, and check
+whether the store's validator inspects fields individually while never comparing the status field
+against the history beside it, which is what lets the contradiction pass green indefinitely.
+
+**False positives.** A genuine reopening is not this defect: it carries the vocabulary the schema
+reserves for it and it moves the status field, so a record that is open again after being closed is
+correct. An evidence note or a delivery event appended after a terminal event is legitimate and
+common — later proof about resolved work is exactly what an append-only history is for — and only a
+birth or state-transition event is the finding. A store whose history is explicitly unordered, or
+whose events carry no ordering field at all, cannot support this claim; establish that the history
+is chronological before asserting anything about its last element.

@@ -117,12 +117,18 @@ for (const run of runs) {
     const nearby = openByFile.get(fileKey(f));
     if (nearby?.length) warnings.push(`${file}: merged as NEW, but ${nearby.join(", ")} is already open under ${f.taxonomy_id} in the same file — confirm it is a distinct site, not a re-verification`);
     const id = `F-${String(nextNum++).padStart(4, "0")}`;
-    const entry = {
-      id,
-      ...f,
-      status: f.status ?? "open",
-      history: [...(f.history ?? []), { date: today, event: "opened", run }],
-    };
+    const status = f.status ?? "open";
+    // A staged finding can arrive ALREADY CLOSED - a retro-record of work that
+    // shipped before the ledger saw it. Stamping "opened" on such an entry
+    // writes a lifecycle transition that never happened, and it lands AFTER the
+    // entry's own closing event, so the permanent history ends by contradicting
+    // the status field it sits next to. Only an entry that actually enters the
+    // ledger open gets "opened"; anything else records the merge itself, which
+    // the schema defines as status-neutral ("new evidence, status unchanged").
+    const birth = status === "open"
+      ? { date: today, event: "opened", run }
+      : { date: today, event: "note", run, note: `Retro-recorded into the ledger by ${run} at status ${status}.` };
+    const entry = { id, ...f, status, history: [...(f.history ?? []), birth] };
     ledger.push(entry);
     // Only OPEN entries may shadow a later staged finding. Indexing a closed
     // entry here would make this run's own retro-records silently swallow the

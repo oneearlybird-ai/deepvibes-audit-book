@@ -283,3 +283,36 @@ separate case: they must be allowed to wrap as a group rather than compress.
 **False positives.** Surfaces that legitimately opt out of text scaling by platform convention
 (a video player's transport, a camera viewfinder); controls whose label is a fixed-width glyph;
 and screens already covered by a scaling-specific alternate layout.
+
+## LL:18 — A duplicate type name inside one module fails at every point the name is READ, so the compiler's error list names files nobody edited and buries the one real cause
+
+**Statement.** A second declaration of an existing type name is added to a large module, far from
+the first and usually because the author searched for a use rather than a declaration. The
+declaration site itself is legal in isolation, so the failure surfaces nowhere near it: every
+reference to the name becomes ambiguous, and — the expensive part — any type holding a property of
+that name silently loses its compiler-synthesised conformances, so types nobody touched report that
+they do not conform to protocols they have always conformed to. One small mistake therefore produces
+a long error list in which the majority of entries are consequences in unrelated files and the entry
+naming the real cause is neither first nor distinguished. Diagnosis cost is set by where the
+compiler runs, not by the mistake's size: where the language's toolchain is unavailable on the
+development machine — a platform-specific compiler and a team developing on another operating system
+— the first compiler to see the change is remote CI, minutes away and only after a push, so each
+wrong guess costs a full build cycle. The same defect that a local compile would have named in
+seconds consumes hours.
+
+**Detect.** Collect declared type names per module and report any name declared twice, which is a
+whole-file parse rather than a search, and must be a parse: a text search for the name finds its
+uses and cannot distinguish a second declaration from the hundreds of references that are the
+symptom. Scope the check to the module, never the repository, because sibling applications in one
+codebase legitimately and deliberately declare the same names for their own screens and models, and
+a repository-wide check reports that correct arrangement as an error until it is switched off.
+Exclude nested types, whose fully-qualified names differ and which are legal and common. Where a
+platform's compiler cannot run on the development machines, treat this check as owed a local gate
+rather than delegated to CI, and judge the gate by whether it runs in the pre-push path.
+
+**False positives.** The same name declared in two different modules is correct and frequently
+deliberate, particularly for parallel applications sharing a codebase. Nested types under distinct
+parents are distinct types. A type and an extension of it are not duplicates, and neither is a name
+re-declared inside a conditional compilation block where only one branch is ever compiled for a
+given target — verify the branches are genuinely exclusive before dismissing it, since overlapping
+conditions reintroduce the defect.

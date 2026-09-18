@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1117,
+ "rule_count": 1118,
  "sections": [
   {
    "id": "A",
@@ -3739,7 +3739,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "EE:1",
@@ -3800,6 +3800,10 @@
     {
      "id": "EE:15",
      "title": "A connection is tiered into probationary and established, but the only thing that promotes it is an action the probationary timeout prevents, so every slow-starting real session is collected as if it were abandoned"
+    },
+    {
+     "id": "EE:16",
+     "title": "The bridge closes the user's transport before it asks the carrier to end the session, so the carrier's stream-ended continuation races the completion and a finished user hears the abandonment script"
     }
    ]
   },

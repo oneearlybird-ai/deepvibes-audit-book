@@ -220,3 +220,37 @@ time-to-first-work with margin, where that margin is documented and measured rat
 Protocols whose clients reliably re-establish on rejection, verified against the client rather
 than asserted, since there the failure costs one retry rather than the session. Registries whose
 entries are cheap to rebuild and carry no session-scoped state.
+
+## EE:16 — The bridge closes the user's transport before it asks the carrier to end the session, so the carrier's stream-ended continuation races the completion and a finished user hears the abandonment script
+
+**Statement.** A bridge that relays a carrier's media stream to an upstream service has two moves to
+make when the upstream ends the session by design: end the carrier-side session (a control-plane
+request) and close the media stream (a data-plane socket). When the socket is closed first, the carrier
+observes a stream that ended while the session is still up and, by its own contract, invokes the
+continuation configured for a stream that stopped mid-session — which is the bridge's recovery path
+for an abandoned session. The completion request lands milliseconds later, but the continuation has
+already chosen what the user hears. Every flag the completion branch checks was true; the outcome is
+decided by order, not by state. The signature is a normal close code on the upstream leg, an error-class
+close on the user's leg, and the carrier's stream-status callback reporting an error with the session
+still in progress, all within a few hundred milliseconds. The recovery continuation, doing its job,
+plays the disconnection apology to a user whose interaction just finished, and if it logs at error
+level it feeds the outage alarm with a healthy session. A second cost hides in the same order: the
+upstream closes as soon as it has SENT its last words, not when the user has heard them, so closing
+the socket on the upstream's close also cuts the end of the goodbye.
+
+**Detect.** In the teardown code, find where the completion request is issued and where the
+user-facing socket is closed, and establish which runs first on the normal-completion path; a
+completion request issued from the socket's own close handler is the defect by construction. Correlate
+on real sessions: upstream normal close → carrier stream-status error → carrier continuation with the
+session still in progress → completion acknowledged; that ordering is the finding. Check whether audio
+queued for playout is still unplayed when the upstream closes. The correct sequence waits for playout,
+issues the completion while the stream is open, lets the carrier close the stream, and closes it from
+the bridge side only when the completion could not be made or the carrier did not act within a bounded
+grace.
+
+**False positives.** Carriers whose stream-ended continuation is documented not to fire once the session
+itself has ended, verified against the carrier's behaviour rather than assumed; bridges that already
+issue the completion before any socket close and close the socket only as a fallback; sessions ended by
+the user, where the carrier ends the session itself and the continuation reports it as ended; the
+abandonment path being a silent hangup rather than an announced failure, which turns the race into a
+logging defect rather than a user-facing one.

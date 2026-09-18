@@ -866,3 +866,32 @@ same shape as one that skipped an ineligible recipient.
 off — the reference should then be absent too, not dangling. Classes the provider creates lazily on
 first use. References to objects owned by another account or team, where existence is that owner's
 gate.
+
+## DD:38 — A plane outside the primary configuration store's reach has its own way of receiving identifiers, but only the primary plane's rule is written, so the next function copies the wrong plane's pattern and the gate goes red on the trunk
+
+**Statement.** An estate resolves resource identifiers (roles, topics, tables, account ids) through
+one configuration plane, and a static gate enforces that no function reads such an identifier as a
+loose string from its environment. A second plane exists that the configuration store cannot reach —
+the control account that watches the cells, a build account, a tooling account — and its functions
+receive their identifiers another way, typically one typed configuration document per concern
+rendered by infrastructure and validated at the function's seam. That second convention is real,
+reviewed and correct, but it was established by the first function to need it and never written down
+as a rule. The next author in that plane knows only the primary rule, which they cannot follow (there
+is no store to resolve through), so they fall back to the pattern the rule was written against: one
+bare identifier per environment variable. The gate refuses it, the trunk goes red on a lane that only
+the full verifier suite runs, and the function ships and runs anyway because nothing between merge
+and deploy runs that suite. The defect is not the author's: a rule that says "resolve through the
+store" without saying what a plane without the store does is a rule with a hole exactly the shape of
+the second plane.
+
+**Detect.** List every account or plane where the primary configuration store is absent and find
+how its functions get identifiers; if the answer differs from the primary rule, look for the sentence
+that says so and the check that enforces it. A gate that refuses by name pattern (suffixes like
+`_ARN`, `_ACCOUNT_ID`) will pass the second plane's documents by luck and fail its next function by
+luck; that asymmetry is the signal. Run the full verifier suite on the trunk, not the landing gate:
+a check that is red only there has been red since the change that tripped it.
+
+**False positives.** A second plane that genuinely resolves through the same store (cross-account
+read of the configuration document) and simply forgot to; a function that is a one-off test fixture
+outside every plane; an identifier that is runtime-owned rather than estate-owned (the platform's own
+region, function name or tracing variables).

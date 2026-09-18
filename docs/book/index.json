@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1118,
+ "rule_count": 1119,
  "sections": [
   {
    "id": "A",
@@ -3582,7 +3582,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "DD:1",
@@ -3731,6 +3731,10 @@
     {
      "id": "DD:37",
      "title": "The configuration document names a provider-side object whose creation requires a third-party credential the deployment pipeline may not hold, so no unit declares it, nothing ever asserts it exists, and its permanent absence surfaces only as a per-item error inside a path that reports success"
+    },
+    {
+     "id": "DD:38",
+     "title": "A plane outside the primary configuration store's reach has its own way of receiving identifiers, but only the primary plane's rule is written, so the next function copies the wrong plane's pattern and the gate goes red on the trunk"
     }
    ]
   },

@@ -290,3 +290,31 @@ drop at the group.
 **False positives.** Workloads that reach the service through a NAT by design; groups that carry a
 customer-managed prefix list which includes the gateway's ranges; a subnet with no gateway route,
 which is C:5, not this.
+
+## C:30 — The gateway's specification is imported in merge mode so that other stacks may attach to it, which makes the specification append-only: a path deleted from the contract stays live forever and nothing reconciles the difference
+
+**Statement.** An API gateway takes its shape from a specification document rendered by the
+infrastructure code, and the import is configured to MERGE rather than overwrite, for a real reason:
+other stacks attach their own paths to the same gateway out of band, and an overwrite would delete
+them on every apply. The trade is never written down. Merge can create a path and update one, and it
+cannot remove one, so the specification stops describing the gateway and becomes an append-only log
+of everything ever published to it. A retirement therefore looks complete and is not: the path leaves
+the generator source, the rendered document, the handler's route table, the vendored client
+manifests and every consumer, the apply replaces the deployment and the stage picks it up, every gate
+passes — and the path is still there, still authenticated, still pointed at the same backend. Whether
+that is harmless depends on the backend: a handler that no longer matches the route answers a method
+error and nothing is written, while a handler whose dispatch still carries the code keeps serving it.
+The residue accumulates silently, one path per retirement, and the only way to see it is to ask the
+gateway what it has rather than to read what the contract says.
+
+**Detect.** Read the import mode. Where it is merge, treat every deletion from the specification as
+unverified until the live gateway is listed: enumerate the deployed resources and methods and diff
+them against the operations the rendered document declares, and expect the live set to be a superset.
+Do this after an apply that removes a path, not before. Grade the residue by what the backend does
+with it — list the handler's route table and check whether the retired path still resolves — because
+a hollow path and a live one are the same finding at very different severities. Where other stacks
+genuinely attach paths, they are the exemption list for a reconciler, not a reason to skip one.
+
+**False positives.** Gateways imported in overwrite mode, where a deletion really does delete;
+estates where every path in the gateway comes from the one document and the merge setting is
+vestigial; a deletion whose apply has not yet run, which is lag rather than this mechanism.

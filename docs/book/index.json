@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1123,
+ "rule_count": 1124,
  "sections": [
   {
    "id": "A",
@@ -343,7 +343,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "C:1",
@@ -460,6 +460,10 @@
     {
      "id": "C:29",
      "title": "An egress-locked security group that names its endpoint security groups but not the gateway endpoint's prefix list times out on every call to that service; the route is there, the packets die at the group, and the failure reads as an unreachable public address"
+    },
+    {
+     "id": "C:30",
+     "title": "The gateway's specification is imported in merge mode so that other stacks may attach to it, which makes the specification append-only: a path deleted from the contract stays live forever and nothing reconciles the difference"
     }
    ]
   },

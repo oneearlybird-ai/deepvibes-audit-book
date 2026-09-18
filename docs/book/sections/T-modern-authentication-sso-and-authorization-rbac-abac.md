@@ -629,3 +629,29 @@ production verify paths.
 **Detect.** Read every catch on the path between the credential and the verification decision and classify what each converts a failure into. Any catch that yields the same value as "the requester presented nothing" is the defect; the correct shape distinguishes the two and lets an infrastructure failure surface as a server-side error, so it is counted, alarmed, and retried rather than answered. Verify the grant chain live rather than from IaC: confirm the verifying principal can both read the secret AND decrypt it, since a read permission without the corresponding key permission produces exactly this denial and is a common outcome of least-privilege tightening. Then search the verifier's logs for the catch site's message and bound it in time — a continuing count is a live incident, not a historical one — and check whether any alarm is bound to that message, since by construction no error-rate alarm will see it.
 
 **False positives.** Catches that genuinely distinguish an absent credential from a fetch failure and re-raise the latter; verifiers whose sentinel is consumed by a caller that itself re-classifies the outcome — the caller must be read, not assumed; and deliberate degraded modes in which serving unauthenticated is the documented, alarmed choice, which requires a sanctioning record naming that decision.
+
+## T:40 — A client-side permission hint maps a surface to a capability the server issues for a different purpose, so the hint hides the surface from exactly the members the server would let in
+
+**Statement.** The client paints its navigation from a per-surface permission map so that a
+restricted member is not offered sections they cannot use; the server remains authoritative and the
+map is meant to mirror its route-to-capability table. Two vocabularies coexist in the session
+snapshot: per-scope grants (view or edit on a data area) and account-level capabilities (manage
+members, manage billing) that the snapshot exposes under a tab-like name for convenience. A new shell,
+written by analogy from the labels, maps a data surface — a staff roster, a schedule — to the
+account-level name because the words match, while the server gates that surface's routes under the
+data-area grant. The hint now hides the surface from every member who holds the grant but not the
+account capability, which is the ordinary invitee, and shows it to administrators, who see everything
+anyway, so the mistake is invisible to whoever tests it. Nothing fails: the server would have allowed
+the request, and the client never makes it. The inverse of painting everything for everyone, and the
+same root: a map written from labels instead of from the server's table.
+
+**Detect.** For each entry in a client permission map, find the routes the surface calls and the
+capability the server's route table names for them; the map's entry must be the grant those routes
+are gated under, and a name that the snapshot derives from an account-level capability is wrong for
+any data surface. Compare sibling shells' maps for the same shared component: two shells mapping one
+component to two different grants is the finding. Test with an invitee holding the data grant and no
+account capability, never with an administrator.
+
+**False positives.** A surface that genuinely composes account-level management (inviting members,
+changing plans) and whose routes the server gates under that capability; a map that intentionally
+narrows below the server (documented as a product choice, not as a mirror of the server's table).

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1120,
+ "rule_count": 1121,
  "sections": [
   {
    "id": "A",
@@ -2416,7 +2416,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "T:1",
@@ -2573,6 +2573,10 @@
     {
      "id": "T:39",
      "title": "The session verifier catches an infrastructure denial while fetching its signing secret and returns \"no session\", converting a platform fault into a silent per-request logout"
+    },
+    {
+     "id": "T:40",
+     "title": "A client-side permission hint maps a surface to a capability the server issues for a different purpose, so the hint hides the surface from exactly the members the server would let in"
     }
    ]
   },

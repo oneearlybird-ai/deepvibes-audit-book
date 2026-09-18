@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1113,
+ "rule_count": 1117,
  "sections": [
   {
    "id": "A",
@@ -1385,7 +1385,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 28,
+   "rule_count": 30,
    "rules": [
     {
      "id": "I:1",
@@ -1498,6 +1498,14 @@
     {
      "id": "I:28",
      "title": "Interface elements assert system state that nothing computes: a status indicator with no data source, an identity panel filled from a literal, a delivery promise behind an empty function"
+    },
+    {
+     "id": "I:29",
+     "title": "An overlay's side is chosen from the target's midpoint rather than from the clearance beside it, so a target taller than the card is covered by the card describing it"
+    },
+    {
+     "id": "I:30",
+     "title": "A summary count is derived from the whole collection while the list beneath it renders one subtype, so the count promises rows the list will not show and the missing subtype is invisible rather than filtered"
     }
    ]
   },
@@ -1506,7 +1514,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "J:1",
@@ -1575,6 +1583,10 @@
     {
      "id": "J:17",
      "title": "A shared cross-app forward list is evaluated ahead of local routing, so any app owning a route of the same name serves the forward instead and its own page can never render"
+    },
+    {
+     "id": "J:18",
+     "title": "A client-boundary directive is added to an existing shared component, and its unchanged imports drag a server-only child across the boundary, so the page renders and then dies on hydration"
     }
    ]
   },
@@ -2569,7 +2581,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 52,
+   "rule_count": 53,
    "rules": [
     {
      "id": "U:1",
@@ -2778,6 +2790,10 @@
     {
      "id": "U:52",
      "title": "A defect is recorded as fixed when its change merges, but the running system keeps the defect until a separate deploy, so the record asserts a safety the estate does not yet have"
+    },
+    {
+     "id": "U:53",
+     "title": "A control character committed into a text source makes the version-control system classify the file as binary, so every later diff, review and history search of that file returns nothing"
     }
    ]
   },

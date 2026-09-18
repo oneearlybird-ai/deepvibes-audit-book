@@ -971,3 +971,32 @@ a stated convention that a separate deployment record tracks rollout is not this
 that second record exists and is itself reconciled. And a lag that is bounded and monitored — a
 freshness signal that reports which consumers still run the old artifact, and is read — converts
 this from a silent exposure into managed rollout, which is ordinary and not a finding.
+
+## U:53 — A control character committed into a text source makes the version-control system classify the file as binary, so every later diff, review and history search of that file returns nothing
+
+**Statement.** Version-control systems decide text-versus-binary by inspecting content, and the
+usual test is the presence of a NUL byte near the start of the file. A source file that acquires one
+— from a placeholder or sentinel written as a raw control character, a mis-encoded literal, an editor
+or generator emitting UTF-16 or a stray byte — is thereafter handled as an opaque blob. It still
+parses, still runs, still passes every test, because the language does not care. What stops working
+is the repository's entire review surface for that file: diffs print one line saying the binary files
+differ, blame and line history are unavailable, the merge driver refuses to merge and escalates every
+concurrent edit to a whole-file conflict, and any text-search tool that skips binaries stops
+returning it — which silently removes the file from grep-driven audits, secret scans, and coverage
+sweeps that enumerate by search. Nothing announces this. The file simply becomes a place where
+changes cannot be seen, and it stays that way until someone notices the odd-looking diff and asks
+why.
+
+**Detect.** Ask the version-control system directly rather than looking at the files: list the tracked
+paths it considers binary and subtract the ones that legitimately are (images, archives, fonts,
+compiled artifacts). Any source extension in the remainder is the finding. Independently, scan tracked
+text-extension files for NUL bytes and for byte-order marks that force a wide encoding. Check the
+history of any hit for how long it has been unreviewable, and re-read the whole file by eye for that
+span, because no diff of it since then has been read by anyone. Prevent recurrence with a commit-time
+check that refuses a NUL byte in a source extension, and prefer a printable sentinel to a control
+character wherever a placeholder token is needed.
+
+**False positives.** Genuinely binary fixtures and test vectors deliberately kept under a source-like
+extension, where the repository declares the intent through its attributes file. Files explicitly
+marked binary in the attributes file for merge-safety reasons with a recorded decision. Generated
+artifacts that are committed by policy and are not reviewed by diff anyway.

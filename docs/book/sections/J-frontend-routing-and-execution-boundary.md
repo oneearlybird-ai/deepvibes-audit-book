@@ -173,3 +173,34 @@ public origin (pricing, legal, docs) even though a stub route exists for metadat
 purposes — confirm the stub is not the real page. Frameworks whose route resolution runs before
 middleware, where the local page wins and the forward is dead configuration rather than a live
 shadow; establish the platform's actual order, do not assume it.
+
+## J:18 — A client-boundary directive is added to an existing shared component, and its unchanged imports drag a server-only child across the boundary, so the page renders and then dies on hydration
+
+**Statement.** In a framework that splits components by an in-file directive, adding that directive
+to an existing component does not only change that file — it redeclares the execution environment of
+everything the file imports, transitively, for that subtree. A component that was rendering a
+server-only child perfectly well keeps the same import line after the directive lands, and the child
+is now compiled into the client bundle, where the server-only machinery it depends on — a filesystem
+read, a server-side document renderer, a database handle, a framework's server-render entry point —
+cannot exist. Whether this fails at build time or at runtime depends on how deeply the server-only
+dependency objects to being bundled, and the worst case is the quiet one: the page prerenders fine on
+the server, ships, and throws in the browser during hydration, so it looks correct to every check
+that renders it and is broken for every person who opens it. The change that causes this is usually
+described as a UI improvement — "add client-side search", "make the list sortable" — and its diff
+shows a directive and some state, not an architectural move, so review reads it as local.
+
+**Detect.** For each file carrying the client directive, walk its import graph and check every
+transitive module for server-only entry points — the framework's explicit server export path, direct
+filesystem or process access, secrets clients, ORM handles. The framework's own server-only import
+guard catches some of these at build and none of the ones that merely misbehave at runtime, so do not
+treat a green build as the answer. Date the directive: run the blame on the directive line, then open
+every page that mounts the component and exercise it in a browser with the console open, because
+hydration failure is invisible to a server-rendered HTML fetch, which is what most availability
+checks perform. The fix is to keep the server-only child on the server and hand its rendered output
+down as a prop or slot, not to make the child a client component.
+
+**False positives.** Children that merely look server-flavoured but are environment-neutral (pure
+formatting, presentational components over plain data). Frameworks or build setups that fail the
+build on any server-only import from a client module, where the class cannot reach production.
+Components whose server-only import is behind a lazily-evaluated server-side branch the client bundle
+provably tree-shakes, demonstrated by reading the emitted bundle rather than assumed.

@@ -290,3 +290,59 @@ do not encode status). Deliberately static demo, storybook, or fixture surfaces 
 in production. Elements whose single value is genuinely invariant for this deployment and is labelled
 as such. Loading skeletons and optimistic states that are explicitly transitional and reconcile to a
 real value.
+
+## I:29 — An overlay's side is chosen from the target's midpoint rather than from the clearance beside it, so a target taller than the card is covered by the card describing it
+
+**Statement.** A coach mark, tooltip, popover or spotlight card must dock somewhere that does not
+cover the element it is pointing at. The cheap rule is a single comparison against the viewport: if
+the target's centre sits in the lower part of the screen, put the card at the top, otherwise at the
+bottom. The midpoint is a proxy for "is there room below", and it is only a valid proxy while
+targets are small relative to the screen. A target that occupies a large fraction of the viewport
+has its midpoint near the middle by construction, so the comparison answers from the target's SIZE
+rather than from any room that exists, and it will confidently send the card to the side the target
+already fills. The result is the exact failure the component exists to prevent — the narration
+sitting on top of the thing being narrated — and it appears only on the largest targets, which are
+usually the most important steps. Because the rule reads as geometric and is often inherited from a
+sibling platform where the surfaces happened to be smaller, review passes it: the arithmetic is
+right, the quantity is wrong.
+
+**Detect.** Read the placement function and ask what it compares. Any branch whose only input is the
+target's centre, top or bottom coordinate against a viewport fraction is structurally guilty; a
+correct one subtracts the target's rect from the viewport and compares the remaining space on each
+side against the card's own measured height. Reproduce by walking the flow on the smallest supported
+screen and noting every step whose target exceeds roughly half the viewport in the placement axis —
+those are where the proxy and the truth diverge. Confirm the fix by checking that a target too large
+to dodge on either side falls through to a defined degraded presentation (dimmed target, card over a
+scrim, or scroll-to-fit) rather than silently to whichever branch the comparison happened to pick.
+
+**False positives.** Placement engines that measure clearance and use the midpoint only to break a
+tie when both sides fit. Flows whose targets are bounded small by construction (icon buttons, single
+form rows) and are enforced so by a gate. Deliberate over-target placement where the card is a
+confirmation OF the target rather than a description of it, and the target is not meant to stay
+readable.
+
+## I:30 — A summary count is derived from the whole collection while the list beneath it renders one subtype, so the count promises rows the list will not show and the missing subtype is invisible rather than filtered
+
+**Statement.** A surface shows a heading, a count, or a set of bucket chips over a list. The count is
+computed from the collection the screen loaded; the list is rendered from that collection after a
+filter the count never sees — most often a type narrowing that was correct when the collection held
+only one kind of thing and became wrong when a second kind was added to it. The two are now derived
+from different sets and disagree on screen, which is itself the bug report: a user reads "All 6" over
+a list of one. The deeper harm is not the arithmetic but the silence. The rows the filter removed are
+not shown as excluded, greyed, or summarised — they are simply absent, so the surface whose entire
+subject is that collection asserts by omission that the other subtype does not exist. Nothing fails,
+no empty state renders, and the only signal is a number nobody trusts anyway.
+
+**Detect.** For every count, badge, or bucket chip on a list surface, find the expression that
+produces it and the expression that produces the rendered rows, and check that both read the same
+array after the same filters. A count taken from the store while the list maps a narrowed local is
+the pattern. Then enumerate the subtypes the underlying collection can hold — from the model, the
+schema, or the API contract, not from the screen — and confirm each one has a rendering; a subtype
+with no branch in the row renderer is invisible by construction. The sibling platform that renders
+the same collection is the fastest oracle: if it shows kinds this one does not, this one is the
+narrowed copy.
+
+**False positives.** Counts deliberately labelled as totals of a wider set than the visible page
+("6 of 40"), where the relationship is stated. Lists with an explicit, visible filter control whose
+state explains the difference. Virtualised or paginated lists where the count is of the query and the
+rows are of the page, and the surface says so.

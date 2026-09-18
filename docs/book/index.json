@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1119,
+ "rule_count": 1120,
  "sections": [
   {
    "id": "A",
@@ -4468,7 +4468,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 62,
+   "rule_count": 63,
    "rules": [
     {
      "id": "NN:1",
@@ -4717,6 +4717,10 @@
     {
      "id": "NN:62",
      "title": "A debt baseline keyed by file path and line number invalidates on every refactor, and the wall of false positives it then reports is the pressure that gets a real finding re-baselined away"
+    },
+    {
+     "id": "NN:63",
+     "title": "Every static scanner carries its own comment stripper, and a stripper that does not walk strings treats the first glob literal as an unclosed comment, so the scan silently reads only the top of the file"
     }
    ]
   },

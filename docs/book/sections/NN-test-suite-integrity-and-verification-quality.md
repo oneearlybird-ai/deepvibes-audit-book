@@ -1550,3 +1550,29 @@ short-lived baseline created to adopt a checker and burned down within a release
 refactor and does not need re-keying. And a genuinely new violation surfacing alongside a rename is
 not a false positive just because it appeared in the same change; the content diff is what tells the
 two apart, which is the whole reason to do it.
+
+## NN:63 — Every static scanner carries its own comment stripper, and a stripper that does not walk strings treats the first glob literal as an unclosed comment, so the scan silently reads only the top of the file
+
+**Statement.** A static gate reads source to enforce a rule and first strips comments so a
+commented-out line cannot satisfy or violate it. Written inline, the stripper is a regex that removes
+`/* ... */` wherever the two tokens occur. Source is full of `/*` that is not a comment: every S3
+`bucket/*` ARN, every `secret:${root}/*`, every glob in a policy or a path. From that character the
+regex looks for the next `*/`, which may be another glob a hundred lines later or may never come. In
+the first case a large block of live code is deleted before the rule runs; in the second the regex
+matches nothing and the file is read whole, which is why the defect stays invisible: it depends on
+whether a second glob happens to follow. The gate reports a count, the count is wrong by however many
+declarations sat in the blanked span, and nothing compares it to a second derivation. Because every
+gate copied the same idiom, the estate has one defect in twenty places, each with its own slightly
+different regex, and fixing one teaches none of the others.
+
+**Detect.** Grep the gate scripts for the block-comment regex idiom and count the copies; more than one
+is the finding by construction. For each, take the file set it scans and, with a real scanner that
+walks strings and template literals, list every `/*` that is NOT a comment and measure how many
+non-space characters the regex would have blanked from there; any nonzero span is a blind spot, and a
+rule that would have matched inside it is a missed finding. Re-derive each gate's headline count by a
+second method (a loose per-line grep) and treat disagreement as the proof.
+
+**False positives.** A scanner that parses the language (tokenizer or AST) rather than matching
+tokens; a gate whose scanned files provably contain no `/*` outside comments (state the evidence, and
+expect it to rot); a stripper that only removes a block comment opening at the start of a line, which
+narrows the exposure to the rare glob that begins a line.

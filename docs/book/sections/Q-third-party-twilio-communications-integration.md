@@ -152,3 +152,37 @@ surrounding state machine is the finding.
 always-on staffing); systems where the transferee runs a client that itself provides screen-pop
 and accept (the affordance exists, just elsewhere); internal-only transfers between
 always-staffed desks.
+
+## Q:18 — The integration pays the provider to classify who answered and the verdict rides the very callback that asks what to do next, but the handler branches on everything except that field
+
+**Statement.** An outbound communications integration asks the carrier to classify the answering
+party — answering machine versus person, fax, no answer — and the carrier does the work before it
+requests instructions, delivering its verdict as an ordinary parameter on that request. The request
+handler reads the identifiers it needs, validates the signature, resolves the session, and returns the
+same instructions it would return for a person, because nobody ever added the branch. The
+classification is therefore bought and discarded: the automated agent delivers its script to a
+recording, waits out its turn timeouts, and reports a terminal outcome that the business system stores
+as a real interaction with a human. Downstream the damage compounds in two directions: the recorded
+outcome is false, and where the orchestration has a no-contact branch it is never taken, so the task
+instead strands until its timeout, whose recovery path commonly redials — the same recording, again.
+What makes this hard to see in review is that every piece is present and correct in isolation: the
+detection is enabled, the orchestration has the branch, the terminal vocabulary includes the value.
+Only the one line that reads the parameter is missing, and no test covers a state the test author
+never triggers.
+
+**Detect.** For each provider classification the integration requests, find the field the provider
+uses to deliver it and grep the handler for that exact field; absence is the finding, regardless of
+how complete the downstream handling looks. Trace the value end to end as a chain of four independent
+agreements and require each: the request enables the detection, the handler reads the verdict, the
+resume/callback API accepts the outcome name the handler sends, and the orchestration routes that
+name rather than falling to a default. Check where the branch sits relative to resource acquisition —
+a session token minted or a media stream opened before the verdict is read means a machine still costs
+a live session. Confirm the no-contact path is reachable in the provider's own logs rather than in the
+code: a terminal-state histogram with zero machine outcomes across months of outbound calls is the
+evidence.
+
+**False positives.** Integrations that deliberately treat a machine as a person because leaving a
+message IS the product (appointment reminders designed for voicemail); providers that deliver the
+classification asynchronously after the instruction request, where the correct branch lives in the
+status callback instead and the handler genuinely cannot know; flows whose orchestration has no
+distinct no-contact behaviour to reach, where reading the verdict would change nothing.

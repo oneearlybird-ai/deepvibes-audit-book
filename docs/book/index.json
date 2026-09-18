@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1121,
+ "rule_count": 1122,
  "sections": [
   {
    "id": "A",
@@ -2165,7 +2165,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "Q:1",
@@ -2234,6 +2234,10 @@
     {
      "id": "Q:17",
      "title": "Live-call transfer executed blind: no availability signal, no context handoff, no accept path for the transferee"
+    },
+    {
+     "id": "Q:18",
+     "title": "The integration pays the provider to classify who answered and the verdict rides the very callback that asks what to do next, but the handler branches on everything except that field"
     }
    ]
   },

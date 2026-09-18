@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1122,
+ "rule_count": 1123,
  "sections": [
   {
    "id": "A",
@@ -4476,7 +4476,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 63,
+   "rule_count": 64,
    "rules": [
     {
      "id": "NN:1",
@@ -4729,6 +4729,10 @@
     {
      "id": "NN:63",
      "title": "Every static scanner carries its own comment stripper, and a stripper that does not walk strings treats the first glob literal as an unclosed comment, so the scan silently reads only the top of the file"
+    },
+    {
+     "id": "NN:64",
+     "title": "The broad verification lane is optional and in arrears, so its checks rot in the dark and the arrears become self-sustaining: nothing can be certified until the suite is green, and the suite stays red because nothing is certified"
     }
    ]
   },

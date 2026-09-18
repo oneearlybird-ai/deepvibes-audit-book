@@ -1576,3 +1576,35 @@ second method (a loose per-line grep) and treat disagreement as the proof.
 tokens; a gate whose scanned files provably contain no `/*` outside comments (state the evidence, and
 expect it to rot); a stripper that only removes a block comment opening at the start of a line, which
 narrows the exposure to the rare glob that begins a line.
+
+## NN:64 — The broad verification lane is optional and in arrears, so its checks rot in the dark and the arrears become self-sustaining: nothing can be certified until the suite is green, and the suite stays red because nothing is certified
+
+**Statement.** A repository runs a narrow check lane at admission and a broad one before deployment,
+and the broad lane is a precondition: the deploy tool runs the whole suite once as a shared preflight
+and refuses to touch a single unit until it passes. Because the fast path exists and is sanctioned —
+ship now, certify later, with the debt recorded honestly — the broad lane goes unrun for weeks, and
+the recorded debt grows to most of the estate. Nothing warns, because the debt ledger is working as
+designed and every individual change passed everything that ran. Meanwhile each change quietly
+invalidates checks only the broad lane runs: a file moves and a check still reads the old home, a
+formatter realigns an assignment and a check matching by column stops matching, a debt baseline keyed
+by line text re-fingerprints when lines are reflowed, one change outlaws a pattern that another check
+still requires. None of these are caught, because the only lane that would catch them is the one in
+arrears. The two failures then compound into a deadlock the operator meets only when they try to pay
+the debt down: the suite must be green before anything certifies, and it has been red for as long as
+nothing certified. The first attempt to clear the arrears therefore fails at the preflight and can
+look like a much larger breakage than it is — in the observed case, six red checks from five clean
+landings inside one day, every one attributable to that day's own work.
+
+**Detect.** Count the checks each lane runs and divide: a narrow lane naming a small fraction of the
+checks by hand, beside a broad lane discovering all of them by glob, is the exposure, and the gap is
+the set of checks that can only rot. Measure the age of the broad lane's last green run — not its
+last edit — and read the debt ledger for how many units owe it. Then run the broad lane on the trunk
+before you need it: if it fails, every failure it reports was already there and undiscovered, so
+attribute each one to its introducing commit rather than calling any of them pre-existing. A check
+that has to be repaired to describe the system as it is today, rather than to catch a real defect,
+is a check that has been unrun since the system changed under it.
+
+**False positives.** Repositories whose broad lane is genuinely advisory, with no gate depending on
+it; suites whose extra checks read deployed state and legitimately cannot run at admission, where
+the right split is by what the check reads rather than by which list it is on; a lane red for one
+externally-caused reason, such as an expired credential, rather than accumulated drift.

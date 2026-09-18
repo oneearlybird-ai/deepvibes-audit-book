@@ -1767,3 +1767,33 @@ low rate is ordinary contention and belongs to capacity, not to this pattern, wh
 self-inflicted and correlated with a sweep. And a rule that correctly declines to publish any
 verdict at all when its evidence is unavailable is not this defect: the finding requires that the
 unreadable state be published as a violation.
+
+## G:75 — A compliance rule publishes its verdicts under an identifier the recorder does not use for that resource, so a deleted resource's verdict is never superseded and the ghost is counted in every report thereafter
+
+**Statement.** A continuous-compliance recorder identifies each resource by one identifier — for
+some resource types a name, for others an opaque id, rarely the full ARN — and a custom rule may
+publish an evaluation under any string it likes. The rule's scheduled sweep enumerates the fleet
+through the service's own API and publishes each verdict under the identifier that API returns,
+typically the ARN; its change-triggered path receives the recorder's configuration item and answers
+under the identifier that item carries, typically the name. Both are accepted, both appear in the
+rule's results, and for a live resource the disagreement is invisible because both verdicts say the
+same thing. It becomes visible only at deletion: the recorder delivers a deletion item under its own
+identifier, the rule correctly answers not-applicable under that identifier, and the sweep's verdict
+under the other identifier is never touched again, because the sweep only ever enumerates resources
+that still exist. The stale verdict then outlives its subject indefinitely, still non-compliant, still
+counted by every consumer that reads the rule's results without checking that the resource exists,
+and it can only be cleared by an operator who notices it and deletes the rule's evaluation results
+wholesale.
+
+**Detect.** List the rule's non-compliant results and, for each, check that the identifier resolves
+to a live resource through the service's own API; any that does not is a ghost. Then compare the
+identifier shape the sweep publishes with the identifier the recorder's inventory returns for that
+resource type — if they differ, every deletion since the rule was deployed has left a ghost, and the
+count of ghosts should match the count of deletions the recorder has seen. The rule's own log usually
+shows the split directly: a not-applicable evaluation submitted under one identifier while the
+compliance details still carry a non-compliant verdict under another for the same resource.
+
+**False positives.** A recorder that has not yet delivered the deletion item is a delay, not this
+defect; wait one recording interval before filing. A resource type the recorder does not record at
+all can only be evaluated by a sweep, so nothing will ever supersede its verdicts on deletion and the
+rule must prune them itself — that is a different rule and a documented limitation, not a mismatch.

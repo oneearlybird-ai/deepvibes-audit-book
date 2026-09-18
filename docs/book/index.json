@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1112,
+ "rule_count": 1113,
  "sections": [
   {
    "id": "A",
@@ -995,7 +995,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 74,
+   "rule_count": 75,
    "rules": [
     {
      "id": "G:1",
@@ -1292,6 +1292,10 @@
     {
      "id": "G:74",
      "title": "A fleet-wide re-evaluation of a compliance rule exhausts the control-plane rate limit with its own reads, so the sweep manufactures the blind spots it then reports as violations"
+    },
+    {
+     "id": "G:75",
+     "title": "A compliance rule publishes its verdicts under an identifier the recorder does not use for that resource, so a deleted resource's verdict is never superseded and the ghost is counted in every report thereafter"
     }
    ]
   },

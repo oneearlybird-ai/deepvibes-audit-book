@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1124,
+ "rule_count": 1125,
  "sections": [
   {
    "id": "A",
@@ -2593,7 +2593,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 53,
+   "rule_count": 54,
    "rules": [
     {
      "id": "U:1",
@@ -2806,6 +2806,10 @@
     {
      "id": "U:53",
      "title": "A control character committed into a text source makes the version-control system classify the file as binary, so every later diff, review and history search of that file returns nothing"
+    },
+    {
+     "id": "U:54",
+     "title": "The workflow's one absolute prohibition names a state that no status surface can see, so the rule is unenforced by construction and the forbidden state accumulates for months in plain sight"
     }
    ]
   },

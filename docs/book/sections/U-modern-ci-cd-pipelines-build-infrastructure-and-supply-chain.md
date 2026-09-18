@@ -1000,3 +1000,33 @@ character wherever a placeholder token is needed.
 extension, where the repository declares the intent through its attributes file. Files explicitly
 marked binary in the attributes file for merge-safety reasons with a recorded decision. Generated
 artifacts that are committed by policy and are not reviewed by diff anyway.
+
+## U:54 — The workflow's one absolute prohibition names a state that no status surface can see, so the rule is unenforced by construction and the forbidden state accumulates for months in plain sight
+
+**Statement.** A team bans a specific working-tree operation outright, usually after it destroyed
+verified work, and builds a sanctioned replacement so nothing ever needs it. The ban is written in
+the governing document, repeated in the tooling's own comments, and honoured by every code path the
+team controls. What nobody notices is that the banned operation leaves its residue in a place none of
+the team's status surfaces read: the residue is not a modification, not an untracked file and not an
+unpushed commit, so the tree it sits in reports as clean, the deployment firewall that asserts "clean
+and level with origin" passes, and the pipeline's own inventory of every checkout says nothing. The
+prohibition is therefore enforced only by the discipline of whoever remembers it, and the one state it
+exists to prevent is the one state the team cannot observe. Violations arrive from outside the
+sanctioned paths — a tool's automatic behaviour, a command run by hand, another agent's session — and
+then simply sit, sometimes for months, holding work that is neither landed nor visibly pending. The
+irony is usually exact: the scar that motivated the ban says a clean tree is not evidence nothing was
+lost, and the ban is enforced by looking at a clean tree.
+
+**Detect.** For each absolute prohibition in the governing documents, ask what the forbidden state
+looks like on disk and which command would reveal it; if no tooling runs that command, the rule is
+unenforced regardless of how often it is restated. Run the revealing command yourself across every
+checkout the team manages, not just the one in front of you — violations cluster in the repositories
+nobody is currently working in. Treat an automatically-created entry as a second finding: it proves a
+path outside the sanctioned tooling, with the tool's default behaviour still enabled. When residue is
+found, grade each item before proposing anything: whether its content is already in the trunk,
+whether it targets paths that still exist, and whether the defect it addressed was fixed by different
+code — superseded is the common case and is still a finding about the rule.
+
+**False positives.** Prohibitions that are genuinely advisory; states the team's tooling cannot
+observe because they live on a developer's machine outside any managed checkout; a single recent
+entry created and consumed inside one session, where the window is minutes rather than months.

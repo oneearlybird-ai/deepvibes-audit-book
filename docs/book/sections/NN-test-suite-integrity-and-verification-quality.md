@@ -1608,3 +1608,41 @@ is a check that has been unrun since the system changed under it.
 it; suites whose extra checks read deployed state and legitimately cannot run at admission, where
 the right split is by what the check reads rather than by which list it is on; a lane red for one
 externally-caused reason, such as an expired credential, rather than accumulated drift.
+
+## NN:65 — A debt baseline re-keyed onto a hash of the offending LINE still re-fires whenever a reformat moves the violation across line boundaries, so a change that introduced nothing reports as new debt
+
+**Statement.** The remedy for a baseline keyed by path and line is to key it by content instead, and
+the cheapest content to hash is the offending line's own text. That survives the failure the
+previous rule describes — inserting or deleting lines above no longer shifts anything, and the
+entries stay attached to their violations through an ordinary edit. It does not survive a reformat.
+The unit being hashed is a line, but the unit the author edits is a statement, and the two come
+apart the moment a collection is expanded or collapsed: a list rendered on one line and then split
+one element per line contains exactly the same violations afterwards, each now on a line whose text
+differs from the one recorded. The formatter is often not even the author's choice — a canonical
+formatter run by the gate itself, or an unrelated refactor that lengthened a neighbouring token past
+the wrap width, is enough. The baseline reports a wall of additions for a change that introduced
+nothing, the gate blocks, and the engineer is returned to precisely the position the re-key was
+supposed to end: a large false count whose obvious remedy is the blanket re-baseline that absorbs
+anything hiding inside it.
+
+The trap is that the re-key looks proven. The standard proof — snapshot, regenerate, diff on content
+with the positional parts stripped — is run at the moment of the re-key, when no reformat has
+happened, so it reports zero added and everyone concludes the key is refactor-proof. It is
+refactor-proof against the one refactor that was in the room.
+
+**Detect.** Read what the hash is computed over, not merely that a hash is used. A digest whose
+input includes the whole line, or the line plus its path, is line-shaped and will re-fire on
+reflow; a digest over the offending token plus its logical subject — the resource, the rule, the
+declaration it sits in — will not. Test it rather than reasoning about it: take a real baselined
+file, run the project's own formatter or manually expand one multi-element collection containing a
+baselined violation, regenerate, and count the additions. Any addition at all is the defect, because
+nothing was introduced. In an existing estate the signature is a gate that blocks immediately after
+a formatting-only or mechanical-rename commit, reporting a count in the tens with no corresponding
+new code — check the diff for changed line boundaries before believing any of it.
+
+**False positives.** A reformat that genuinely changes the violating text — a literal edited to a
+different literal while being moved — is a new violation and should be reported. A baseline whose
+entries are expected to be short-lived, regenerated as part of the debt-paydown workflow rather than
+carried across refactors, has no stability requirement to fail. And a checker that reports additions
+after a reflow but does not gate on them is noisy rather than dangerous, since it cannot create the
+pressure to re-baseline.

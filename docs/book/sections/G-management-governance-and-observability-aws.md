@@ -1797,3 +1797,47 @@ compliance details still carry a non-compliant verdict under another for the sam
 defect; wait one recording interval before filing. A resource type the recorder does not record at
 all can only be evaluated by a sweep, so nothing will ever supersede its verdicts on deletion and the
 rule must prune them itself — that is a different rule and a documented limitation, not a mismatch.
+
+## G:76 — A throttling remedy hardens the one call the incident named and leaves its neighbours on the same hot path at library defaults, so the next stampede fails beside the fix — and where the neighbours sit outside the handler's degraded-result catch, a recorded degradation becomes an unrecorded dead invocation
+
+**Statement.** An incident names a call: the evidence read in the middle of a handler, the one whose
+throttles were counted. The remedy is written for that call — a generous attempt budget, backoff
+measured in seconds, a cache so the same subject is read once per container — and it is proven
+against the very sweep that produced the incident, which now runs clean by the metric the incident
+was measured in. What the remedy does not do is change the load. The sweep still fans the whole
+population out at once and still consumes the same account-wide control-plane quota, so the quota is
+still exhausted; only the identity of the call that loses has changed. The handler's other
+control-plane calls — the fetch that resolves the subject before the hardened read, the publish that
+records the verdict after it, a registry lookup during initialisation — were never in the incident's
+frame and remain on the client library's defaults, typically three attempts a few hundred
+milliseconds apart. They now absorb the stampede the hardened call used to.
+
+The relocation is not neutral, and this is what makes the pattern worth its own rule. A remedy is
+usually written into the part of the handler that already has a degraded-result path, because that
+is where the previous fix taught everyone to look: the hardened read is wrapped in a catch that
+turns an unreadable dependency into an explicit incomplete verdict, which is recorded, annotated and
+countable. The neighbouring calls are not inside that catch. A throttle there propagates out of the
+handler, the invocation fails, and the platform records a generic error with no verdict attached to
+any subject. So the same underlying exhaustion that used to produce a loud, wrong, countable answer
+now produces no answer at all — and every dashboard built during the first incident reads clean,
+because each was keyed to the annotation the hardened path emits. The control appears repaired at
+exactly the moment its failures stopped being attributable.
+
+**Detect.** Never accept a throttling fix proven only in the vocabulary of the incident it closed.
+Take the platform's own invocation-error count for the handler over the window and compare it with
+the count of the remedy's degraded-verdict annotations: the fix is genuine only when both fall.
+Where the annotation count falls to zero while the error count is unchanged or higher, the failures
+were relocated, not removed. Then attribute them: pull the throttle records and group by the
+application stack frame, not by exception type — the frames that are not the hardened function name
+the neighbours, and their share of the total is the size of the miss. Confirm by reading the handler
+for control-plane calls that sit outside the try/catch which produces the degraded result; each one
+is a path on which a transient throttle is fatal. A sweep whose invocation-error rate is a
+double-digit percentage while its compliance data reads complete is this defect recovering behind
+platform-level retries rather than being absent.
+
+**False positives.** A neighbouring call that is genuinely idempotent and retried by the platform
+itself, where the failed invocation is re-driven and the only cost is the error count, is a
+monitoring concern rather than a correctness one — say so, but do not score it as data loss. A
+handler whose every control-plane call was hardened together, where the residual errors come from a
+quota the caller cannot influence, is sized wrong rather than swept wrong. And a first deployment of
+a remedy measured before any subsequent stampede has occurred is unproven, not refuted.

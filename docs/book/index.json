@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1125,
+ "rule_count": 1127,
  "sections": [
   {
    "id": "A",
@@ -999,7 +999,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 75,
+   "rule_count": 76,
    "rules": [
     {
      "id": "G:1",
@@ -1300,6 +1300,10 @@
     {
      "id": "G:75",
      "title": "A compliance rule publishes its verdicts under an identifier the recorder does not use for that resource, so a deleted resource's verdict is never superseded and the ghost is counted in every report thereafter"
+    },
+    {
+     "id": "G:76",
+     "title": "A throttling remedy hardens the one call the incident named and leaves its neighbours on the same hot path at library defaults, so the next stampede fails beside the fix — and where the neighbours sit outside the handler's degraded-result catch, a recorded degradation becomes an unrecorded dead invocation"
     }
    ]
   },
@@ -4484,7 +4488,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 64,
+   "rule_count": 65,
    "rules": [
     {
      "id": "NN:1",
@@ -4741,6 +4745,10 @@
     {
      "id": "NN:64",
      "title": "The broad verification lane is optional and in arrears, so its checks rot in the dark and the arrears become self-sustaining: nothing can be certified until the suite is green, and the suite stays red because nothing is certified"
+    },
+    {
+     "id": "NN:65",
+     "title": "A debt baseline re-keyed onto a hash of the offending LINE still re-fires whenever a reformat moves the violation across line boundaries, so a change that introduced nothing reports as new debt"
     }
    ]
   },

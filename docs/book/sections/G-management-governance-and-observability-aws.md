@@ -1841,3 +1841,94 @@ monitoring concern rather than a correctness one — say so, but do not score it
 handler whose every control-plane call was hardened together, where the residual errors come from a
 quota the caller cannot influence, is sized wrong rather than swept wrong. And a first deployment of
 a remedy measured before any subsequent stampede has occurred is unproven, not refuted.
+
+## G:77 — A static guardrail resolves the operand of the call it audits through a hand-maintained alias map, so the codebase's prevailing accessor idiom resolves to nothing and the empty extraction is published as a positive scope claim
+
+**Statement.** A guardrail that judges code by reading it must first turn each call site's operand
+into a name it can reason about — which table, which bucket, which queue. Source rarely spells that
+operand as a literal, so the analyzer grows a small resolver: a regular expression for the literal
+form, another for an environment variable, and, bridging the two, a hand-written map from the
+identifier names the author happened to see to the resources they stand for. The map is written once,
+against the handful of call sites in front of the author, and it is never wrong in a way anything
+reports — a name missing from it does not raise an error, it resolves to undefined and is dropped.
+Meanwhile the codebase converges on an idiom the author did not anticipate, typically a central
+accessor introduced precisely because hard-coded names were a problem. Every call site written in
+the new idiom resolves to nothing, and the analyzer concludes the component touches no governed
+resource at all.
+
+What makes this worth its own rule is the shape of the verdict, not the miss. The checks downstream
+are written as existential tests over the extracted set, and every one of them is false on the empty
+set, so the component clears each check in turn and the guardrail states the result affirmatively —
+"uses the datastore for ungoverned resources only", "direct client on non-governed resources". That
+sentence is not a silence to be noticed later; it is a positive assertion about the component,
+published into the compliance record, contradicted by the component's own source. A reviewer who
+doubts a component looks it up, reads the clean verdict, and stops. The blindness is strongest
+exactly where the codebase is most consistent, because a house idiom adopted everywhere is invisible
+everywhere, and the few components still written in the old style are the only ones judged at all —
+which makes the guardrail's small population of findings look like a small population of problems.
+
+**Detect.** Never accept the extracted set as the set the code touches. Take the analyzer's own
+resolver — every pattern and every entry of its alias map — and run it across the whole tree, then
+count the call sites of the audited API that resolve to nothing; the ratio, not the absence of
+errors, is the guardrail's reach. Read three of the unresolved call sites in their own source and
+name the resources they reach, then look up those components' published verdicts: a verdict that
+positively claims a narrower scope than the source shows is the defect in its reportable form.
+Cross-check from the permission side, which has no such resolver — a principal holding a grant on a
+governed resource whose component is scored as touching none is the same defect seen from the
+outside. Confirm the direction of the failure by reading what the downstream checks do with an empty
+set: if they clear and the verdict is stated as a fact rather than as unknown, the blindness is
+being published as a pass.
+
+**False positives.** A resolver that reports an unresolved operand as unknown — a distinct warning,
+a coverage gap, a refusal to score — is bounded rather than blind, and its misses are already
+visible; say the reach is narrow, not that the verdict is wrong. A component whose operand genuinely
+cannot be resolved statically because it is chosen at runtime is a limit of static analysis, and the
+correct finding is that no verdict should be published, not that the extraction is incomplete. And an
+alias map that is generated from the same catalog the rest of the system reads, rather than typed by
+hand, cannot drift from the codebase's idiom in this way.
+
+## G:78 — A control detects the sanctioned property by the canonical library that usually provides it, so an equivalent inline implementation is reported as that property's absence
+
+**Statement.** A platform makes a security property available through a library — a scoped client, a
+tagged session, a narrowed credential — and a detective control is written to enforce it. The control
+has to decide, from source, whether a component has the property, and the cheapest reliable signal is
+a call into the library: if the import and the entry point are there, the property is there. That
+inference is sound in one direction only. The library is a way of obtaining the property, not the
+property itself, and a component may obtain it inline — resolving the same principal, assuming the
+same role with the same tags, constructing its client from those credentials — using the same
+platform helpers the library itself calls. The control sees no library call, concludes the property is
+absent, and publishes a violation.
+
+The violation is not merely a false positive, it is a statement of a consequence the code has made
+impossible: the finding says the component's credentials are unscoped when every request it issues is
+signed by the scoped role. This costs more than a wasted triage. The control's population of findings
+now mixes components that really do bypass the property with components that implement it by hand,
+and nothing in the verdict distinguishes them, so the register cannot be worked down — each entry has
+to be re-derived from source by a human, which is the work the control existed to remove. Worse, the
+false entries are indistinguishable from real ones to any process built on top: an exception register
+records them as sanctioned, a dashboard counts them as debt, and a note pointing at a tracking record
+gets written for a defect that does not exist. The control is also now teaching the wrong lesson,
+since the only way to clear the finding is to adopt the library, which may be correct as policy but is
+not what the control claims to be measuring.
+
+**Detect.** Read the control's detector and name the property it claims to test, then name the signal
+it actually tests; when the signal is an import, a module path, or an entry-point call, the gap is
+present by construction and the only question is whether anything occupies it. Find out by searching
+the tree for the property's underlying mechanism rather than the library — the assume-role call, the
+credential construction, the tag that carries the scope — and list the components that have the
+mechanism without the library; each one is a published false verdict. Verify one end to end: read
+every client construction in the component and prove each request is issued on the scoped credential,
+then read the control's live finding for that component and quote the clause it contradicts. Check
+the register built on the control's output too: a false verdict that has acquired an analyst note, a
+suppression, or a tracking reference has propagated past the control into the process, and each of
+those is a second thing to unwind.
+
+**False positives.** A control whose stated purpose is to enforce use of the library itself — as a
+supportability or uniformity policy, declared as such in its own text and its findings' wording — is
+measuring what it says it measures; the inline component is then genuinely non-compliant with a policy
+about implementations, and the finding is correct even though the property is present. An inline
+implementation that differs materially from the library's — a longer credential lifetime, a missing
+tag, no re-assertion of the scope after a caller's options are applied — is not equivalent, and the
+difference, not the absence of the library, is the finding. And a component that constructs any client
+outside the scoped path, even one used on a single code path, does bypass the property and is
+correctly flagged.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1127,
+ "rule_count": 1129,
  "sections": [
   {
    "id": "A",
@@ -999,7 +999,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 76,
+   "rule_count": 78,
    "rules": [
     {
      "id": "G:1",
@@ -1304,6 +1304,14 @@
     {
      "id": "G:76",
      "title": "A throttling remedy hardens the one call the incident named and leaves its neighbours on the same hot path at library defaults, so the next stampede fails beside the fix — and where the neighbours sit outside the handler's degraded-result catch, a recorded degradation becomes an unrecorded dead invocation"
+    },
+    {
+     "id": "G:77",
+     "title": "A static guardrail resolves the operand of the call it audits through a hand-maintained alias map, so the codebase's prevailing accessor idiom resolves to nothing and the empty extraction is published as a positive scope claim"
+    },
+    {
+     "id": "G:78",
+     "title": "A control detects the sanctioned property by the canonical library that usually provides it, so an equivalent inline implementation is reported as that property's absence"
     }
    ]
   },

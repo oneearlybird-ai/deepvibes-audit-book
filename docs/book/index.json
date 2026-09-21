@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1134,
+ "rule_count": 1135,
  "sections": [
   {
    "id": "A",
@@ -4785,7 +4785,7 @@
    "title": "Documentation & Comment Truthfulness",
    "group": "cross-cutting",
    "file": "sections/OO-documentation-and-comment-truthfulness.md",
-   "rule_count": 6,
+   "rule_count": 7,
    "rules": [
     {
      "id": "OO:1",
@@ -4810,6 +4810,10 @@
     {
      "id": "OO:6",
      "title": "The record-keeping tool stamps a lifecycle event the subject never underwent, so a durable record ends by contradicting its own status field"
+    },
+    {
+     "id": "OO:7",
+     "title": "Guidance that activates on a path pattern keeps reading as correct after the tree is restructured, because the file is still there and still true; what changed is that its selector now matches nothing, so the rule silently stops reaching the work it governs"
     }
    ]
   },

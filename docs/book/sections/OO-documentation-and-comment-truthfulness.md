@@ -163,3 +163,51 @@ common — later proof about resolved work is exactly what an append-only histor
 birth or state-transition event is the finding. A store whose history is explicitly unordered, or
 whose events carry no ordering field at all, cannot support this claim; establish that the history
 is chronological before asserting anything about its last element.
+
+## OO:7 — Guidance that activates on a path pattern keeps reading as correct after the tree is restructured, because the file is still there and still true; what changed is that its selector now matches nothing, so the rule silently stops reaching the work it governs
+
+**Statement.** Contextual guidance — area rules, ownership files, review checklists, agent
+instructions, editor and lint overrides scoped by directory — is delivered by a selector, usually
+a path glob in a header block, that decides when the text applies. The selector is the only thing
+binding the guidance to its subject, and it is the one part of the file nobody reads when
+reviewing the guidance, because reviewers read the prose for correctness. A restructure then
+renames the directories the selector names. Nothing fails: the loader is not an error when a glob
+matches zero paths, that is its ordinary quiet outcome for every rule not relevant to the current
+work. The file remains in the tree, correct in every sentence, discoverable by search, and cited
+by other documents. It simply never arrives where the work happens.
+
+This decays worse than a document that goes stale, because the usual signals all point the wrong
+way. Staleness is eventually noticed by someone reading the document beside the code; an
+unreachable document is never read beside the code at all, so its content drifts unchallenged for
+as long as it survives. Meanwhile everyone continues to reason about the rule as though it were in
+force — a later audit will describe it as the most-read statement of its subject, a review will
+decline to repeat its content because the rule already covers it, and a decision will be recorded
+on the assumption that anyone touching that area sees it. Where the selectors of several rules are
+listed together, the damage is uneven and therefore invisible: whoever did the restructure updated
+the selectors of the rules they happened to be exercising and left the rest, so one rule loads
+correctly and its neighbours do not, and the one that loads is the proof everyone cites that the
+mechanism works. The most costly case is a rule carrying a safety constraint — data handling,
+secret scope, a destructive-operation boundary — because the constraint's absence is not visible
+in any output; it is visible only as work done without it.
+
+**Detect.** Do not read the prose. Take each selector literally and resolve it against the tree as
+the loader would: for a path glob, list the paths that actually match, and a match count of zero is
+the finding on its own. Do this for every rule in the set at once and compare — a set whose
+selectors were written together and maintained apart will show some live and some dead, and the
+live ones tell you the restructure happened and was applied partially. Then invert the test, which
+catches the more common half: take the directories where the governed work actually lives today and
+ask which rules a change there would load; a governed area that loads no rule, or loads only a
+neighbour's, is the same defect seen from the other side. Confirm behaviourally rather than by
+reading, since loaders differ: make or simulate an edit in the governed directory and observe which
+guidance is actually delivered. Finally, search the tree and the decision record for statements
+that assume the rule is in force — a finding, review note, or design record that says "the area
+rule covers this" is a second artefact to correct, and its existence dates how long the rule has
+been unreachable.
+
+**False positives.** Selectors deliberately pointing at a directory that does not exist yet, for
+work about to land, where the tree says so. Rules delivered by more than one mechanism, where a
+dead glob is redundant beside a live one — verify the live path really delivers the same file
+rather than a different rule with a similar name. Sets where a rule is intentionally dormant and
+recorded as such. And a glob that matches nothing in the repository you are looking at but matches
+in a sibling repository the same rule set governs, which is a scoping question rather than a dead
+selector.

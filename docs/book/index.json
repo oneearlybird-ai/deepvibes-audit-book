@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1133,
+ "rule_count": 1134,
  "sections": [
   {
    "id": "A",
@@ -2609,7 +2609,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 54,
+   "rule_count": 55,
    "rules": [
     {
      "id": "U:1",
@@ -2826,6 +2826,10 @@
     {
      "id": "U:54",
      "title": "The workflow's one absolute prohibition names a state that no status surface can see, so the rule is unenforced by construction and the forbidden state accumulates for months in plain sight"
+    },
+    {
+     "id": "U:55",
+     "title": "The upstream-fix probe is built for the dependencies that cannot be fixed and never extended to the ones that can, so the cheap remedy is the one that waits"
     }
    ]
   },

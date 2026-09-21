@@ -1030,3 +1030,45 @@ code — superseded is the common case and is still a finding about the rule.
 **False positives.** Prohibitions that are genuinely advisory; states the team's tooling cannot
 observe because they live on a developer's machine outside any managed checkout; a single recent
 entry created and consumed inside one session, where the window is minutes rather than months.
+
+## U:55 — The upstream-fix probe is built for the dependencies that cannot be fixed and never extended to the ones that can, so the cheap remedy is the one that waits
+
+**Statement.** A scanner backlog splits into two populations. One is hard: vendor-published
+binaries, pinned runtimes, a transitive whose fix would force a major-version migration. Those
+generate argument, an acceptance, and eventually tooling — a scheduled probe that asks the
+registry whether the upstream fix has appeared yet, precisely because nobody can act until it
+does. The other population is easy: an ordinary application dependency, transitive, whose fixed
+version already satisfies the range its parent declares, so the remedy is a lockfile refresh and
+a redeploy. That population generates no argument, no acceptance, and therefore no tooling,
+because tooling gets built where the pain was felt and the pain was all in the hard half.
+
+The result inverts the priority the team believes it holds. The hard findings are watched
+continuously and remediated the day they become remediable; the easy ones sit ACTIVE for as long
+as it takes a person to read a scanner console, which on a healthy estate is rarely, because the
+console is dominated by the accepted block and a reader learns the backlog is expected. Nothing
+is wrong with any individual decision — the acceptance was honest, the probe was good work — and
+the gap is invisible from inside each of them. It shows only when the two populations are listed
+side by side and the question is asked in the other direction: not "what are we accepting and
+why", but "which findings here have a published fix right now, and what would tell us". A
+dependency whose fix is one command away, unremediated for weeks, next to a vendor pin that is
+re-probed nightly, is the shape.
+
+**Detect.** Take the scanner's open findings and partition them by whether a fixed version
+exists upstream today — most scanners state this directly per finding, as a fixed-version field
+and an availability flag. For every finding where a fix exists, name the mechanism that would
+have surfaced it: a scheduled probe, a lane gate, an alarm, a ticket. Where the answer is "a
+person reading the console", that population is unwatched regardless of how many other
+populations are. Then measure the consequence rather than asserting it: the age of each
+fix-available finding, from first observation to today, is the window the missing watcher left
+open. Check the direction of the asymmetry too — if the watched population is the one whose
+remediation is blocked upstream and the unwatched one is remediable in a single command, the
+tooling has followed the difficulty of the remedy rather than the exposure, which is the
+reportable finding and not merely an omission.
+
+**False positives.** An estate whose lane already fails on any fix-available finding has the
+control, even if it has no dedicated probe; check the lane before calling the population
+unwatched. A finding whose "available fix" does not actually satisfy the declared range, so that
+taking it forces a breaking upgrade, belongs to the hard population and is correctly triaged
+there. And a scanner that reports a fixed version for a component the estate vendors rather than
+resolves may be describing a fix the team genuinely cannot apply without rebuilding the vendored
+artifact.

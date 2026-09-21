@@ -895,3 +895,47 @@ a check that is red only there has been red since the change that tripped it.
 read of the configuration document) and simply forgot to; a function that is a one-off test fixture
 outside every plane; an identifier that is runtime-owned rather than estate-owned (the platform's own
 region, function name or tracing variables).
+
+## DD:39 — An attribute of the source-of-truth manifest that no consumer reads preserves a superseded design's vocabulary indefinitely, and the verifier that enforces the redesign certifies the model consistent without ever checking it
+
+**Statement.** A platform that resolves its own identifiers through a central manifest will, over
+time, give each declared component a small block of attributes: which capability owns it, which
+class of principal it runs as, which session shape it mints. A redesign then replaces one of those
+vocabularies — the classes are consolidated, renamed, or retired — and the migration is driven,
+correctly, from the places that resolve at runtime: the accessors, the code that assumes, the
+infrastructure that provisions. Those places get migrated because they fail loudly when they are
+not. The manifest attribute is migrated only where someone happened to be editing the entry
+anyway, because it has no runtime consumer: nothing resolves it, nothing validates it, nothing
+fails when it names a class that no longer exists. An unread field cannot drift detectably. It
+holds the old vocabulary for as long as the document lives, on whatever fraction of entries the
+redesign did not hand-edit.
+
+What lets this survive review is the verifier the redesign shipped. A change to a principal model
+is exactly the kind of change that earns a mechanical gate, and that gate is written against the
+failure the redesign feared: a call still pointing at a retired class, a trust list admitting a
+principal it should not. Those are the consumers, so those are what it checks, and it closes with a
+whole-model verdict — the model is internally consistent, every call points at a current class.
+The sentence is true about everything the gate examined and silent about the document the gate read
+its own expectations from. A reader who wants to know what class a component runs as opens the
+manifest, because the manifest is the source of truth, and reads a name that was retired a redesign
+ago. The damage is not an outage; it is that the estate's description of itself is wrong in a way
+no check can turn red, and the next person to build tooling on that attribute inherits the entire
+retired vocabulary as though it were current.
+
+**Detect.** Take the redesign's own definition of current and retired classes — the verifier
+usually encodes both as literal sets — and evaluate every entry of the manifest against it,
+counting entries whose attribute names a retired class or a class that appears in neither set. Then
+establish whether the attribute has any consumer at all: read the runtime accessor module's
+exported surface for a getter that returns it, and the infrastructure sources for any expression
+that reads it. An attribute with no accessor and no infrastructure reference is inert, which lowers
+the blast radius to the document's truthfulness and raises the likelihood that the count is large.
+Confirm from the live side that the retired names have no corresponding resources, so the mismatch
+is retirement rather than a provisioning gap. Finally read the verifier's terminal output: a
+positive whole-model claim standing next to a manifest it never validated is the reportable form.
+
+**False positives.** An attribute the redesign deliberately froze as a historical record of the
+pre-migration class, documented as such, is a record and not a claim about the present. An
+attribute whose values are generated from the same definition the verifier uses, rather than
+hand-maintained per entry, cannot hold a retired name this way. And a manifest entry describing a
+component that is itself retired carries a retired class correctly; confirm the component is live
+before counting its attribute as drift.

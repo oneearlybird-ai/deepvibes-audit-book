@@ -1932,3 +1932,56 @@ tag, no re-assertion of the scope after a caller's options are applied — is no
 difference, not the absence of the library, is the finding. And a component that constructs any client
 outside the scoped path, even one used on a single code path, does bypass the property and is
 correctly flagged.
+
+## G:79 — The log-derived detective control is rebuilt in a different account from the one its organization-scoped trail can deliver to, so filters and alarms arrive complete and the source cannot follow, and not-breaching treatment publishes the unfed control as healthy
+
+**Statement.** A log-derived detective control is a three-link chain: a producer delivers audit
+records into a log store, filters over that store publish counters, and alarms read the counters.
+Only the last two links are ordinary per-account resources that a workload move carries with it.
+The first is frequently not a resource of that account at all: an organization-wide audit trail is
+owned centrally and its log-delivery destination is a single log group in the account that owns the
+trail, so the whole organization's records can be pointed at exactly one account. When a control's
+consumers are relocated — a restructure into per-domain stacks, a workload migration out of the
+management account, a landing-zone rebuild — the log store, the filters and the alarms are
+recreated faithfully in the destination and reference each other correctly, and the producer stays
+where it was or is torn down with the origin. Nothing in the destination account is wrong. The log
+store exists with the right name and retention, every filter names it, every alarm names a filter's
+metric, and the resulting chain is internally consistent from link two onward. It is fed nothing.
+
+What converts the severed link into silence rather than a signal is the missing-data treatment,
+and the treatment is usually not-breaching for exactly the right reason: these controls count rare
+bad events, so most periods legitimately publish no datapoint, and any other setting would make the
+healthy steady state noisy. So "no record has ever arrived" and "nothing bad happened" render as
+the same green. The counters do not sit at zero — the metric names do not exist, because a filter
+that never matches a line never creates its metric — and an alarm reading a metric that has never
+been created reports OK from birth. Every review that would normally catch this confirms it
+instead: the alarm inventory lists the control present, enabled and wired to a live notification
+target; the filter inventory lists the pattern; the log store is there. The gap is not a missing
+object but a missing edge, and it is an edge to something outside the account, which is why
+same-account consistency checks cannot represent it. The blast radius is the whole detective
+posture the control existed to provide, held for as long as nobody asks the one question the
+inventory does not answer.
+
+**Detect.** For every metric filter in the estate, resolve its log group and read the group's
+stored-bytes and stream count, not its existence — a group with zero streams has never received a
+line from anything and every filter over it is dead by construction. Independently, list the metrics
+actually present in each filter's target namespace and compare that set with the set the filters
+claim to publish; a namespace that returns no metrics at all while filters declare several is the
+finding. Then name the producer for each log store and prove the edge: describe the trail, delivery
+stream, subscription or agent that is supposed to write there, read its configured destination, and
+confirm the destination is that group in that account. For organization-scoped producers check the
+account boundary explicitly, since the destination can only be one account and a control living
+anywhere else cannot be fed by it however the permissions are written. Compare the log store's
+creation time against the alarms' and filters' — a store created in the same window as a
+restructure, with no data since, dates the severance. Finally check the missing-data treatment on
+each alarm so you know which way the dead control is failing: not-breaching publishes it as healthy,
+which is the expensive direction.
+
+**False positives.** Controls deliberately provisioned ahead of the producer during a staged
+build-out, where the tree says so and a tracking record names the pending link. Filters over a
+store whose producer is genuinely idle rather than absent — the distinction is stream count and
+last-ingestion time, not datapoint count, since a real producer creates streams even in a quiet
+period. Chains whose producer writes intermittently by design and whose alarms were chosen with
+that sparsity in mind. And a control replicated into several accounts where one copy is fed and the
+others are deliberate inert standbys, provided the standby status is declared and the fed copy is
+the one the posture depends on.

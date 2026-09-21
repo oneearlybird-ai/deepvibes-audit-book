@@ -1646,3 +1646,51 @@ entries are expected to be short-lived, regenerated as part of the debt-paydown 
 carried across refactors, has no stability requirement to fail. And a checker that reports additions
 after a reflow but does not gate on them is noisy rather than dangerous, since it cannot create the
 pressure to re-baseline.
+
+## NN:66 — The coverage gate walks both directions of the consumer half of a telemetry chain and reports that as end-to-end coverage, so a chain whose producer feeds it nothing passes and is counted in the gate's positive tally
+
+**Statement.** A monitoring-coverage gate earns trust by being bidirectional: it fails when a
+published counter has no alarm reading it, and it fails again when an alarm reads a counter no
+filter publishes. Both halves are real checks and both catch real defects, and a reviewer who sees
+them concludes the chain is verified. It is not. The chain has three links — something writes, a
+filter counts, an alarm reads — and the gate models only the second and third. It parses
+declarations, so it can see that a filter names a log store; it never asks whether anything writes
+to that store, because the writer is usually declared in a different stack, a different account, or
+not in the tree at all. Mutual consistency between links two and three is therefore proved, and
+then reported as though it were coverage of the whole. The tell is the gate's own closing note,
+which almost always states a positive: so many published counters, each bound to an alarm. That
+sentence is true and its implication is false, and because it is emitted by the gate rather than
+claimed by a person it is the sentence every later reader believes.
+
+The same blindness recurs wherever the gate's model of "covered" is narrower than the thing it is
+named for. A gate that binds alarms to metrics typically does not read the attributes that decide
+whether the alarm can act — whether its actions are enabled, whether its notification target
+resolves, whether a suppression is in force — so an alarm silenced by one attribute counts toward
+coverage exactly like a live one. The deeper error is that a static gate can only verify the edges
+present in the files it parses, and the edges that matter most in a telemetry chain are the ones
+that leave the tree: to a producer in another account, to a notification channel someone must
+subscribe to, to a human. A gate that does not distinguish "I verified this edge" from "this edge
+is outside my model" will report the second as the first, and the coverage number it publishes then
+measures internal consistency while being read as safety.
+
+**Detect.** Read the gate's source and write down the exact graph it builds — the node types it
+recognizes and the edges it asserts — then draw the real chain the control depends on end to end and
+mark every edge the gate does not represent. Each unmarked-but-real edge is an unverified link
+being counted as verified. Pay particular attention to the gate's summary line: any positive tally
+it prints is a claim, so restate that claim in full ("N counters, each bound to an alarm, each
+alarm able to notify, each counter fed by a live producer") and check which clauses the code
+actually establishes. Then prove the gap empirically rather than by reading: pick a control the gate
+passes, go to the running system, and measure the link the gate cannot see — ingestion into the log
+store, existence of the metric, the alarm's action-enabled state, a live subscription on the target.
+A control the gate passes and the live system shows unfed or unable to notify is the finding, and
+one such control is enough. Finally, check whether the gate has an exemption list: an exemption
+mechanism for the edges it does model, with no vocabulary at all for the edges it does not, is
+direct evidence that the missing edges were never considered rather than considered and waived.
+
+**False positives.** A gate whose stated scope is explicitly the declaration-level binding — named
+so, documented so, and paired with a separate live-system check that covers ingestion and
+notification — is doing its job, and the finding then belongs to whatever asserts overall coverage
+from the pair. Edges genuinely unrepresentable in the tree, where the gate says so in its output
+rather than silently omitting them. And a producer edge that is declared in the same tree and the
+gate does check — confirm by reading the parse, not by the presence of the producer's resource
+type somewhere in the repository.

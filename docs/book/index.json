@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1129,
+ "rule_count": 1132,
  "sections": [
   {
    "id": "A",
@@ -999,7 +999,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 78,
+   "rule_count": 79,
    "rules": [
     {
      "id": "G:1",
@@ -1312,6 +1312,10 @@
     {
      "id": "G:78",
      "title": "A control detects the sanctioned property by the canonical library that usually provides it, so an equivalent inline implementation is reported as that property's absence"
+    },
+    {
+     "id": "G:79",
+     "title": "The log-derived detective control is rebuilt in a different account from the one its organization-scoped trail can deliver to, so filters and alarms arrive complete and the source cannot follow, and not-breaching treatment publishes the unfed control as healthy"
     }
    ]
   },
@@ -3413,7 +3417,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 47,
+   "rule_count": 48,
    "rules": [
     {
      "id": "CC:1",
@@ -3602,6 +3606,10 @@
     {
      "id": "CC:47",
      "title": "A component is filed into a deployment unit by word-adjacency rather than by what it serves, and the unit's name becomes a compound that then justifies the next mistake"
+    },
+    {
+     "id": "CC:48",
+     "title": "Adoption writes the live resource's disabling attribute into the declaration alongside the resource, so a temporary operational silencing becomes permanent declared intent that the plan now defends on a control every inventory reports present"
     }
    ]
   },
@@ -4496,7 +4504,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 65,
+   "rule_count": 66,
    "rules": [
     {
      "id": "NN:1",
@@ -4757,6 +4765,10 @@
     {
      "id": "NN:65",
      "title": "A debt baseline re-keyed onto a hash of the offending LINE still re-fires whenever a reformat moves the violation across line boundaries, so a change that introduced nothing reports as new debt"
+    },
+    {
+     "id": "NN:66",
+     "title": "The coverage gate walks both directions of the consumer half of a telemetry chain and reports that as end-to-end coverage, so a chain whose producer feeds it nothing passes and is counted in the gate's positive tally"
     }
    ]
   },

@@ -1140,3 +1140,49 @@ is cohesive even when the members differ, provided the coupling is real and stat
 platform primitive answering many prefixes by design is not a finding either. And during a
 decomposition that is still running, provisional homes are expected; this becomes a finding when the
 decomposition is declared complete and the provisional assignment is still there.
+
+## CC:48 — Adoption writes the live resource's disabling attribute into the declaration alongside the resource, so a temporary operational silencing becomes permanent declared intent that the plan now defends on a control every inventory reports present
+
+**Statement.** Bringing an existing estate under code is done by writing a declaration that matches
+what is live and an import block that binds the two, and the declaration is correct precisely when
+it reproduces every attribute the live resource carries. That is the point of the exercise and it
+is also its trap, because some attributes are not configuration in any meaningful sense — they are
+the residue of an operator's action. A control switched off during an incident, a notification
+suppressed while a noisy filter was being rewritten, a recorder paused for a migration: each of
+these is a live attribute at adoption time, each is faithfully rendered, and from that commit on
+the temporary act is permanent policy. Nothing announces the change of status. The plan is clean
+because the declaration matches the live state, drift detection stays quiet for the same reason,
+and if anyone re-enables the control by hand the next apply turns it back off — the suppression is
+now defended by the pipeline that exists to defend intent.
+
+This is worse to find than an adopted resource that should not exist, because the resource here is
+legitimate and expected. The control appears in every inventory as present. Its notification
+targets are still declared beside the attribute that makes them unreachable, so a reviewer checking
+that the control is wired finds it wired. A coverage gate that binds the control to the thing it
+watches counts it as covered. The single attribute that negates all of it is one line in a
+generated-looking block among many, in a bulk commit too large to read line by line, and it carries
+no comment because the generator had nothing to say about it. The result is a control that is
+simultaneously in the code, in the inventory, in the coverage count and completely inert, and the
+only way to discover it is to ask the live system whether it can act — a question that is rarely
+asked of a control everything says is fine.
+
+**Detect.** Take every import or adoption block in the tree and, for each adopted resource, list
+the attributes whose effect is to disable, suppress, pause, reduce or exempt: actions disabled,
+recording off, enforcement set to count or log rather than block, logging disabled, evaluation
+paused, retention shortened, a validation relaxed. Each one is a claim of intent and must have a
+reason somewhere — a comment in the block, a decision record, a tracking entry — and an attribute
+with no reason anywhere is a laundered operational act, not a decision. Sort by peer comparison,
+which is the cheapest signal: within a family provisioned together, the one member configured to
+be inert is almost never deliberate, so list the siblings and their values and flag any lone
+outlier. Confirm against the running system that the attribute is really in force, and check the
+version history of the line — an attribute that arrived in a bulk adoption or restructure commit
+and has never been touched since was never chosen by anyone. Do the same sweep on resources adopted
+by a state import without an import block, which leave no trace in the tree at all.
+
+**False positives.** Attributes deliberately set inert with the reason stated in the tree or in a
+linked decision — a control staged ahead of the producer it will watch, an enforcement mode held at
+count during a documented tuning window with an end date. Families where inert is the correct
+default and active is the exception, provided that polarity is declared. Resources adopted as a
+deliberate holding action before deletion, where a tracking record names the removal. And a
+disabling attribute that the provider populates by default and the declaration merely echoes,
+which is a different finding about redundant declaration rather than about laundered intent.

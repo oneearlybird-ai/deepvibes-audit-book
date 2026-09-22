@@ -211,3 +211,53 @@ rather than a different rule with a similar name. Sets where a rule is intention
 recorded as such. And a glob that matches nothing in the repository you are looking at but matches
 in a sibling repository the same rule set governs, which is a scoping question rather than a dead
 selector.
+
+## OO:8 — Deleting a dead symbol leaves its comment behind, and the orphan re-parents onto the next construct, so a hygiene change converts an accurate comment into a confident false statement about code that was never there
+
+**Statement.** Nothing in any mainstream language binds a comment to the thing it
+describes; the binding is adjacency and reader convention alone. So when a cleanup removes
+a symbol that genuinely had no callers — the whole point of the change, and the easiest
+kind of change to approve — the declaration goes and the comment above it stays, because
+the deletion was scoped to the parse tree and the comment is not in it. The orphan then
+sits against whatever construct now follows, and every future reader applies the ordinary
+convention and reads it as documenting THAT. The comment has not merely gone stale; it has
+acquired a new and wrong subject, and it keeps its original confident register — a date, an
+author's reasoning, often a citation to the incident that prompted it — so it reads as the
+most authoritative line in the neighbourhood.
+
+The damage depends entirely on what the deleted symbol was. If it was a helper, the result
+is noise. If it was a CONTROL — a verification step, a gate, an authorization check, a
+sanitizer, a retry bound — the orphan now asserts that the control is present, and it is
+precisely the kind of statement that stops the next reader from looking. A reviewer
+wondering whether the sensitive path is gated finds a dated comment saying it is, and stops.
+An auditor sampling for the control finds the comment and marks it satisfied. The absent
+control is thereby defended by the artifact of its own removal.
+
+Two properties make this class survive review. First, the producing change is a hygiene
+change — dead code out — which is reviewed for what it removes, not for what it leaves, and
+whose diff shows the deleted lines while the surviving comment appears in no hunk at all
+unless context happens to reach it. Second, searches for the control by name still succeed:
+the identifier is right there in the comment, so a name search returns a hit in the file
+where the control used to be, and only reading the surrounding code shows the hit is prose.
+
+**Detect.** Take each deletion of a named symbol in a cleanup or dead-code change and look
+at the lines immediately preceding the deleted declaration: any comment whose subject is
+that symbol must leave in the same change. On existing code, read every comment against the
+construct that follows it and ask whether the comment's subject appears in that construct at
+all — a comment about authentication above an event reducer is the shape. The sharpest
+mechanical signal is a comment naming an identifier, endpoint, route, flag or flow that a
+repository-wide search for the name finds ONLY inside comments: a subject that exists
+nowhere in executable form is either deleted or never built, and both make the comment
+false. Prioritize comments asserting a security or correctness control, and confirm by
+tracing the control end to end rather than by finding its name. When one is found, the
+history tells you which change orphaned it: search the file's history for the commit that
+removed the named symbol, and read what else that change left behind.
+
+**False positives.** Banner or section comments that legitimately describe a following group
+or a whole file rather than the next construct, and block comments at file head. Comments
+explicitly retained as history and marked as such ("was", "removed in", changelog notes).
+A comment whose named subject still exists elsewhere and is genuinely reached from this
+file, where the comment is a pointer rather than a local description — verify the path
+actually runs before calling it orphaned. Commented-out code kept deliberately under a
+policy that permits it. And a comment describing a subject that is absent because it is not
+built YET, where the text says so — that is a TODO's register, not a false claim.

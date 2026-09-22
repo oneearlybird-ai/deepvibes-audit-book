@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1138,
+ "rule_count": 1139,
  "sections": [
   {
    "id": "A",
@@ -4797,7 +4797,7 @@
    "title": "Documentation & Comment Truthfulness",
    "group": "cross-cutting",
    "file": "sections/OO-documentation-and-comment-truthfulness.md",
-   "rule_count": 7,
+   "rule_count": 8,
    "rules": [
     {
      "id": "OO:1",
@@ -4826,6 +4826,10 @@
     {
      "id": "OO:7",
      "title": "Guidance that activates on a path pattern keeps reading as correct after the tree is restructured, because the file is still there and still true; what changed is that its selector now matches nothing, so the rule silently stops reaching the work it governs"
+    },
+    {
+     "id": "OO:8",
+     "title": "Deleting a dead symbol leaves its comment behind, and the orphan re-parents onto the next construct, so a hygiene change converts an accurate comment into a confident false statement about code that was never there"
     }
    ]
   },

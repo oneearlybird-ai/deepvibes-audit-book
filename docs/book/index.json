@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1140,
+ "rule_count": 1141,
  "sections": [
   {
    "id": "A",
@@ -2371,7 +2371,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "S:1",
@@ -2444,6 +2444,10 @@
     {
      "id": "S:18",
      "title": "The store that maps an external identifier to its owner must be keyed by that identifier, which makes the platform's per-customer key condition inexpressible, so the one store that routes inbound traffic is the one store with no enforced isolation"
+    },
+    {
+     "id": "S:19",
+     "title": "A batched consumer resolves the tenant once per invocation, from whichever record it could parse first, and applies that identity to the whole batch, so a batch spanning tenants processes the rest under a neighbour's"
     }
    ]
   },

@@ -197,3 +197,48 @@ correct design and is what the fix looks like. And a store whose rows are condit
 attribute at write time, enforced by the store rather than by the caller, is genuinely protected
 even though the key prefix condition is absent; verify the condition is on the write itself and
 cannot be omitted by a caller that simply does not include it.
+
+## S:19 — A batched consumer resolves the tenant once per invocation, from whichever record it could parse first, and applies that identity to the whole batch, so a batch spanning tenants processes the rest under a neighbour's
+
+**Statement.** A stream or queue consumer receives an array of records, and the tenant it must act
+as is carried inside each record rather than in the invocation. The natural-looking shape is to
+resolve it once at the top — walk the records, take the first identifier that parses, and hold it
+for the invocation — because the handler then has a single tenant variable to stamp on its client,
+its assumed role, its outbound header or its log line, exactly as a per-request handler would.
+That shape is correct only if a batch can never span tenants, which is a property of the SOURCE,
+not of the handler, and is almost never true: stream shards are partitioned by a hash of the
+partition key rather than by tenant, and a shared queue is shared. The batch size is the blast
+radius, and it is configured in a different file from the handler.
+
+Nothing detects it. The resolution succeeds, so there is no error branch; the identity is real and
+belongs to a real tenant, so every downstream authorization check passes; and the records that were
+mis-stamped are processed successfully, just as somebody else. Whether the effect is a leak or a
+loss depends on what the identity is used for — an outbound notification reaches the wrong tenant's
+people, an assumed role writes one tenant's rows into another's partition, a log line attributes
+activity to a tenant that had none — and in every case the wrong result is indistinguishable from
+the right one in the handler's own output. The volume hides it too: a batch spans tenants only when
+two are active in the same shard in the same window, so the defect is rare early, when tenants are
+few, and becomes routine exactly as the system succeeds.
+
+The first-parseable variant adds a second failure on top: records whose identifier cannot be parsed
+are skipped in the search but still carried in the batch, so a malformed leading record silently
+promotes the next one's tenant to govern the whole invocation, including the malformed record.
+
+**Detect.** For every handler that receives a batch, find where the tenant identity is resolved and
+count how many times it happens per invocation. One resolution for many records is the finding
+unless the source can be shown to be single-tenant per batch — and showing that means reading the
+source's partitioning, not assuming it: a per-tenant queue or a stream partitioned so that a shard
+holds exactly one tenant qualifies, a shared table's stream does not. Read the trigger's batch size
+in the same pass; a size of one makes the shapes equivalent today and leaves the defect armed for
+whenever somebody tunes it, which is worth saying even when nothing is wrong yet. Then follow the
+resolved identity to every use: the client it configures, the role it assumes, the header it
+stamps, the payload it forwards. The fix shape is to group the records by their own identity and
+process one group at a time, which also makes per-tenant retry and per-tenant failure reporting
+expressible for the first time.
+
+**False positives.** Sources that are genuinely per-tenant by construction — a queue provisioned
+per tenant, a stream whose partition key is the tenant identifier AND whose consumer is pinned to
+one shard. Handlers that resolve once only to validate that the batch is homogeneous, and refuse or
+split it otherwise. Identity used for something that is genuinely invocation-scoped and not
+tenant-bearing, such as a region or a stage. And a single-record batch where the trigger's size is
+pinned at one deliberately and documented as the reason.

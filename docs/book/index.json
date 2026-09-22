@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1141,
+ "rule_count": 1144,
  "sections": [
   {
    "id": "A",
@@ -2371,7 +2371,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "S:1",
@@ -2448,6 +2448,10 @@
     {
      "id": "S:19",
      "title": "A batched consumer resolves the tenant once per invocation, from whichever record it could parse first, and applies that identity to the whole batch, so a batch spanning tenants processes the rest under a neighbour's"
+    },
+    {
+     "id": "S:20",
+     "title": "A second scoping dimension exists in the schema and in the UI's navigation but in no query, so a record filed under one sub-scope is returned under every sub-scope its parent contains"
     }
    ]
   },
@@ -2854,7 +2858,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "V:1",
@@ -2947,6 +2951,10 @@
     {
      "id": "V:23",
      "title": "A consumer pinned to a wall-clock cron reads a producer scheduled by frequency rather than by time, and its empty-result guard turns the ordinary schedule slip into a hard failure"
+    },
+    {
+     "id": "V:24",
+     "title": "A time-sensitive value is computed when the work is queued and replayed verbatim when the work finally runs, so a delay or a retry delivers an offer that has already expired"
     }
    ]
   },
@@ -4116,7 +4124,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "JJ:1",
@@ -4289,6 +4297,10 @@
     {
      "id": "JJ:43",
      "title": "A dashboard fills a blank domain attribute with a fixed default that contradicts the industry's rule, so records created before the rule existed silently take the wrong value the first time anyone edits them"
+    },
+    {
+     "id": "JJ:44",
+     "title": "A resolver that always returns its best candidate is read as having found the thing, so a partial match is stored with the same confidence as an exact one and every downstream reader treats an approximation as a fact"
     }
    ]
   },

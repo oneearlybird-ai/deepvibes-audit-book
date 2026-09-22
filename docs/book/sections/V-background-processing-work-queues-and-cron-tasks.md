@@ -330,3 +330,49 @@ not-yet-evaluated period as a skip that says so, distinct from a genuinely empty
 **False positives.** A consumer that triggers the upstream evaluation itself and waits for completion; a
 consumer whose empty branch already distinguishes staleness from emptiness using the producer's status;
 a producer whose schedule is a guaranteed clock time in the same timezone, with the guarantee documented.
+
+## V:24 — A time-sensitive value is computed when the work is queued and replayed verbatim when the work finally runs, so a delay or a retry delivers an offer that has already expired
+
+**Statement.** Work that reaches a person — an outbound call, a notification, a reminder — is
+usually prepared in two stages: something computes the content when the job is enqueued, and
+something else delivers it when the job is picked up. Anything in that content derived from the
+clock is correct only at the first moment and decays from then on. A proposed appointment time, a
+hold expiry, a "today" or "in an hour", a price valid until, a slot list: each was true at enqueue
+and none is re-checked at delivery, because the delivery side reads a stored field and has no
+reason to think it is perishable.
+
+The gap between the two stages is exactly what queues are for, so the system's normal healthy
+behaviour is what breaks it. A retry after no answer, a rate limit, a quiet-hours hold, a backoff,
+an operator pause — all of them widen the gap, and the longer the delay the more certainly the
+stored value is wrong. The worst case is the ordinary one: the first attempt fails precisely
+because the person was unavailable, and the retry that follows is therefore guaranteed to be later
+than the value assumed.
+
+What makes it hard to see in review is that the delivery code is correct in isolation. It reads a
+field and presents it, which is what it should do; the defect is the absence of a comparison that
+nobody thought to require, between a stored instant and the current one. And when a human or a
+generative agent is the last step, they will present the stale value confidently, because nothing in
+the payload marks it as perishable — the recipient hears an offer for a time that has already gone,
+which reads as the system being broken rather than late.
+
+Related but distinct: the same absence usually means there is no minimum-notice rule either. Even
+a freshly recomputed slot can be unreasonably soon — offering someone an appointment twenty minutes
+out — and the place that should enforce a floor is the same place that should have rejected the
+past one.
+
+**Detect.** For every payload a queued or retried job delivers, list the fields whose meaning
+depends on the clock and ask where each is computed and where it is read. Any field computed at
+enqueue and read at delivery without being compared to the current time is the finding. Trace the
+delay sources rather than assuming the gap is short: retries, backoff, quiet-hours or regulatory
+holds, concurrency limits, manual pauses. Test the second attempt specifically, not the first —
+the first attempt hides the entire class. Where a generative agent renders the payload, check
+whether anything would stop it presenting an expired value, and do not count instructions telling
+it to check the time as a control. Then check the floor as well as the ceiling: a recomputed value
+with no minimum-notice rule is the same defect in the other direction.
+
+**False positives.** Values that are deliberately historical — "your appointment was at", a record
+of what was offered, an audit trail. Jobs with a hard expiry that are discarded rather than
+delivered once stale, where the staleness is already handled by not delivering. Content whose
+time reference is relative and re-rendered at delivery from the current clock. And cases where the
+stored value is a request for a recomputation rather than a result, which is the shape the fix
+usually takes.

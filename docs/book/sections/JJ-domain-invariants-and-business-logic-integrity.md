@@ -882,3 +882,47 @@ as a value whose creation date predates the rule and whose update date is a dash
 
 **False positives.** A value the owner set deliberately after the rule existed; attributes the
 industry genuinely leaves open.
+
+## JJ:44 — A resolver that always returns its best candidate is read as having found the thing, so a partial match is stored with the same confidence as an exact one and every downstream reader treats an approximation as a fact
+
+**Statement.** Resolution services — geocoders, address validators, entity matchers, product
+lookups, name-to-identifier services — are built to be helpful, which means they rank candidates and
+return the best one rather than refusing. Ask for a street number that does not exist and a geocoder
+returns the street; ask for a street that does not exist and it returns the locality. The response
+is well-formed and complete in every case, and it carries the evidence of how good the match was in
+a separate field: a score, a match level, a returned normalized form that can be compared with what
+was asked.
+
+The defect is taking the first result and recording it as resolved. Code written against the happy
+path reads only the payload it wants — the coordinates, the identifier — and never the quality
+signal beside it, so "we got a result" silently becomes "we found the address". From that moment
+the approximation is indistinguishable from an exact hit: it is stored in the same field, rendered
+with the same pin, dispatched against, and used to compute distance, routing and arrival times. The
+error is not detected downstream because nothing downstream has anything to detect it with.
+
+Two things make it common. First, the API's shape encourages it: asking for one result and taking
+index zero reads as deliberate narrowing rather than as discarding the ranking that made index zero
+meaningful. Second, the input is often itself imperfect — typed hastily, transcribed from speech,
+copied from a form with no validation — and an imperfect input is exactly when the resolver falls
+back to a broader match, so the cases that most need the quality check are the ones that silently
+skip it.
+
+The user-visible failure is characteristic and is usually reported as the map being wrong rather
+than as a data problem: the record is right, the pin is somewhere plausible and wrong, and the
+distance between them is the size of whatever the resolver fell back to.
+
+**Detect.** For every call to a resolution service, read what the response offers beyond the value
+being consumed — match score, match level, result type, the normalized form of what it matched —
+and check whether any of it is read. Taking `results[0]` while requesting a single result is the
+signature. Then look at where the result is stored: a boolean called resolved, or a non-null
+coordinate, that is set purely from the presence of a value is the point where the approximation
+becomes a fact. Confirm by feeding a deliberately partial input — a real street with an impossible
+number, a misspelling of the kind the upstream capture actually produces — and see whether the
+system records it as resolved. Where the input comes from speech or OCR, treat that check as
+required rather than optional.
+
+**False positives.** Deliberate coarse resolution, where locality-level accuracy is the product
+requirement and is documented as such. Services that genuinely return nothing rather than a
+fallback, where presence really is a match. Resolutions whose consumer only needs a rough region —
+a timezone, a currency, a service-area test — provided no other consumer reads the same stored
+field expecting precision, which is the thing to verify rather than assume.

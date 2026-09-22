@@ -242,3 +242,48 @@ one shard. Handlers that resolve once only to validate that the batch is homogen
 split it otherwise. Identity used for something that is genuinely invocation-scoped and not
 tenant-bearing, such as a region or a stage. And a single-record batch where the trigger's size is
 pinned at one deliberately and documented as the reason.
+
+## S:20 — A second scoping dimension exists in the schema and in the UI's navigation but in no query, so a record filed under one sub-scope is returned under every sub-scope its parent contains
+
+**Statement.** Products that nest a scope inside a scope — a sub-account under an account, a
+location under a chain, a brand or profile under a customer — end up with two dimensions that both
+look like isolation to a reader. The outer one is enforced everywhere, because it is the one the
+platform's own authorization is built on: it is in the partition key, in the policy condition, in
+the session, and it is re-checked in code. The inner one is present in exactly two places, the
+column on the row and the switcher in the navigation, and in neither of them does it filter
+anything. A record written while one sub-scope is selected is therefore visible from every other
+sub-scope under the same parent.
+
+It survives because every individual part looks right. The write stores the sub-scope faithfully,
+so the data is not wrong. The read is genuinely isolated, on the outer scope, and often re-checks
+that scope on every row, so a reviewer auditing the read finds a careful, defensive query and stops
+there. The navigation switches, so the product demonstrably knows which sub-scope you are in. Only
+the join between them is missing, and nothing names the join. A test writes and reads within one
+sub-scope and passes; the failure needs two sub-scopes and one reader, which is the state a
+single-sub-scope test fixture never reaches.
+
+The inner column is frequently NULL in practice as well, which is the tell that no read ever used
+it: the client never learned to send it because nothing ever asked. That makes the defect worse to
+repair later, because the historical rows carry no sub-scope to filter on and cannot be
+retroactively attributed. A client cache keyed on the query's own arguments compounds it — the
+sub-scope is not an argument, so switching sub-scopes does not even invalidate the cache and the
+previous scope's rows stay on screen without a request being made.
+
+**Detect.** For every scope the navigation lets a user switch between, find the reads that should
+narrow to it and check whether the identifier appears in the query at all — in the key condition, in
+the filter, in the post-read re-check. Then check the write path for the same identifier, and then
+sample live rows: a column that is null on most rows is one no read depends on. Ask specifically
+whether the platform's authorization primitive can even express the inner scope — a key condition
+scoped to the outer one cannot, and where it cannot, the enforcement must be in code on every path,
+which means enumerating every path rather than trusting the one you read. Test with two sub-scopes
+and a single user, which is the configuration that exposes it and the one fixtures usually lack.
+Finally check the client's cache key: if the sub-scope is not part of it, that is a second,
+independent way the same rows persist across a switch.
+
+**False positives.** Designs where the inner scope is deliberately presentational — a filter the
+user can clear, a grouping — and the records genuinely belong to the parent; say so in the code
+rather than leaving it to be inferred. Records that are intentionally parent-wide, such as an
+account-level billing or support object, where the sub-scope column is provenance rather than
+scope. And reads already narrowed by a different dimension that happens to imply the sub-scope, such
+as a per-requester filter, where the exposure is smaller than it looks — smaller, but still not the
+sub-scope isolation a reader would assume.

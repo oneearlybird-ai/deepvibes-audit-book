@@ -1694,3 +1694,52 @@ from the pair. Edges genuinely unrepresentable in the tree, where the gate says 
 rather than silently omitting them. And a producer edge that is declared in the same tree and the
 gate does check — confirm by reading the parse, not by the presence of the producer's resource
 type somewhere in the repository.
+
+## NN:67 — A blocking cross-repo gate resolves its counterpart through a filesystem sibling and aborts when the path is absent, so whether a change can be landed at all is decided by the working copy's layout rather than by the change
+
+**Statement.** A gate that must compare two repositories reaches the second one the cheapest way
+available: a path relative to its own repository root, one directory up and across. On the machine
+where it was written both repositories sit side by side, so the reference resolves and the gate is
+correct. The coupling it introduces is not to the other repository's contents but to the shape of
+the working copy, and that shape is not constant. Isolated workspaces — a per-task clone, a
+worktree, an ephemeral build directory, a container that mounts one repository — routinely
+materialize exactly the repository being worked on and nothing else, because that is the point of
+isolating them.
+
+In such a workspace the gate does not degrade, it aborts, and it aborts before it has checked
+anything, so the run reports a failure that names a missing file in a repository the change never
+touched. Now the landing path is blocked by the environment. Every property the gate exists to
+enforce is unverified at exactly the moment a change is trying to land, and the enforced behaviour
+is not the contract but the layout. The remedy people discover is to materialize the other
+repository, which works and is therefore repeated: the operating lesson becomes that a red gate can
+be answered by changing the environment rather than the code. That lesson is the expensive part.
+Once a class of failure is known to be about the checkout, a genuine failure of the same gate is
+read the same way and waved through, and the gate's authority is spent.
+
+The defect hides from the usual reviews because the gate is not wrong and its coverage is not thin.
+It passes in the layout its author used, it passes in any full-workspace run, and it fails only in
+the isolated workspaces that are least likely to be the ones anyone debugs. A gate inventory sees it
+present and green. Where the failure is a hard abort with a clear message, the whole episode reads
+as an environment problem and never reaches the record as a gate-integrity finding at all. The same
+shape can fail the other way — resolving the sibling to a copy that exists but is at some unrelated
+revision — which is worse, because then the gate returns a verdict about two trees that were never
+meant to be compared.
+
+**Detect.** Grep every gate, verifier and test for path expressions that climb out of the repository
+root — a parent-relative resolve, an environment variable naming another checkout, a bare directory
+name assumed adjacent — and for each one identify the repository it reaches and the property it
+reads there. Then run the full gate suite from an isolated working copy containing only the
+repository under test, not from the developer workspace, and record which checks abort; that run is
+the finding, and nothing short of it is, because the developer layout is the one place the defect
+cannot appear. For any gate that survives, establish which revision of the counterpart it read and
+whether anything pins it — an unpinned sibling gives a verdict about an arbitrary pair of trees.
+Finally, separate abort from skip in the gate's own code: a gate that quietly skips when the sibling
+is absent is the silently-green variant and is a different finding, not this one.
+
+**False positives.** Gates whose environment genuinely guarantees both repositories, where the
+provisioning step that materializes them is named and is part of the same contract that runs the
+gate. Monorepo-internal path climbing, where the "sibling" is inside the same checkout by
+construction. Gates that resolve the counterpart from a published, versioned artifact and use a
+filesystem path only as a local development convenience, provided the artifact path is the one the
+enforcing environment takes. And deliberately layout-coupled developer conveniences that are not
+blocking — the finding requires that the abort stands between a change and the trunk.

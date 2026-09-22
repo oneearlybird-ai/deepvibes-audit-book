@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1135,
+ "rule_count": 1138,
  "sections": [
   {
    "id": "A",
@@ -999,7 +999,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 79,
+   "rule_count": 81,
    "rules": [
     {
      "id": "G:1",
@@ -1316,6 +1316,14 @@
     {
      "id": "G:79",
      "title": "The log-derived detective control is rebuilt in a different account from the one its organization-scoped trail can deliver to, so filters and alarms arrive complete and the source cannot follow, and not-breaching treatment publishes the unfed control as healthy"
+    },
+    {
+     "id": "G:80",
+     "title": "An alarm pages on a filtered resource whose own request logging was never attached, so the only record of what it filtered is the provider's short-lived sampling buffer and every firing is uninvestigable by the time anyone reads it"
+    },
+    {
+     "id": "G:81",
+     "title": "A shared operational feed multiplexes sources whose event rates differ by orders of magnitude, and the loudest source republishes unchanged state, so the rare high-value event is unreachable in the channel that exists to surface it"
     }
    ]
   },
@@ -4512,7 +4520,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 66,
+   "rule_count": 67,
    "rules": [
     {
      "id": "NN:1",
@@ -4777,6 +4785,10 @@
     {
      "id": "NN:66",
      "title": "The coverage gate walks both directions of the consumer half of a telemetry chain and reports that as end-to-end coverage, so a chain whose producer feeds it nothing passes and is counted in the gate's positive tally"
+    },
+    {
+     "id": "NN:67",
+     "title": "A blocking cross-repo gate resolves its counterpart through a filesystem sibling and aborts when the path is absent, so whether a change can be landed at all is decided by the working copy's layout rather than by the change"
     }
    ]
   },

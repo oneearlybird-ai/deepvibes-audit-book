@@ -1985,3 +1985,109 @@ period. Chains whose producer writes intermittently by design and whose alarms w
 that sparsity in mind. And a control replicated into several accounts where one copy is fed and the
 others are deliberate inert standbys, provided the standby status is declared and the fed copy is
 the one the posture depends on.
+
+## G:80 — An alarm pages on a filtered resource whose own request logging was never attached, so the only record of what it filtered is the provider's short-lived sampling buffer and every firing is uninvestigable by the time anyone reads it
+
+**Statement.** A traffic-filtering resource — an edge firewall, an API shield, a bot or rate-limit
+control — publishes aggregate counters as a first-class metric with no configuration at all, and it
+exposes the individual requests it acted on through two quite different channels. One is a logging
+configuration the operator must attach explicitly, naming a durable destination the operator owns.
+The other is a provider-side sampling buffer, readable through a describe-style call, retained for a
+fixed short window measured in hours and not extendable. Because the counters need no wiring, an
+alarm over them can be built, tuned, thresholded and connected to a notification target entirely
+without the logging configuration ever existing, and nothing in the alarm's own definition refers to
+it. The alarm is correct. It fires on the condition it was written for. What it cannot do is answer
+the question it was written to raise.
+
+The asymmetry is in the lifetimes. The alarm's purpose is to bring a human — or a scheduled reviewer
+that runs once a day — to a decision that requires the request detail: which client, which path,
+which rule, one hostile source or a legitimate population that the allowlist stopped matching. The
+alarm's own description usually states that fork explicitly. But the notification arrives in a
+mailbox or a queue that is read on a human or daily cadence, while the sampling buffer expires in a
+few hours, so on any read that is not immediate the evidence is already gone and the call that would
+fetch it is rejected outright for naming a window the provider no longer holds. The failure is
+silent in the worst way: there is no error, no gap in a dashboard, no missing object. The counters
+are intact and can be plotted precisely, so the episode's shape — when it began, how long it lasted,
+how many requests — is fully recoverable while its cause is permanently not. A post-incident review
+therefore ends in a plausible story rather than an identification, and the same alarm will fire again
+into the same emptiness.
+
+Two related shapes hide the defect from inventory. The destination may already exist — provisioned
+in the same change as the resource, correctly named, encrypted and retained — with only the
+attachment missing, so an audit that enumerates log destinations finds one per filtering resource
+and reports full coverage. And a sibling resource of the same kind, provisioned by a later change
+that did include the attachment, will be logging correctly, so a spot check that samples one
+resource concludes the practice is in force. Where the codebase states the practice in a comment —
+every such resource logs to its own destination — the unattached resources are drift from a written
+rule, not an undecided question.
+
+**Detect.** Enumerate every traffic-filtering resource in every account and scope, and for each one
+call the provider's own read-the-logging-configuration operation. Treat only a returned
+configuration naming a live destination as coverage: a not-found error is the finding, and so is a
+configuration naming a destination that does not exist. Do not infer coverage from the presence of a
+destination — resolve the edge in the other direction as well, reading each destination's stored
+bytes and stream count, since a destination with zero streams has never been written to whatever the
+configuration says. Then cross the result with the alarm inventory: any alarm whose metric carries
+the filtering resource as a dimension, on a resource with no attached logging, is a page that cannot
+be triaged, and its severity is the severity of the decision the alarm exists to force. Confirm the
+retention asymmetry concretely rather than assuming it — issue the sampling-buffer call for a window
+older than the provider's cap and record the rejection, so the report names the boundary as measured
+rather than as documented. Check whether an adjacent access log could substitute; where the filter
+rejects requests before the downstream service sees them, it cannot, and the tree's own comments
+often say so.
+
+**False positives.** A resource in a counting or monitoring-only mode, which takes no action and
+whose alarm is an observation rather than a page. Estates that ship request records off-platform
+through a streaming delivery attached elsewhere, where the durable copy exists outside the log store
+being enumerated — verify the stream, do not accept the claim. Filtering resources fronting a
+surface with a hard no-retention posture recorded as a decision, where the accepted consequence is
+that firings are triaged from counters alone. And a resource that is newly created inside the
+current sampling window, where the attachment is genuinely pending in an in-flight change.
+
+## G:81 — A shared operational feed multiplexes sources whose event rates differ by orders of magnitude, and the loudest source republishes unchanged state, so the rare high-value event is unreachable in the channel that exists to surface it
+
+**Statement.** An operational review feed is built by pointing several event sources at one
+destination, on the reasonable principle that everything the estate emits should land in one place a
+reviewer can read each morning. The sources are chosen for what they mean, not for how often they
+speak, and their rates are never compared: a state-change notification fires a handful of times a
+day, a service-health advisory a few times a month, while a finding aggregator republishes its
+entire active population on every evaluation cycle, because its publish event fires on update as
+well as on creation and nothing in the pipeline ever transitions a finding out of the population.
+The result is a feed in which one source outnumbers every other by three orders of magnitude, and
+almost none of its volume is new information — the same identifiers, re-emitted, carrying the state
+they already carried.
+
+The feed still works, in the sense that every event is present and retained. What stops working is
+reading it. A reviewer who fetches the day's events receives a payload dominated by repeats, and the
+few events that would change a decision are a fraction of a percent of it, scattered among them with
+no ordering that separates them. A scheduled reviewer fares worse than a human: it pages through the
+volume under a context or output limit, so the limit itself decides what gets read, and the events
+most likely to be dropped are the rare ones. Both then report on the feed rather than from it. The
+destination's cost grows on the same curve, and its retention — chosen for the valuable minority —
+is paid on the repeats.
+
+Every check that would normally catch this passes. The routing rules are individually correct and
+each names a real source and a real destination. The destination exists, is encrypted and is
+retained. Coverage audits that ask "is this source captured" answer yes for all of them. Volume is
+not part of any of those questions, and the loudest source is usually the one whose capture was most
+deliberately argued for, so its presence reads as diligence. The defect lives only in the ratio, and
+the ratio is invisible until someone counts by source.
+
+**Detect.** Count the destination's events for a full representative window, grouped by source, and
+put the counts side by side — the finding is a distribution, never a single event, so any sample
+small enough to skip the counting will miss it. For the dominant source, extract the identity of
+each item it published and count distinct identities against total events, then count how many of
+those identities were created inside the window: a large volume resolving to a smaller set of
+identities almost none of which are new is republished state, not activity. Express the remaining
+sources as a percentage of the total and compare that with the feed's stated purpose, since the
+purpose usually names exactly the low-volume sources. Read the destination's stored bytes against
+its retention to price the repeats. Finally check whether the dominant source already has a
+purpose-built aggregate channel — a periodic digest, a console, a scheduled summary — because where
+one exists the firehose is redundant with a better-shaped consumer and the narrowing costs nothing.
+
+**False positives.** A destination explicitly built as an archive or a search index rather than a
+review feed, where a consumer queries by source and volume is the point. A dominant source whose
+events genuinely are distinct occurrences at that rate — verify by distinct-identity count, not by
+intuition about the source. Feeds whose consumer filters by source at read time as a matter of
+course, provided the filter is in the consumer's own definition rather than in a reviewer's habit.
+And a temporary volume spike from a one-off bulk import, where the steady-state rate is ordinary.

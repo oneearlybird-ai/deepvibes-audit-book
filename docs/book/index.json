@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1139,
+ "rule_count": 1140,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 47,
+   "rule_count": 48,
    "rules": [
     {
      "id": "A:1",
@@ -198,6 +198,10 @@
     {
      "id": "A:47",
      "title": "The production dependency factory supplies a constant or empty function where a real implementation was intended, so a fully built, granted and monitored feature is unreachable and every health signal agrees it is fine"
+    },
+    {
+     "id": "A:48",
+     "title": "The event source enables partial-batch reporting and the handler returns a shape the platform does not recognise, so every caught error is checkpointed as processed and the retry, bisect and dead-letter settings declared beside the trigger are unreachable"
     }
    ]
   },

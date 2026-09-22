@@ -516,3 +516,57 @@ constant is the switch and a decision record names it. Seams whose production im
 is a constant because the answer is static in this deployment (a single-region resolver, a fixed tier).
 Newly merged scaffolding explicitly landed as inert ahead of its enabling change, where the enabling
 change is tracked and the inert state is named in the code.
+
+## A:48 — The event source enables partial-batch reporting and the handler returns a shape the platform does not recognise, so every caught error is checkpointed as processed and the retry, bisect and dead-letter settings declared beside the trigger are unreachable
+
+**Statement.** Partial-batch failure reporting is one contract written in two places that nothing
+compares: the trigger declares that it will read a failure list, and the handler must return that
+list under the exact key, holding the exact identifier the source type uses. The platform's
+documented rule for anything else is not an error — it is SUCCESS. An empty list, a null list, an
+empty response, and a response carrying unrelated keys are all treated as a complete batch success,
+and the stream checkpoint advances past every record. A handler that ends in a conventional
+`{ status: 200 }`, or a status-and-body envelope copied from the HTTP handler beside it, therefore
+reports perfect delivery on the batch where it caught every error and delivered nothing.
+
+The damage is larger than the lost records, because the same declaration is what activates the
+trigger's whole failure apparatus. Retry counts, bisect-on-error, maximum record age and the
+dead-letter destination are all configured on the trigger, read fluently by anyone auditing it, and
+all of them are reached ONLY through a failure the handler reports. A handler that reports none
+makes every one of them dead configuration that still reads as protection. An auditor sees a
+dead-letter queue attached to the trigger and concludes failures are captured; the queue has been
+empty since it was created, and its emptiness is read as health.
+
+The second form is subtler and survives review even better, because the handler plainly does build
+the list: it fills it with the wrong KIND of identifier. Stream sources are checkpointed by sequence
+number and the platform selects the lowest one reported as the new checkpoint, so the identifier it
+needs is an ordered position in the shard. A record carries several other plausible ids — a
+per-event uuid, a business key, an application id — and one of them is usually shorter, already in
+scope, and already used in the log line directly above. Substituting it produces a response that is
+structurally valid, passes every schema check, reads correctly to anyone who has not compared it
+against the source type's contract, and cannot be ordered against any record in the batch. Because
+the wrong-identifier form only matters on the failure path, a test suite that exercises the happy
+path never touches it, and a suite that does exercise it usually asserts the value the code
+produces rather than the value the platform requires.
+
+**Detect.** Enumerate every trigger declaration in the infrastructure that enables partial-batch
+reporting, resolve each to the handler it invokes, and read that handler's return statements — all
+of them, including early returns on the configuration-missing and nothing-to-do paths, which are the
+ones most often written as a bare status. Then, for each place the handler records a failure, check
+the identifier against the source type: a stream wants the record's sequence number, a queue wants
+its message id. Treat an identifier read from a different field of the same record as the finding,
+not as a near-miss. Two mechanical signals find most of it without judgement: a handler whose return
+mentions a status code while its trigger enables the feature, and a failure identifier whose name
+does not appear in the source type's own documented response example. Check the inverse too, which
+is its own rule. As live corroboration, read the depth and age of the dead-letter destination
+attached to each such trigger: one that has never received a message, on a path known to have
+failed, is evidence the report never reaches the platform.
+
+**False positives.** Handlers that signal whole-batch failure by throwing, where every record in the
+batch genuinely must be retried together and the trigger's bisect setting is the intended mechanism
+— that is a deliberate coarser choice, not a broken contract, though it should be stated. Records
+deliberately not retried because a retry cannot help or would duplicate a side effect already
+performed: dropping an unparseable record rather than stalling the shard on it, and declining to
+redrive a record whose other recipients already succeeded, are both correct, and the finding is only
+that such a decision is silent, not that it was made. Identifier expressions held in a local
+variable, where the variable is assigned from the correct field — read the assignment before judging
+the line. And source types whose correct identifier genuinely is not a sequence number.

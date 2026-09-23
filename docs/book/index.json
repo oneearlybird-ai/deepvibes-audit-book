@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1146,
+ "rule_count": 1147,
  "sections": [
   {
    "id": "A",
@@ -2637,7 +2637,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 55,
+   "rule_count": 56,
    "rules": [
     {
      "id": "U:1",
@@ -2858,6 +2858,10 @@
     {
      "id": "U:55",
      "title": "The upstream-fix probe is built for the dependencies that cannot be fixed and never extended to the ones that can, so the cheap remedy is the one that waits"
+    },
+    {
+     "id": "U:56",
+     "title": "The plan pins the infrastructure to a source revision but reads the code through a mutable \"latest\" artifact pointer, so a build landed mid-lane ships a later revision's code under an earlier revision's certification"
     }
    ]
   },

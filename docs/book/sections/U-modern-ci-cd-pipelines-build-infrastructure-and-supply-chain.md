@@ -277,7 +277,11 @@ Then read the commit-stage gate and confirm what it asserts about *added* paths 
 large-file ceiling bounds size from above and says nothing about zero, and end-of-file fixers leave
 empty files untouched. The gate to look for is one that rejects a newly added file that is empty,
 extensionless, or named unlike anything else in the tree, with an explicit escape for the rare
-legitimate case.
+legitimate case. Count files that became empty by modification too, not only additions: a relocation that
+leaves a one-line pointer comment behind, followed by a comment clean-up that deletes the pointer,
+leaves an empty file whose name still claims a home for something that lives elsewhere, and a gate
+keyed on added paths never sees it. Check every repository the workflow commits to, not only the
+one where the first accident happened - the gate is usually installed where it was discovered.
 
 **False positives.** Deliberately empty marker files (keep-files, sentinel paths, fixtures that
 must be zero bytes) — these are legitimate and should be allowlisted rather than argued about;
@@ -1063,7 +1067,10 @@ fix-available finding, from first observation to today, is the window the missin
 open. Check the direction of the asymmetry too — if the watched population is the one whose
 remediation is blocked upstream and the unwatched one is remediable in a single command, the
 tooling has followed the difficulty of the remedy rather than the exposure, which is the
-reportable finding and not merely an omission.
+reportable finding and not merely an omission. Last, list every lockfile the estate ships and name the scanner that reads each one. An
+application hosted outside the scanned platform — a frontend on a separate host — produces no
+scanner findings at all, so it never appears in the partition above, and a repository scan pointed
+at a workspace subdirectory reads no lockfile when the lockfile sits at the workspace root.
 
 **False positives.** An estate whose lane already fails on any fix-available finding has the
 control, even if it has no dedicated probe; check the lane before calling the population
@@ -1072,3 +1079,37 @@ taking it forces a breaking upgrade, belongs to the hard population and is corre
 there. And a scanner that reports a fixed version for a component the estate vendors rather than
 resolves may be describing a fix the team genuinely cannot apply without rebuilding the vendored
 artifact.
+
+## U:56 — The plan pins the infrastructure to a source revision but reads the code through a mutable "latest" artifact pointer, so a build landed mid-lane ships a later revision's code under an earlier revision's certification
+
+**Statement.** The deploy lane records which source revision a plan was made from and refuses to
+apply the plan at any other revision, so the infrastructure half of a deploy is bound to a
+revision. The code half is not. The function package is read at plan time from a mutable pointer
+— a "latest" object key, a moving image tag, a "current" alias — that the post-merge build
+rewrites whenever any revision lands. The freshness check that compares the pointer's content
+against the source runs once, before the plans, and is often cached, so it proves only that the
+pointer matched the tree at the moment it ran. A land between that check and a stack's plan swaps
+the pointer's content, and the plan pins whatever it finds. The lane then applies revision N+1's
+code with revision N's infrastructure, records the result as a certification of revision N, and
+nothing fails. The reverse split happens inside the build's own lag: a plan made at the newest
+revision before its build finishes applies that revision's infrastructure with the previous
+revision's code. Either way, the unit the author committed — a code change plus the configuration
+it needs, in one commit — is separated by the lane. The first code that depends on its own
+commit's new permission, variable or resource then fails at runtime while every gate reports
+success, and the certification record names a revision the running code is not.
+
+**Detect.** For each deploy unit, find where the plan obtains the code artifact. A data read of an
+object key, image tag or alias that a build overwrites is a mutable pointer. Then find what binds
+that read to the plan's revision. A content hash of the plan's own source tree, compared against
+the hash the build stamped on the exact artifact version the plan pinned, is a binding. A
+freshness check run before planning, against whatever the pointer holds at that moment, is not,
+and a cached one is weaker still. Confirm on a real run: take a stack a lane applied at revision
+N and compare the source hash stamped on the artifact version it deployed with the hash of the
+source tree at N. Runs that overlapped a land from another checkout are the likeliest place to
+find a mismatch.
+
+**False positives.** Artifacts addressed by content, where the key or tag is derived from the
+source hash computed from the plan's own tree, so a later build writes a new key and cannot change
+what an older plan resolves. Lanes that build the artifact inside the same run, from the same
+checkout, and pass it to the plan by value. Single-writer estates where no build can land while a
+lane runs, with the lock verified rather than assumed.

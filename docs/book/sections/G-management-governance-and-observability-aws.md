@@ -1931,7 +1931,13 @@ implementation that differs materially from the library's — a longer credentia
 tag, no re-assertion of the scope after a caller's options are applied — is not equivalent, and the
 difference, not the absence of the library, is the finding. And a component that constructs any client
 outside the scoped path, even one used on a single code path, does bypass the property and is
-correctly flagged.
+correctly flagged. That last case is also the trap in repairing this rule: if the control learns to
+credit equivalent implementations per COMPONENT - any scoped assume anywhere in the artifact turns
+the table-access verdict into a pass - then a component that reaches one table through the scoped
+path and another through its own broad credentials is cleared along with the genuine equivalents. The
+credit has to be per call site: attribute each table operand to the client that sends it, and credit
+only the operands whose client came from a scoped assume. Until the control can do that, leave the
+equivalents flagged; noise that fails closed is cheaper than a pass that hides a real bypass.
 
 ## G:79 — The log-derived detective control is rebuilt in a different account from the one its organization-scoped trail can deliver to, so filters and alarms arrive complete and the source cannot follow, and not-breaching treatment publishes the unfed control as healthy
 

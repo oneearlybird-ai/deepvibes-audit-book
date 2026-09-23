@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1144,
+ "rule_count": 1145,
  "sections": [
   {
    "id": "A",
@@ -476,7 +476,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "D:1",
@@ -617,6 +617,10 @@
     {
      "id": "D:35",
      "title": "A cascading delete enumerates its children through a secondary index, and a key family deliberately kept out of that index is exempt from every sweep that index drives"
+    },
+    {
+     "id": "D:36",
+     "title": "Every new consumer of a table's changes is attached to its change stream directly, so the reader count grows one feature at a time past the per-shard limit and every consumer slows together"
     }
    ]
   },

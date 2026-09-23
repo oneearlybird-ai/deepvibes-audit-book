@@ -277,3 +277,42 @@ the base table by the parent's own partition rather than through an index, where
 irrelevant to completeness. And a two-phase design in which a later reconciliation job is the documented
 owner of the exempt family — confirm that job exists and runs, because a planned reconciler is the most
 common thing to find missing.
+
+## D:36 — Every new consumer of a table's changes is attached to its change stream directly, so the reader count grows one feature at a time past the per-shard limit and every consumer slows together
+
+**Statement.** A table's change stream is the most convenient trigger in the platform: it
+sees every write from every writer, needs no cooperation from the code that wrote, and is one
+declaration away. So each feature that needs to react to a table attaches its own reader — a
+function mapping here, a pipe there — and each attachment is reviewed alone, where one more
+reader looks free. It is not. The stream shard is shared: the platform guidance is no more than
+two concurrent readers per shard, and beyond that the readers throttle each other. Throttled
+reads do not fail; they wait. The symptom is that the age of the oldest unread record climbs on
+every consumer at once, so a confirmation text, a real-time dashboard update, an aggregate and an
+integration sync all get slower together, and none of their owners can see why from their own
+code.
+
+It is invisible for exactly as long as it matters least. With little traffic the added wait is a
+few seconds and indistinguishable from configured batching windows, so the breach passes every
+test and every early production week. It surfaces with volume, and at that point the fix is a
+migration of every existing reader rather than a choice about the next one.
+
+The shape that scales is a single reader per stream that republishes the change as an event on a
+bus, where any number of rules can subscribe without touching the shard. Many products end up
+with a partial version of this already — a bus event emitted by some writers for some consumer —
+and the practical trap is that such an event is usually shaped for its first consumer (it
+carries only what one notifier needed, or is skipped when that consumer would have nothing to
+do), so the next feature finds it incomplete and goes back to the stream.
+
+**Detect.** For every table with a change stream, count its readers across every mechanism that
+can hold one: function event source mappings, pipes, and any service polling the stream
+directly. More than two is the finding, and the count is the severity signal. Then read the
+iterator-age metric of each consumer over a week: a floor of several seconds on every consumer of
+one stream, at low traffic, is consistent with contention, but separate it from configured
+batching windows before calling it proven. For each reader, ask whether its trigger could be a
+bus event instead, and whether the existing bus event for that entity is complete - emitted by
+every writer, for every record, not only the ones its first consumer cared about.
+
+**False positives.** Streams with one or two readers. Global tables' replication, which is a
+platform reader outside the count the guidance addresses. A second reader deliberately added as
+the fan-out point itself during a migration away from direct readers, where the plan and the
+count going down are both recorded.

@@ -839,3 +839,34 @@ wrapper around the call - a caught and logged denial is this rule, an uncaught o
 operation (check the service's documented condition-key behaviour per action); call sites that use
 a different, broader session for the extra field by design; and fields read only through an
 index projection the condition does not cover.
+
+## F:48 — An attribute-list fence on a secondary-index query names the fields the request names - the index keys and the projection - but the service also counts the base table's own key attributes as read, so the fence denies every request from its first day
+
+**Statement.** Narrowing a lookup to the few fields it needs is the right instinct when the index it
+reads projects whole records: a routing lookup that only needs owner ids should not be able to read
+message bodies. The fence is an attribute-list condition (every attribute the request touches must
+be on the list) paired with a requirement that the request ask for specific attributes. The natural
+way to write the list is to read it off the request: the two index keys in the key condition and the
+fields in the projection. On an index read, the service also presents the base table's own key
+attributes as accessed, although the request never names them, so a list built from the request
+refuses every call it was written for. Nothing fails before deploy: unit tests fake the store and
+never evaluate the policy, the plan shows a narrowing (which reviews approve), and a policy
+simulator only evaluates the context keys the author chooses to supply, which are the same wrong
+ones. The first real call is denied; when the caller is an event consumer the denial surfaces as
+retries and then a dead-letter queue, with the working grant already replaced.
+
+**Detect.** For every policy statement that carries an attribute-list condition and whose resource
+is an index, check that the list holds the base table's partition and sort key names as well as the
+index keys and the projected fields. Do not settle it by reading documentation or by reasoning:
+measure it. Assume a role with a session policy containing only the statement under test (nothing
+is created) and run the real request, then the same request with each table key removed from the
+list, and one request that projects a field outside the list; the first must pass and the others
+must be refused. Confirm on the deployed consumer after apply by driving one real message through
+it, not only by reading the policy back.
+
+**False positives.** Statements with no attribute-list condition; indexes whose keys are the base
+table's keys; tables whose base keys are themselves on the list for another reason. For local
+secondary indexes, which share the base partition key, measure rather than assume which base keys
+are counted. An attribute-list condition without the specific-attributes requirement is a different
+defect (it admits any request that omits a projection) and is flagged by the provider's own policy
+validator.

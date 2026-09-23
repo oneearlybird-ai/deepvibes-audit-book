@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1154,
+ "rule_count": 1155,
  "sections": [
   {
    "id": "A",
@@ -822,7 +822,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 47,
+   "rule_count": 48,
    "rules": [
     {
      "id": "F:1",
@@ -1011,6 +1011,10 @@
     {
      "id": "F:47",
      "title": "An attribute-level condition on a scoped session lists the fields a feature used when the fence was written, a later feature reads or writes one more field through the same session, and every such call is denied while the rest of the session keeps working"
+    },
+    {
+     "id": "F:48",
+     "title": "An attribute-list fence on a secondary-index query names the fields the request names - the index keys and the projection - but the service also counts the base table's own key attributes as read, so the fence denies every request from its first day"
     }
    ]
   },

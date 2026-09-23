@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1150,
+ "rule_count": 1151,
  "sections": [
   {
    "id": "A",
@@ -633,7 +633,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "E:1",
@@ -810,6 +810,10 @@
     {
      "id": "E:44",
      "title": "The front-door verification secret is checked inside the request-authorization component, so it covers exactly the authenticated routes and structurally cannot cover the unauthenticated ones, and a coverage check that asks whether the origin validates the token answers yes"
+    },
+    {
+     "id": "E:45",
+     "title": "A second API plane reaches backend functions by direct invocation with its own event shape, the functions read only the first plane's shape, and each answers with its HTTP error envelope as an ordinary return value, so the second plane serves every such field as empty data and nothing errors anywhere"
     }
    ]
   },

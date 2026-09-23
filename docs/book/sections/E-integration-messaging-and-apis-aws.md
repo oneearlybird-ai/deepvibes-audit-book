@@ -622,3 +622,40 @@ genuinely must accept third-party callers who cannot be given the secret (provid
 authenticated by their own signature), which need the signature verified rather than the header;
 and estates where the edge is not the only sanctioned client, where the correct finding is the
 undocumented second client rather than the missing check.
+
+## E:45 — A second API plane reaches backend functions by direct invocation with its own event shape, the functions read only the first plane's shape, and each answers with its HTTP error envelope as an ordinary return value, so the second plane serves every such field as empty data and nothing errors anywhere
+
+**Statement.** Two API planes front the same backend functions: a gateway that delivers a request
+event carrying the caller's identity in its authorizer context, a method and a path, and a second
+layer (GraphQL, RPC) that invokes the functions directly with a payload of its own - a field name,
+the arguments, and the identity in a different shape. A function written, or later rewritten, for
+the first plane reads identity only from the authorizer context and routes only on method and path,
+so a payload from the second plane arrives with no identity and no route, and the function returns
+its standard unauthorized or not-found response. That response is an HTTP envelope - a status code,
+headers, a body string - returned as a normal value, not thrown, so the invocation succeeds at the
+runtime level. A dispatcher that checks only the runtime's error flag hands the envelope to its
+schema layer as the field's result; the schema layer resolves the declared result type against an
+object that has none of its properties, and the client receives an object of nulls, or a generic
+non-null violation, instead of an authorization or routing error. The dispatcher logs no failure,
+the function logs at most a warning, and no metric moves, so the defect stays invisible until a
+client of the second plane first uses the field - and a plane whose traffic is mostly native reads
+can carry many such fields for months. The usual history: a shared adapter that reads both shapes
+exists and part of the fleet uses it; the rest was written later or refactored away from it, one
+function may even state in a comment that it "serves only" the first plane, and the second plane's
+resolver map still routes to it. An adapter that is imported but never called reads as coverage in
+a search and protects nothing.
+
+**Detect.** Enumerate every field the second plane resolves by invoking a function. For each target,
+read the identity reader and the router the entry point actually calls - not the imports - and ask
+whether they accept the second plane's identity shape and dispatch on the field name. Read the
+dispatcher's handling of the invoke result: does it inspect a status code inside the returned
+payload, or only the runtime error flag? Prove each suspected target with one read-only invocation
+using the dispatcher's exact payload shape and a scope that owns no data; a returned 401 or 404
+envelope with no runtime error is the finding. Then list which clients' operation documents name
+each affected field, because that decides whether the fix is a repair or a removal.
+
+**False positives.** Targets that route through the shared adapter and dispatch on the field name;
+dispatchers that turn any non-2xx envelope into a schema-level error, which makes the failure
+visible (the mismatch is then a loud outage, a different and lesser finding); and fields that no
+client's operation documents name and that are removed from the schema rather than repaired, where
+the finding is the dead surface, not the dispatch.

@@ -1170,3 +1170,35 @@ scanner grades against the distribution's advisories and the image refresh fixes
 from a vendor-signed single binary with no dependency tree; and global installs removed from the
 image before snapshot (build-time only), provided the scanner confirms nothing remains under the
 global prefix on a running host.
+
+## U:59 — The host vulnerability scanner's language-package pass walks only its default locations, the images install every application tree somewhere else, and the host still reports as covered, so the application's dependencies on its servers have never been scanned
+
+**Statement.** Host scanners do two jobs: operating-system packages, which they read from the
+package database wherever the files are, and language packages, which they find by walking a set
+of directories. The walk has defaults chosen for a generic machine: the system interpreter's
+library directories and the system package manager's global module folder. Service images put
+their code in a directory of their own - a per-service folder under an optional-software root, a
+dedicated runtime prefix - so the walk never enters it. Nothing about the scanner's status reveals
+this: the host shows as covered and recently scanned, the operating-system findings flow, and a
+process-manager or tool installed into the global folder may even produce findings, which makes the
+coverage look real. The application trees - the dependencies that actually parse requests - never
+produce a finding, and any gate that grades the scanner's findings against the service lockfiles
+passes over the servers vacuously. The gap usually survives because the language-package defaults
+and the custom-path setting live in the scanner's account configuration rather than beside the
+image, and some infrastructure-as-code providers have no resource for that setting at all. It also
+tends to change under the operator: a move from an older agent-based plugin (which walked a wider
+system tree) to a newer scanner with narrower defaults can silently drop trees that used to be
+seen.
+
+**Detect.** On a running host, read the scanner's own statement of the paths it walks (its log or
+its configuration API) and compare it with every directory the image build installs a lockfile's
+tree into. Any installed tree outside the walked set is this rule. Confirm with the
+configuration: custom paths empty, no organisation-level paths, no declaration in the repository.
+The fix is one declared list of the image's package roots, read by both the scanner configuration
+step and the dependency gate, with a live check that fails when the scanner's configured paths
+differ from the declared roots.
+
+**False positives.** Trees under the scanner's default locations; hosts whose images install
+nothing outside the system package manager; applications shipped as container images scanned by
+the registry scanner instead of on the host (check that the host itself does not also carry a
+tree); and scanners configured to walk the whole filesystem.

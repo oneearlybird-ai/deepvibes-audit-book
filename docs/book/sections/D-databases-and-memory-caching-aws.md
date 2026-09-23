@@ -296,21 +296,37 @@ few seconds and indistinguishable from configured batching windows, so the breac
 test and every early production week. It surfaces with volume, and at that point the fix is a
 migration of every existing reader rather than a choice about the next one.
 
-The shape that scales is a single reader per stream that republishes the change as an event on a
-bus, where any number of rules can subscribe without touching the shard. Many products end up
-with a partial version of this already — a bus event emitted by some writers for some consumer —
-and the practical trap is that such an event is usually shaped for its first consumer (it
-carries only what one notifier needed, or is skipped when that consumer would have nothing to
-do), so the next feature finds it incomplete and goes back to the stream.
+The shape that scales is a single reader per stream that republishes every change unchanged to a
+fan-out medium whose consumers each hold their own position, so adding a consumer never adds a
+reader to the table. Which medium is not a detail, because the direct readers it replaces had
+two properties the consumers may have been leaning on without saying so: changes to one item
+arrive in the order they were made, and each consumer retries and checkpoints independently. An
+ordered, partitioned log with a dedicated channel per consumer keeps both, and the consumer code
+barely changes. A general-purpose event bus keeps neither ordering nor, often, discretion: it
+does not promise order, so a consumer that applies images - a cache, a projection, an external
+sync - can apply an older change over a newer one, and a bus with an archive keeps a copy of
+every full row image it carried, outside whatever deletion the table itself honours. A bus fits
+only when every consumer re-reads current state or is otherwise indifferent to order, and the
+payload is fit to be retained. Many products also have a partial version already — a bus event
+emitted by some writers for some consumer — and the practical trap is that such an event is
+usually shaped for its first consumer (it carries only what one notifier needed, or is skipped
+when that consumer would have nothing to do), so the next feature finds it incomplete and goes
+back to the stream.
 
 **Detect.** For every table with a change stream, count its readers across every mechanism that
 can hold one: function event source mappings, pipes, and any service polling the stream
 directly. More than two is the finding, and the count is the severity signal. Then read the
 iterator-age metric of each consumer over a week: a floor of several seconds on every consumer of
 one stream, at low traffic, is consistent with contention, but separate it from configured
-batching windows before calling it proven. For each reader, ask whether its trigger could be a
-bus event instead, and whether the existing bus event for that entity is complete - emitted by
-every writer, for every record, not only the ones its first consumer cared about.
+batching windows before calling it proven. For each reader, read what it does with a record
+before choosing where it moves: if it applies the image, depends on the order of two changes to
+one item, or deduplicates on the record's own sequence identity, it needs an ordered relay that
+passes the record through unchanged; only an order-indifferent consumer can move to a bus event,
+and then ask whether that event is complete - emitted by every writer, for every record, not
+only the ones its first consumer cared about. After the move, check that each consumer reports a
+failed record by the identifier of the transport it now arrives on: a record relayed through a
+log still carries the table's own sequence number inside it, and reporting that one is a value
+the new transport cannot match, which silently checkpoints the whole batch as delivered.
 
 **False positives.** Streams with one or two readers. Global tables' replication, which is a
 platform reader outside the count the guidance addresses. A second reader deliberately added as

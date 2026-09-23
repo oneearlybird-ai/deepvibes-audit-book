@@ -857,7 +857,11 @@ retries and then a dead-letter queue, with the working grant already replaced.
 
 **Detect.** For every policy statement that carries an attribute-list condition and whose resource
 is an index, check that the list holds the base table's partition and sort key names as well as the
-index keys and the projected fields. Do not settle it by reading documentation or by reasoning:
+index keys and the projected fields. The same reading-off error has a second form on any read, index
+or table: a request that filters on a field it does not return (a scan projecting two fields and
+filtering on two others) still presents the filtered fields as read, so a list copied from the
+projection alone refuses every call; the list must hold every attribute the filter expression names
+as well. Do not settle it by reading documentation or by reasoning:
 measure it. Assume a role with a session policy containing only the statement under test (nothing
 is created) and run the real request, then the same request with each table key removed from the
 list, and one request that projects a field outside the list; the first must pass and the others

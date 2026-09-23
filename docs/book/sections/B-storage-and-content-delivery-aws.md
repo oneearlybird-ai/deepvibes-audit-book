@@ -191,3 +191,32 @@ empty state is the intended end of life rather than a break.
 **Detect.** Enumerate every key grant and key policy carrying an encryption-context condition, and for each, resolve whether the container it protects has bucket-level keys enabled — read the live container's encryption configuration, not the IaC, since the setting is frequently toggled outside the module that writes the policy. A condition that names only the object form (a container ARN with an object-path suffix) against a container with the optimization on is the defect; the safe form admits both the container ARN and its object form. Confirm live rather than by reading policy: look for failed-operation counters on the dependent process (replication failure metrics, per-object status showing a failed state) and for access-denied entries attributable to the grant's principal in the key service's audit trail.
 
 **False positives.** Grants whose condition already lists both the container and object forms; containers with the optimization disabled and a gate that keeps it disabled; policies whose condition constrains a different context key entirely; and denials that trace to a separate cause — a key policy that never named the principal, a disabled key, or a cross-account trust gap — which must be excluded by reading the actual denial record rather than assuming this mechanism.
+
+## B:33 — Two writers put the same object key and only one of them tags it, so the evidence tags survive or vanish depending on which write lands last
+
+**Statement.** Two components each fetch the same artifact (a call recording, a generated report,
+an export) and put it to the same object key. They exist for historical reasons: a webhook that
+fires when the artifact is ready, and a workflow step that fetches it when the workflow reaches
+that point. One of them also attaches object tags after its write: consent proof, a retention
+class, a legal-hold marker, the identifiers a lifecycle or access rule matches on. In an object
+store, tags belong to an object version, and a put replaces the object with a new version that
+carries only the tags given in that request. So when the untagged writer's put lands after the
+tagging writer's, the current object loses its evidence tags without any error. Whether a given
+artifact keeps them depends on a race between two independent triggers, and every check that
+reads either writer in isolation passes. Every duplicate write also fires the store's
+object-created notification again, so anything downstream of that event runs once per writer.
+
+**Detect.** For each key pattern under which evidence or policy tags are applied, list every
+principal and code path that puts to it: grants on the prefix, put calls building the key, and
+the notifications or schedules that trigger them. More than one writer is the finding's
+precondition. Then compare what each writer sends. A put without the tagging parameter, or a tag
+application issued as a separate call after the put, on a key another writer also puts to, is
+the race. Confirm with the event trail: count object-created events, or the downstream
+consumer's invocations, per key over a period, since two per artifact is the duplicate write
+made visible.
+
+**False positives.** Writers that use a conditional put (only if the key is absent), so the
+second write is refused rather than applied. Keys whose tags are applied by a rule the store
+evaluates at write time from the request itself, so every writer's put carries them. Buckets
+where versioning plus a read path pinned to the tagged version makes the later overwrite
+irrelevant to every consumer, verified rather than assumed.

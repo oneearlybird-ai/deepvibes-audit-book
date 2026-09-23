@@ -2091,3 +2091,36 @@ events genuinely are distinct occurrences at that rate — verify by distinct-id
 intuition about the source. Feeds whose consumer filters by source at read time as a matter of
 course, provided the filter is in the consumer's own definition rather than in a reviewer's habit.
 And a temporary volume spike from a one-off bulk import, where the steady-state rate is ordinary.
+
+## G:82 — A detector's blindness is repaired and recorded as fixed, and the violations its restored sight produces are written down only inside that closure, so the record reads the problem as solved on the day the problem became visible
+
+**Statement.** When a compliance analyzer has been passing components it could not read, the repair
+is a change to the analyzer, and it is recorded, correctly, as a fixed defect in the analyzer. The
+deploy of that repair converts a population of silent passes into a population of failures in a
+single sweep, often dozens at once, and the failures are true: every one of them was true the day
+before, the analyzer simply could not see it. Whoever closes the analyzer's record usually notices
+the wave and writes it into the closing note, often in exactly the right words — a backlog revealed,
+not a regression introduced; each needs its own triage. That note is the last place the wave is
+written down. The record that carries it is closed, and closed records drop out of every view of
+open work. The findings store shows the wave as a batch of new high-severity rows beside a founding
+population that nobody triages (G:62). And the next reviewer, finding the analyzer's record closed
+with a careful note, has no reason to look further. The organization has just learned the most
+important thing the analyzer was built to tell it, and has filed it under done.
+
+The failure is quiet because every individual step was correct. The analyzer's fix is real and
+verified, the closure is honest, the note is accurate, and the findings exist in the store. What is
+missing is a single transition: the revealed population never becomes work that anyone owns.
+
+**Detect.** For each closed record of a detector or analyzer fix, read the closure for a change in
+the detector's output — a count of subjects that now fail, a phrase such as "newly reported" or
+"revealed". For every such rise, look for an open record, or an owner decision, that covers the
+newly failing subjects. Then compare the detector's live failing population today with its
+population before the fix was deployed: any subject that entered the failing state at the deploy
+and appears in no open record and no recorded decision is the finding. Check the direction before
+flagging — a fix that removes false failures legitimately closes with a falling count and needs no
+successor; only a rise needs one.
+
+**False positives.** A closure that itself opens or links successor records for the revealed
+population, or records an owner decision to accept it with a reason; a detector in a declared
+observe-only bring-up window whose output is not yet treated as work; and a rise that is fully
+explained by subjects deleted and recreated during the window rather than newly visible.

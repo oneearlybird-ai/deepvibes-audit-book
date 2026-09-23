@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1148,
+ "rule_count": 1150,
  "sections": [
   {
    "id": "A",
@@ -1011,7 +1011,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 81,
+   "rule_count": 82,
    "rules": [
     {
      "id": "G:1",
@@ -1336,6 +1336,10 @@
     {
      "id": "G:81",
      "title": "A shared operational feed multiplexes sources whose event rates differ by orders of magnitude, and the loudest source republishes unchanged state, so the rare high-value event is unreachable in the channel that exists to surface it"
+    },
+    {
+     "id": "G:82",
+     "title": "A detector's blindness is repaired and recorded as fixed, and the violations its restored sight produces are written down only inside that closure, so the record reads the problem as solved on the day the problem became visible"
     }
    ]
   },
@@ -3461,7 +3465,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "CC:1",
@@ -3654,6 +3658,10 @@
     {
      "id": "CC:48",
      "title": "Adoption writes the live resource's disabling attribute into the declaration alongside the resource, so a temporary operational silencing becomes permanent declared intent that the plan now defends on a control every inventory reports present"
+    },
+    {
+     "id": "CC:49",
+     "title": "A plan-time hook creates its links at a depth counted from wherever the working copy sits, so when the copy falls back to its default location inside the unit the links land in the tracked tree, and the guard that refuses to apply behind uncommitted source refuses the apply the plan was run to prepare"
     }
    ]
   },

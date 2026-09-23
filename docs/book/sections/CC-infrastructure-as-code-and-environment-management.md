@@ -1191,3 +1191,46 @@ default and active is the exception, provided that polarity is declared. Resourc
 deliberate holding action before deletion, where a tracking record names the removal. And a
 disabling attribute that the provider populates by default and the declaration merely echoes,
 which is a different finding about redundant declaration rather than about laundered intent.
+
+## CC:49 — A plan-time hook creates its links at a depth counted from wherever the working copy sits, so when the copy falls back to its default location inside the unit the links land in the tracked tree, and the guard that refuses to apply behind uncommitted source refuses the apply the plan was run to prepare
+
+**Statement.** A wrapper that plans from a copy of the unit, rather than from the unit in place,
+breaks every relative read that climbs out of the unit, so a hook repairs the copy: from the
+working directory it climbs the same number of parents the unit's own paths climb, and creates
+links there to the real sibling directories. The climb is counted from wherever the copy happens
+to sit. With the copy directed to a cache outside the repository — the configured case — the links
+land beside the cache and nobody sees them. When the cache setting is absent, because a script was
+run directly instead of through the task runner that exports it, or a shell never loaded it, the
+wrapper falls back to its default: a cache directory inside the unit itself. The same climb now
+ends at the unit's own directory, and the hook creates linked copies of sibling directories inside
+the unit being deployed. Nobody anticipated them, so nothing ignores them, and version control
+reports them as new untracked content under the unit's path.
+
+A deploy gate that refuses to apply while deploy source is uncommitted is right to refuse, and it
+now refuses the apply that the plan was executed to prepare; anything that demands a clean checkout
+before handing back a lease on the workspace refuses too. The operator is blocked by their own gate
+on files they did not write, and the quick relief is to delete them by hand or to ignore them. That
+relief is where the second half of the defect lives. An ignore pattern written by directory name
+blinds the guard to a whole class of path it exists to see. One written for the exact residue shape
+blinds it only to the residue, but it also removes the one visible sign that the run was made
+without its environment, and the environment-less run still leaves a full copy of the unit in the
+in-tree cache for filesystem-walking gates to read as duplicate source (U:47). The durable remedy
+is at the cause: every entry point that can invoke the wrapper refuses to run without the
+out-of-tree cache setting, so the residue can never be made. A narrowly scoped ignore is a
+secondary guard, never the fix.
+
+**Detect.** For each hook that creates links or copies at a path relative to the working
+directory, compute where its targets land for every place the working copy can sit — the
+configured cache, the wrapper's default cache, and in place — and list each landing site inside the
+tracked tree. Enumerate the entry points that can invoke the wrapper and check which of them can
+run without the cache setting: scripts callable directly, recipes that do not export it, and
+commands the repository's own guidance tells people to run by hand. Run one of them that way in a
+scratch clone and read version-control status afterwards. Read the ignore file for patterns whose
+only purpose is to hide such residue, and for each ask whether it is scoped to the exact shape and
+whether the cause was closed as well. A deploy gate that has ever been cleared by hand because a
+plan left files behind is the incident's signature.
+
+**False positives.** Hooks whose link targets are absolute or computed from the repository root
+rather than from the working directory; wrappers with no in-tree default, which refuse to run
+without the cache setting; and residue that lands in a path the guard ignores for a stated reason
+where every entry point that could produce it also refuses to run without its environment.

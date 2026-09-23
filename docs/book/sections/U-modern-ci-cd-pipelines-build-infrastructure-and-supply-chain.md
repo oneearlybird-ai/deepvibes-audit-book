@@ -1137,3 +1137,36 @@ lookups at the top of scripts whose pass/fail logic is a file comparison.
 call is the check); probes that must run on every invocation because the pin is only meaningful
 against the live value; and pipelines whose fast lane has credentials, where the split does not
 exist.
+
+## U:58 — A machine image installs a tool with the package manager's global install, so no lockfile records the tree the servers run, the scanner's findings on it map to no file, and a tool that pins its own vulnerable dependency exactly cannot be fixed at all
+
+**Statement.** Image builds install their process manager, CLI or agent the way a person would on
+a laptop: a global install of one pinned version. The version pin looks like reproducibility, but
+it pins one package; every transitive dependency is resolved from the registry at build time and
+recorded nowhere. Three consequences follow. The tree a server runs differs from bake to bake
+with no diff to review. A scanner finding on that tree names a path under the global prefix that
+corresponds to no file in the repository, so any gate that grades findings against lockfiles can
+only report it as owned by nothing, and a gate built to fail on unowned copies fails the lane with
+no remedy it can name. And when the tool's own manifest pins the vulnerable transitive to an
+exact version (a common habit for small parsers), neither bumping the tool (no newer release
+changes the pin) nor waiting for a patch in range (there is no range) fixes it; the only remedy is
+an override, and an override is a property of a project with a manifest and a lockfile, which the
+global install never created. The finding therefore stays open for as long as the image is baked
+the old way, and it usually becomes visible only when host scanning is turned on long after the
+image pattern was established.
+
+**Detect.** In every image or container build, list the package-manager installs that run outside
+a project directory (global installs, installs into a system prefix, tool bootstraps piped from the
+network) and check whether a tracked lockfile governs each one; any that has none is this rule.
+For each host finding the scanner reports, check that the reported path falls under a root the
+build installs from a tracked lock, and that the dependency gate maps that root to the lock; a
+finding under the global prefix is the symptom. The fix shape is a small manifest plus lockfile
+for the tool, installed with the lockfile-honouring install command into a fixed directory and
+linked onto the path the service units call, with any override the tool's exact pins require and a
+build-time assertion that the resolved copy matches the lock.
+
+**False positives.** OS packages installed by the distribution's package manager, which the
+scanner grades against the distribution's advisories and the image refresh fixes; tools installed
+from a vendor-signed single binary with no dependency tree; and global installs removed from the
+image before snapshot (build-time only), provided the scanner confirms nothing remains under the
+global prefix on a running host.

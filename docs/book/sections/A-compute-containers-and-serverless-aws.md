@@ -54,6 +54,8 @@ ECS (Fargate): Missing Storage Encryption on Ephemeral Volumes. Task definitions
 
 EC2/ASG: Missing Instance Refresh Policies for Automated Patching. Auto Scaling Groups running static, long-lived AMIs without scheduled instance refreshes, leaving underlying container hosts or compute instances vulnerable to zero-day OS kernel exploits.
 
+**Detect.** List each group's running image date and the scanner's fixable operating-system findings per host. Do not accept an in-place updater as the patch path until it is shown to install something: on distributions with versioned repositories the host is pinned to the release its image was built from, so a daily security update runs green and reports nothing to install while the scanner lists fixes that shipped in later releases. Prove it on a host by comparing the updater's view of the pinned release with a check against the latest release; if only the latter shows the fixes, operating-system patches arrive solely by rebuilding the image, and the question becomes what schedules that rebuild and what fails when it lapses.
+
 ## A:13 — ECS/EKS: Absence of Container Resource Limits (cpu/memory)
 
 ECS/EKS: Absence of Container Resource Limits (cpu/memory). Microservices deployed without hard memory limits or CPU allocations, enabling an isolated software memory leak or compute loop in one container to completely starve adjacent tasks on the same cluster node.

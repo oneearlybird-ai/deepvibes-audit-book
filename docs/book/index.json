@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1152,
+ "rule_count": 1153,
  "sections": [
   {
    "id": "A",
@@ -1019,7 +1019,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 82,
+   "rule_count": 83,
    "rules": [
     {
      "id": "G:1",
@@ -1348,6 +1348,10 @@
     {
      "id": "G:82",
      "title": "A detector's blindness is repaired and recorded as fixed, and the violations its restored sight produces are written down only inside that closure, so the record reads the problem as solved on the day the problem became visible"
+    },
+    {
+     "id": "G:83",
+     "title": "An alert topic's email subscription is declared as code, created unconfirmed, and deleted by the notification service days later, so between applies the topic has no subscriber and every plan shows only a harmless-looking create"
     }
    ]
   },

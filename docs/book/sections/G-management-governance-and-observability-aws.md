@@ -2124,3 +2124,30 @@ successor; only a rise needs one.
 population, or records an owner decision to accept it with a reason; a detector in a declared
 observe-only bring-up window whose output is not yet treated as work; and a rise that is fully
 explained by subjects deleted and recreated during the window rather than newly visible.
+
+## G:83 — An alert topic's email subscription is declared as code, created unconfirmed, and deleted by the notification service days later, so between applies the topic has no subscriber and every plan shows only a harmless-looking create
+
+**Statement.** Email delivery from a notification topic needs the recipient to confirm: the
+subscription is created in a pending state, a confirmation message goes to the address, and the
+service deletes the pending subscription if nobody confirms within a few days. Infrastructure code
+declares the subscription like any other resource, so the apply succeeds and reports it created.
+When the address is an automated mailbox (an archive, a ticketing intake, a forwarding rule), nobody
+is looking for a confirmation link; when it is a person, the message reads like spam. Days later the
+subscription disappears, the next refresh drops it from state, and the next plan proposes to create
+it again - a line that looks like routine drift rather than a monitoring outage. Between those two
+moments the topic has no confirmed subscriber and every alarm that publishes to it reaches nobody.
+Topics in secondary accounts (a security-tooling account, a log archive) are the usual victims,
+because they are applied rarely, so the gap lasts from one apply to the next and each apply sends
+one more unanswered confirmation.
+
+**Detect.** For every topic that an alarm, a rule or a pipeline notifies, list its subscriptions and
+count only confirmed ones; a topic with alarm publishers and zero confirmed subscribers is the
+finding. Read the account's API audit trail for subscribe calls on that topic with no confirmation
+after them. In plans, treat a create of an email subscription on a topic that already existed as a
+signal to check confirmation, not as drift to apply and forget. Confirm the fix by reading the
+subscription back with an identifier rather than the pending marker.
+
+**False positives.** Protocols that need no confirmation (queue and function subscriptions in the
+same account); topics that are deliberately unsubscribed because nothing publishes to them any more
+(then the finding is the dead topic); and addresses fronted by an automated confirmer that validates
+the topic belongs to the organisation before confirming - check that it ran for this topic.

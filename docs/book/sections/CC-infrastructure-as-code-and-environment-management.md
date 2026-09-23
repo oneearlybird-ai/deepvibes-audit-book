@@ -1027,7 +1027,12 @@ evaluated them.
 
 **False positives.** Caches scoped per workspace (each workspace's copies and links are its
 own); hooks that recreate the link when its target differs from the current root; reads
-resolved through the tool's own dependency mechanism rather than a filesystem climb.
+resolved through the tool's own dependency mechanism rather than a filesystem climb. Not a false positive: a shared cache whose hook deletes and
+re-creates the link on every run. That cures staleness only while runs never overlap; two
+workspaces planning at the same time re-point the link under each other, so one plan reads
+through a link the other just aimed at its own tree, and parallel runs inside one workspace
+collide on the delete-then-create. Only a per-workspace cache removes the cross-workspace
+read, and a hook that leaves an already-correct link alone removes the collision.
 
 ## CC:44 — A provider treats a nested collection attribute as computed, so deleting its block from the declaration plans nothing: the file says the member is gone, the live resource still has it, and the green plan is what hides the gap
 

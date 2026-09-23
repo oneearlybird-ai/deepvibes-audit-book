@@ -636,7 +636,11 @@ service list), both directions. Every registered-but-absent name is the finding;
 (no source directory, no IaC declaration, no live resource) rather than rename before flagging.
 Check whether any reconciliation exists — a verifier, a periodic job, a publish-time gate — that
 compares the registry to the live fleet; absence of that mechanism is the structural half of the
-finding even when the current diff is clean.
+finding even when the current diff is clean. The same holds one level down (a table's registered
+indexes, a queue's registered dead-letter target): a gate that judges other artifacts against the
+registry, such as grants that must name registered indexes, passes every artifact that names a
+phantom, so the reconciliation belongs inside that gate, comparing the registry with the resource
+definitions it is meant to mirror.
 
 **False positives.** Entries for targets that are declared in IaC and genuinely pending first
 deploy (name the change that ships them). Registries whose entries are explicitly lifecycle-stamped

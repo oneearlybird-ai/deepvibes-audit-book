@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1151,
+ "rule_count": 1152,
  "sections": [
   {
    "id": "A",
@@ -822,7 +822,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "F:1",
@@ -1007,6 +1007,10 @@
     {
      "id": "F:46",
      "title": "A caller-side grant on a table's customer-managed key carries the encrypt half of the cipher, but the service decrypts the table key under the caller's identity, so the first real write is denied at the key — after the step it was recording has already happened"
+    },
+    {
+     "id": "F:47",
+     "title": "An attribute-level condition on a scoped session lists the fields a feature used when the fence was written, a later feature reads or writes one more field through the same session, and every such call is denied while the rest of the session keeps working"
     }
    ]
   },

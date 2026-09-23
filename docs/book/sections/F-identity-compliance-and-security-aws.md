@@ -327,7 +327,13 @@ and diff that set against the union of the trust template's principal lists — 
 from the template is a finding; the check is mechanical and should be a verifier, not a review
 habit. Assert action parity too: a trust statement admitting AssumeRole but not TagSession breaks
 every tagged-session caller identically. Live-confirm on one stamped instance: read the actual trust
-policy of a rendered role and check the caller's ARN is present.
+policy of a rendered role and check the caller's ARN is present. A grant-first diff cannot see a caller that holds NEITHER
+half, and that is the common shape when code selects its role indirectly - it names a profile, a
+purpose or a scope, and a shared registry resolves that name to a role family. So also start from
+the code: for every call site that obtains scoped credentials, resolve the name it passes through
+the registry to the role family it will assume, then confirm the calling function's own role holds
+the grant AND the family's template admits it. A function that picks a profile resolving to a family
+it was never wired to fails at its first scoped call, and no IaC-only check will ever list it.
 
 **False positives.** Callers admitted by a different trust statement in the same policy (service
 principals, federation, a separate user-context statement in a dual-trust design — check every
@@ -807,3 +813,29 @@ confirmed against that service's own usage notes, not by analogy with the table 
 statement whose resource is deliberately broader than one alias (a wildcard within an account) and
 resolves to the table's key at evaluation time; grants that are a harmless superset (decrypt plus
 generate-data-key), which are an over-grant to note, not this defect.
+
+## F:47 — An attribute-level condition on a scoped session lists the fields a feature used when the fence was written, a later feature reads or writes one more field through the same session, and every such call is denied while the rest of the session keeps working
+
+**Statement.** Key-value stores let a policy fence a session to named attributes - a condition that
+every attribute a request names must belong to an allowed list (for a document read, the projected
+fields; for an update, the fields the expression sets). The fence is written once, beside the code
+that needed it, and it is exactly right on that day. The next feature that uses the same scoped
+session to read or write one more field - a qualification record, a learned preference, a new
+status flag - is refused, because the new attribute is not on a list that lives in a different file,
+often a different package, from the feature. Nothing breaks at deploy: every other call through the
+session still succeeds, tests run against in-memory fakes that do not evaluate the policy, and the
+new path is usually conditional (one vertical, one industry, one confidence threshold), so it may
+not execute for weeks. When it does, the denial is typically caught by a best-effort wrapper around
+the new step and logged at warning level, and the feature silently never writes.
+
+**Detect.** For each scoped session profile that carries an attribute-list condition, collect the
+list, then find every call site that obtains a session with that profile and enumerate the attribute
+names each request can carry: projection expressions, update and condition expressions, and names
+supplied through expression-name maps built from data (those are the ones reviews miss, because the
+field name is a variable). Any reachable name outside the list is a finding. Confirm by reading the
+wrapper around the call - a caught and logged denial is this rule, an uncaught one is an outage.
+
+**False positives.** Attributes the service does not evaluate against the condition for that
+operation (check the service's documented condition-key behaviour per action); call sites that use
+a different, broader session for the extra field by design; and fields read only through an
+index projection the condition does not cover.

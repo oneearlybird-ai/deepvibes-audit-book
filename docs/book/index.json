@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1153,
+ "rule_count": 1154,
  "sections": [
   {
    "id": "A",
@@ -2657,7 +2657,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 56,
+   "rule_count": 57,
    "rules": [
     {
      "id": "U:1",
@@ -2882,6 +2882,10 @@
     {
      "id": "U:56",
      "title": "The plan pins the infrastructure to a source revision but reads the code through a mutable \"latest\" artifact pointer, so a build landed mid-lane ships a later revision's code under an earlier revision's certification"
+    },
+    {
+     "id": "U:57",
+     "title": "A static check performs a live call it only needs in an optional mode, so the lane classifier correctly files it as live, and its static verdict never runs at the gate every change passes"
     }
    ]
   },

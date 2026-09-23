@@ -1113,3 +1113,27 @@ source hash computed from the plan's own tree, so a later build writes a new key
 what an older plan resolves. Lanes that build the artifact inside the same run, from the same
 checkout, and pass it to the plan by value. Single-writer estates where no build can land while a
 lane runs, with the lock verified rather than assumed.
+
+## U:57 — A static check performs a live call it only needs in an optional mode, so the lane classifier correctly files it as live, and its static verdict never runs at the gate every change passes
+
+**Statement.** Pipelines split their checks into a fast lane that runs on every change and a slow
+lane that runs where live credentials exist, and they decide the lane by behaviour: a check that
+fails without credentials is live. That test is correct and still misfiles checks whose verdict is
+entirely static - a comparison of committed files against a committed pin - when the script
+resolves something live at load time for the benefit of an optional mode: an account id for a
+probe, a caller identity for a re-measure, a region for a fetch that only the refresh path uses.
+Without credentials the script dies before its static comparison runs, so the classifier moves the
+whole check to the slow lane, and a change that breaks the pin lands through every fast gate and is
+caught only when someone next runs the slow lane - after the change is live, and usually by someone
+else, who meets a red certification for work they did not do.
+
+**Detect.** For each check in the slow lane, find the first live call it makes and ask whether the
+verdict it prints depends on it, or whether only an optional flag uses it. Run the check with no
+credentials and with the live call moved behind that flag; if the static verdict now passes both
+ways, the check belongs in the fast lane. Look for module-scope identity, account or configuration
+lookups at the top of scripts whose pass/fail logic is a file comparison.
+
+**False positives.** Checks whose verdict genuinely compares against deployed state (then the live
+call is the check); probes that must run on every invocation because the pin is only meaningful
+against the live value; and pipelines whose fast lane has credentials, where the split does not
+exist.

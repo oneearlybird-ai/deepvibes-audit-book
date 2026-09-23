@@ -312,3 +312,31 @@ reconciler and end with the live probe.
 platform's, not the model's; a single narration turn followed by a real call; candidates that route
 to a different legitimate branch (emergency intake, a callback) under an after-hours prompt — score
 the branch taken, not the absence of a booking.
+
+## R:22 — A conversation record keeps each tool call and its result as separate entries joined by a request id, and a consumer that looks for the result inside the call's own entry, or matches it by tool name, attaches nothing, so every tool failure and every tool output is silently lost downstream
+
+**Statement.** Conversational platforms record a turn's tool call and that call's result as two
+items in the transcript — the call in one entry, the result (its value, an error flag, a latency)
+in a later one — and join them with a request identifier. A post-call consumer written against a
+simplified example, where call and result share an entry, looks for the result beside the call and
+finds none on real data. Matching by tool name instead of the identifier fails the other way: the
+second call of a tool is paired with the first call's result. Nothing errors in either case. The
+consumer stores bare tool names, so every downstream reader that needs to know what a tool
+returned, or whether it failed, is working from records that say every tool ran and returned
+nothing: a detector for "the agent claimed a booking no tool made" counts a failed booking attempt
+as a booking, an outcome derived from the tool trail marks a call full of failures as clean, and a
+cache that learns from tool outputs never learns anything. The loss is invisible exactly because
+the stored shape still looks plausible — a list of the tools the agent used.
+
+**Detect.** Take one real conversation record from the vendor's API — not a fixture, not the
+documentation's example — and print only its structure: for every entry, the tool calls and tool
+results it holds, with their identifiers and error flags. Then read the consumer's pairing code
+against that structure. Finally count the stored records: across every stored call, how many tool
+entries carry an output or a failure flag. Zero across dozens of calls, including tools known to
+return structured values, is the finding; a nonzero count that includes calls of the same tool
+twice in one conversation still needs the identifier check.
+
+**False positives.** A platform whose schema genuinely nests the result inside the call object (read
+the real payload to establish it); consumers that only need the list of tools attempted and never
+their results or failures; a pairing that joins by the platform's own identifier across the whole
+transcript.

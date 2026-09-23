@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1145,
+ "rule_count": 1146,
  "sections": [
   {
    "id": "A",
@@ -2282,7 +2282,7 @@
    "title": "Third Party: ElevenLabs Audio/AI Integration",
    "group": "third-party",
    "file": "sections/R-third-party-elevenlabs-audio-ai-integration.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "R:1",
@@ -2367,6 +2367,10 @@
     {
      "id": "R:21",
      "title": "A voice agent's model emits the platform's tool-call markup as speech instead of calling the tool, then invents the result and confirms it; only the platform's simulator with every tool mocked measures a candidate model's real call rate, and a model is chosen there, never from a spec sheet"
+    },
+    {
+     "id": "R:22",
+     "title": "A conversation record keeps each tool call and its result as separate entries joined by a request id, and a consumer that looks for the result inside the call's own entry, or matches it by tool name, attaches nothing, so every tool failure and every tool output is silently lost downstream"
     }
    ]
   },

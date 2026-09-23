@@ -820,7 +820,12 @@ attributes it actually puts on the row; a reader attribute with no writer is the
 warning. Prefer fixtures built from a writer's real output (a captured row, or a call to the
 writer's own builder) over hand-typed ones. In production, treat a persistently empty result
 from a component whose inputs are known to be non-empty as a wiring defect until proven
-otherwise - count the rows in the store directly and compare.
+otherwise - count the rows in the store directly and compare. A writer that exists in code but
+that nothing can reach - a handler with no route, a job with no trigger - counts as no writer. The
+consequence is worse than an empty report when the attribute is a mode flag whose default is the
+unsafe choice: the protective branch keyed on the other value can never run, so the hazard it was
+written to prevent is live for everyone. Trace every mode flag's non-default value back to a
+reachable writer, and read what the default branch does to the users the other branch was for.
 
 **False positives.** Optional attributes that some writers produce and the reader documents as
 best-effort; a reader that falls back to the writer's attribute when its preferred one is

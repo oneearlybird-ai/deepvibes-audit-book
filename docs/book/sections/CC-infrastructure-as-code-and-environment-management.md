@@ -1234,3 +1234,43 @@ plan left files behind is the incident's signature.
 rather than from the working directory; wrappers with no in-tree default, which refuse to run
 without the cache setting; and residue that lands in a path the guard ignores for a stated reason
 where every entry point that could produce it also refuses to run without its environment.
+
+## CC:50 — A grant is withdrawn in the same change as the code that stops needing it, but the platform keeps the old code serving until the new version's warm capacity is ready, so for that window the old code runs without a permission it still uses
+
+**Statement.** Moving a serverless function's alias to a new version is not an instant switch
+when the alias carries pre-warmed capacity or weighted routing. The runtime keeps sending
+requests to the previous version's environments until the new version's provisioned
+environments report ready — minutes, when the init phase loads a large runtime — and a weighted
+alias keeps a share on the old version by design. A permission change, by contrast, applies the
+moment it is written. A single change that removes a grant the OLD code needs and ships NEW code
+that no longer needs it therefore opens a window in which the old code is still answering
+requests with its permission already gone: an access denial on a path that was never broken in
+either version. The plan shows two correct changes; the tests pass, because each version is
+tested against its own grants; the only trace is a burst of access-denied errors between the
+permission update and the moment the new environments take over, with the invocation record
+naming a version that is not the alias's target. The same overlap exists in any rollout that
+runs two versions at once — canaries, weighted aliases, rolling instance refresh, blue/green with
+a drain — and in the reverse direction too: code that needs a new grant, shipped in the same
+change that adds it, is safe only because the grant lands first.
+
+The remedy is the expand/contract discipline applied to permissions: add a grant before or with
+the code that needs it; withdraw a grant only in a later change, after the code that needed it is
+confirmed retired — alias fully on the new version, provisioned capacity ready, no routing
+weight on the old version, instance refresh complete. A deploy lane that knows which functions
+carry pre-warmed capacity or weighted routing can refuse a plan that both changes such a
+function's code and removes or narrows an Allow on its role in the same apply.
+
+**Detect.** From the IaC, list every function whose alias has a provisioned-concurrency
+configuration or a routing configuration, and every service deployed by rolling refresh. For a
+change that touches one of them, check whether the same plan also removes or narrows an Allow
+statement on that function's role, or a resource policy the old code relies on; if it does, the
+change carries the window. Read the deploy tooling for an ordering guard on exactly this pair.
+In the running system, an access-denied burst in the minutes after an apply whose invocation
+records name the previous version id, ending when the new environments report ready, is the
+incident's signature; the provisioned-concurrency status and the alias's target version at the
+time of the burst confirm it.
+
+**False positives.** A grant removed in a change of its own, after the alias is fully on the
+version that no longer needs it and its capacity reports ready. Functions with no pre-warmed
+capacity and no weighted routing, where the alias switch is atomic and the exposure is at most
+the ordering of two resources inside one apply. Grants the old code never exercised on any path.

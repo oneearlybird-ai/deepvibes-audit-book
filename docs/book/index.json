@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1158,
+ "rule_count": 1159,
  "sections": [
   {
    "id": "A",
@@ -3497,7 +3497,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 49,
+   "rule_count": 50,
    "rules": [
     {
      "id": "CC:1",
@@ -3694,6 +3694,10 @@
     {
      "id": "CC:49",
      "title": "A plan-time hook creates its links at a depth counted from wherever the working copy sits, so when the copy falls back to its default location inside the unit the links land in the tracked tree, and the guard that refuses to apply behind uncommitted source refuses the apply the plan was run to prepare"
+    },
+    {
+     "id": "CC:50",
+     "title": "A grant is withdrawn in the same change as the code that stops needing it, but the platform keeps the old code serving until the new version's warm capacity is ready, so for that window the old code runs without a permission it still uses"
     }
    ]
   },

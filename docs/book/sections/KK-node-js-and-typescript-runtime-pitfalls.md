@@ -308,7 +308,12 @@ no edit to the code path that throws.
 **Detect.** For any commit that deletes more than it adds in a long entry function, list the
 bindings it removed and grep the post-change tree for each name — a name that still appears only as
 a property root inside callees is the finding. Prefer a gate that actually executes the entry point
-in a dry/plan mode over one that parses it. Where a context object is assembled once and read
+in a dry/plan mode over one that parses it. The same sweep drops IMPORTS as readily as bindings —
+an accessor trimmed from an import list while a function below still calls it — and in a runtime
+with no compile-time name resolution the cheapest gate that sees both is a whole-package
+undefined-name lint (never a lint of changed files only) run inside the suite the landing gate
+executes: the dropped name shows as undefined where a parse check, and unit tests that never reach
+the boot path, stay green and the load balancer becomes the first test. Where a context object is assembled once and read
 everywhere, construct it in a function that returns it (so its absence is a call-site error) rather
 than as a bare binding in a several-hundred-line scope. After the fact, a `ReferenceError` or an
 `undefined` property read on the first invocation after a retirement commit names the deletion.

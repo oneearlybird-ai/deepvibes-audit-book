@@ -572,3 +572,64 @@ redrive a record whose other recipients already succeeded, are both correct, and
 that such a decision is silent, not that it was made. Identifier expressions held in a local
 variable, where the variable is assigned from the correct field — read the assignment before judging
 the line. And source types whose correct identifier genuinely is not a sequence number.
+
+## A:49 — Cancelling a rolling instance replacement is not a rollback: the group shrinks by its termination policy, which prefers the OLD template, and heals from the NEW one
+
+**Statement.** A rolling instance replacement launches instances from the group's current template
+and retires the previous ones as the new ones pass health checks; with a minimum-healthy floor of
+100% the old instance keeps serving for as long as the new ones fail. When the new image does not
+come up — a boot crash, a health path that never answers — the operator's reflex is to cancel the
+replacement. Cancelling changes nothing about the template the group points at, and it leaves the
+group above its desired size, so the group scales in; scale-in is decided by the termination policy,
+not by health and not by which instances the replacement had judged good. The default policy's first
+criterion is the OLDEST launch template: exactly the one instance that works. The group terminates
+the proven instance, keeps the crash-looping ones, and every replacement it launches to heal them
+comes from the same broken template. A single-instance group goes from "degraded rollout, service
+intact" to "no serving instance" at the moment of the cancel, with no error anywhere, because every
+step was the group doing what it was configured to do. None of the replacement's own safety settings
+(minimum healthy percentage, warm-up, checkpoints) survive the cancel, and the automatic-rollback
+option acts only when the replacement FAILS on its own — a cancel is not a failure.
+
+**Detect.** For every group that replaces instances from a template pinned to a specific version:
+check whether the replacement's automatic rollback is enabled (it needs a launch template; the
+platform refuses it when the template's image is a parameter reference or the version is a floating
+alias), and whether the termination policy would pick the old-template instance on scale-in — the
+default does. Read the runbook and the deploy tool for the word "cancel": a documented cancel step
+on a group whose desired size equals its minimum is the finding. The safe recovery is to point the
+template at a known-good image and apply, which starts a new replacement toward a healthy target
+(the platform cancels the running one itself) and keeps the floor protecting the old instance
+throughout; the scaling-activity history shows which instance a past cancel actually removed.
+
+**False positives.** Groups whose old-template instances outnumber the scale-in at cancel time;
+groups whose policy retires the newest instance first; groups with automatic rollback whose rollout
+was left to fail rather than cancelled — confirm from the scaling-activity history that the
+terminated instance was a new-template one.
+
+## A:50 — A termination lifecycle hook that nothing completes turns every termination into a fixed maximum wait, and the group's replacement reports "in progress" for the whole of it
+
+**Statement.** A termination hook exists to hold an instance until its in-flight work has drained;
+the contract is that something on or beside the instance completes the hook when draining is done,
+and the heartbeat timeout is the ceiling for the case where that signal never comes. When nothing
+completes the hook — no agent on the host, no rule reacting to the hook's event, the application
+draining only on the shutdown signal that arrives AFTER the hook — the ceiling is the only exit, and
+every termination waits the full window whether the instance holds a thousand calls or none. The
+drain the hook was sized for happens afterwards, on shutdown, and adds its own time. The visible
+symptoms are a rolling replacement that stays "in progress" long after the new instance is healthy,
+a group that runs above its desired size for a fixed number of minutes on every roll, and terminated
+instances whose lifetime ends at the same offset every time. Because the wait is exactly what the
+hook declares, no error is raised and monitoring reads it as a slow but successful roll; the cost
+appears as a wider window in which a second deploy, a cancel or an operator's reflex meets a group
+that is still mid-replacement.
+
+**Detect.** For each termination hook, find the code that calls the platform's complete-lifecycle
+or record-heartbeat action for it: grep the images' provisioning scripts, the application, and the
+event rules for the hook's name and for those two API names. None found means the hook is a fixed
+delay. Confirm from the scaling-activity history: terminations whose start-to-end duration is
+constant across instances, including instances whose application was not running, are waiting on
+the ceiling, not on drain. Compare the measured duration with the declared heartbeat — a multiple
+of it points at a retried default action or a second wait stacked behind the hook.
+
+**False positives.** Hooks completed by an external controller (a deploy tool or an event rule)
+that the grep of the host image would not show — check the event rules and the tool before filing;
+groups whose declared heartbeat is deliberately the drain budget and whose operators accept a
+fixed-length roll, documented as such.

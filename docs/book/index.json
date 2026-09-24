@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1161,
+ "rule_count": 1163,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 48,
+   "rule_count": 50,
    "rules": [
     {
      "id": "A:1",
@@ -202,6 +202,14 @@
     {
      "id": "A:48",
      "title": "The event source enables partial-batch reporting and the handler returns a shape the platform does not recognise, so every caught error is checkpointed as processed and the retry, bisect and dead-letter settings declared beside the trigger are unreachable"
+    },
+    {
+     "id": "A:49",
+     "title": "Cancelling a rolling instance replacement is not a rollback: the group shrinks by its termination policy, which prefers the OLD template, and heals from the NEW one"
+    },
+    {
+     "id": "A:50",
+     "title": "A termination lifecycle hook that nothing completes turns every termination into a fixed maximum wait, and the group's replacement reports \"in progress\" for the whole of it"
     }
    ]
   },

@@ -943,3 +943,28 @@ attribute whose values are generated from the same definition the verifier uses,
 hand-maintained per entry, cannot hold a retired name this way. And a manifest entry describing a
 component that is itself retired carries a retired class correctly; confirm the component is live
 before counting its attribute as drift.
+
+## DD:40 — A schema attached as a deploy-time validator is exercised only by the configuration service, so a pattern that is not a valid regular expression under the service's dialect deploys silently and then refuses every document
+
+**Statement.** A configuration profile carries a JSON schema the service evaluates before it
+accepts a new version. The schema lives in the infrastructure code and reaches the service through
+an infrastructure apply, which checks that the content is a string, not that it is a schema. Nothing
+at land compiles it: the local checks read the document and compare it against the schema by hand,
+or with a library whose dialect is more permissive than the service's, and the document's own values
+happen to satisfy the intent of the pattern. A pattern the service's engine rejects — a nested
+quantifier, a look-behind, a class the dialect lacks — therefore applies cleanly, and the failure
+surfaces at the first publish after it, as a schema syntax error that has nothing to do with the
+document being published and refuses every document that will ever be offered until the schema is
+repaired and re-applied. Because the apply that installed it succeeded and the previous deployment
+keeps serving, nothing alarms; the write path of the configuration plane is simply closed.
+
+**Detect.** For every validator schema attached to a configuration profile, compile every `pattern`
+and every `patternProperties` key with the regular-expression engine and flags the service documents
+(for an ECMA 262 validator, a JavaScript `new RegExp(p)` with the service's flags) at land time, and test each patterned string in
+the tree document against its compiled pattern. Read the live profile's validator content and diff it
+against the tree. A land-time check that validates the document against the schema by hand, or with
+a library in lax mode, is not this check.
+
+**False positives.** Schemas the service compiles at apply time and refuses then, loudly. Profiles
+without a schema validator. Patterns valid in the service's dialect that a local engine rejects: the
+check must use the service's dialect, not the local default.

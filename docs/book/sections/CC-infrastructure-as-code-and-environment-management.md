@@ -1307,3 +1307,35 @@ existence; an account deliberately left at defaults with the reason recorded (a 
 of value); controls whose per-account failure is expected under an organisation-level service (an
 access analyzer or trail run from a delegated administrator), which are accepted postures rather than
 lost settings.
+
+## CC:52 — A publish-before-apply gate written for the consumers of a configuration document is also applied to the stack that ships the document's validator, so the only way to widen the validator's registry is to let a deployment be refused first
+
+**Statement.** A deploy lane gates infrastructure plans on "the configuration document is already
+published": consumers must never deploy ahead of the document they boot from, so the gate is right
+for them. The same gate is then applied to the platform stack — the one that owns the configuration
+profile, its schema and the code-side validator the configuration service invokes at deployment. For
+that stack the dependency runs the other way: the document can only publish once the validator that
+judges it has deployed. When a change widens the validator's registry and the document uses the new
+shape in the same commit (which the land-time twin of CC:46 rightly requires), neither step can go
+first: the publish is refused by the live validator, and the plan is refused by the gate because the
+document is unpublished. The lane still has an exit, and it is a bad one: the publisher creates the
+hosted version before the deployment is refused, the gate then sees a hosted version matching the
+tree and lets the platform plan through, the validator deploys, and a second publish succeeds. Every
+registry-widening change therefore ships through one deliberately failed deployment, with the
+rollback events, alarms and audit rows a failed deployment produces, and the operator learns the
+sequence as folklore rather than reading it in the lane.
+
+**Detect.** For every configuration document with a code-side validator, name the stack that deploys
+the validator (and the profile's schema) and list the gates that stack's plan runs. A gate that
+requires the document to be published before that stack applies is the finding. Confirm it live in
+the deployment history of the last registry-widening change: a refused or rolled-back deployment
+followed minutes later by a validator redeploy and a second deployment of the same document is the
+signature. Check every copy of the gate — a batch lane usually re-implements the single-stack lane's
+gates in code and carries the same inversion.
+
+**False positives.** Lanes whose platform stack is applied strictly before the publish by
+construction, so the gate never runs for it. Documents validated only by a schema the document
+itself carries. A registry change that lands and deploys in a release of its own, before the
+document that needs it. A platform stack that deploys the document itself through IaC from a
+published-version pointer: there publish-first is right, and a validator change must be split into
+its own release instead.

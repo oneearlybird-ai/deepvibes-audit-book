@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1166,
+ "rule_count": 1168,
  "sections": [
   {
    "id": "A",
@@ -3517,7 +3517,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "CC:1",
@@ -3722,6 +3722,10 @@
     {
      "id": "CC:51",
      "title": "Account-level hardening was applied by hand in the origin account and never became code, so every account the estate moves into or adds starts at the provider's permissive defaults, and the standard's findings there read as fresh noise rather than a lost setting"
+    },
+    {
+     "id": "CC:52",
+     "title": "A publish-before-apply gate written for the consumers of a configuration document is also applied to the stack that ships the document's validator, so the only way to widen the validator's registry is to let a deployment be refused first"
     }
    ]
   },
@@ -3730,7 +3734,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 39,
+   "rule_count": 40,
    "rules": [
     {
      "id": "DD:1",
@@ -3887,6 +3891,10 @@
     {
      "id": "DD:39",
      "title": "An attribute of the source-of-truth manifest that no consumer reads preserves a superseded design's vocabulary indefinitely, and the verifier that enforces the redesign certifies the model consistent without ever checking it"
+    },
+    {
+     "id": "DD:40",
+     "title": "A schema attached as a deploy-time validator is exercised only by the configuration service, so a pattern that is not a valid regular expression under the service's dialect deploys silently and then refuses every document"
     }
    ]
   },

@@ -1743,3 +1743,39 @@ construction. Gates that resolve the counterpart from a published, versioned art
 filesystem path only as a local development convenience, provided the artifact path is the one the
 enforcing environment takes. And deliberately layout-coupled developer conveniences that are not
 blocking — the finding requires that the abort stands between a change and the trunk.
+
+## NN:68 — A compliance control reads fields from one record that the producer writes to a sibling record, so every subject fails from the control's first evaluation, the control is red from birth, and its other checks lose their signal behind the constant failure
+
+**Statement.** A scheduled compliance control evaluates each subject by reading its record and
+demanding a set of fields. The producer that creates subjects writes two records per subject —
+a provisioning record and the subject's own record — and the fields the control demands are
+written to the first while the control reads the second. No subject can ever carry them, so
+every evaluation of every subject fails on the same phantom fields from the day the control is
+activated. The control's remaining checks — the ones that would catch real drift in roles, keys,
+identity pools or credentials — still run and still append their findings, but they land in a
+verdict that is already NON_COMPLIANT for a fixed reason, so a new real failure changes nothing
+anyone reads: the aggregate count stays at the population, the per-subject annotation begins
+with the same three tokens, and the dashboard shows the same red it showed yesterday. A control
+that is red for every subject is indistinguishable from a broken one, and a control everyone
+has learned to ignore is not a control.
+
+The unit test does not save it. Its fixture is a hand-written record carrying exactly the
+phantom fields the control demands, so the "fully compliant subject" case is green against a
+shape the producer never writes. The fixture encodes the author's belief about the record, and
+the belief was wrong in the same way as the control.
+
+**Detect.** For each compliance control, take the fields it reads from the subject record —
+literal property reads and the keys it destructures — and resolve each against the code that
+writes that exact table and key pattern, not a sibling table with a similar shape. A field the
+control demands that no writer of that record produces is the finding whether or not the control
+has ever reported COMPLIANT. In the running system, read the control's evaluation history: a
+population where every subject is NON_COMPLIANT since first activation, with identical leading
+annotations, is the signature, and the first-activation timestamp dates the loss of signal.
+Then read the fixture the control's test uses and diff its keys against a live record of the
+same table.
+
+**False positives.** Fields the producer writes to the same record in a later phase (a
+finalizer stamping ARNs after the create), where the control tolerates their absence until that
+phase, or evaluates only subjects past it. A control deliberately red as a launch gate, where the
+population is expected to fail until a documented step is done and the annotation names that
+step.

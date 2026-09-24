@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1159,
+ "rule_count": 1160,
  "sections": [
   {
    "id": "A",
@@ -4600,7 +4600,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 67,
+   "rule_count": 68,
    "rules": [
     {
      "id": "NN:1",
@@ -4869,6 +4869,10 @@
     {
      "id": "NN:67",
      "title": "A blocking cross-repo gate resolves its counterpart through a filesystem sibling and aborts when the path is absent, so whether a change can be landed at all is decided by the working copy's layout rather than by the change"
+    },
+    {
+     "id": "NN:68",
+     "title": "A compliance control reads fields from one record that the producer writes to a sibling record, so every subject fails from the control's first evaluation, the control is red from birth, and its other checks lose their signal behind the constant failure"
     }
    ]
   },

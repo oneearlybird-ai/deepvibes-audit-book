@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1169,
+ "rule_count": 1170,
  "sections": [
   {
    "id": "A",
@@ -2427,7 +2427,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "S:1",
@@ -2508,6 +2508,10 @@
     {
      "id": "S:20",
      "title": "A second scoping dimension exists in the schema and in the UI's navigation but in no query, so a record filed under one sub-scope is returned under every sub-scope its parent contains"
+    },
+    {
+     "id": "S:21",
+     "title": "A tenant-scoped client is minted by hand beside the one shared session library, so the second credential path carries its own cache and expiry arithmetic, drifts from the library's fences, and is invisible to the control that reads the library"
     }
    ]
   },

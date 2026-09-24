@@ -287,3 +287,27 @@ account-level billing or support object, where the sub-scope column is provenanc
 scope. And reads already narrowed by a different dimension that happens to imply the sub-scope, such
 as a per-requester filter, where the exposure is smaller than it looks — smaller, but still not the
 sub-scope isolation a reader would assume.
+
+## S:21 — A tenant-scoped client is minted by hand beside the one shared session library, so the second credential path carries its own cache and expiry arithmetic, drifts from the library's fences, and is invisible to the control that reads the library
+
+**Statement.** A platform has one sanctioned way to act as a tenant: a session library that resolves
+the tenant's role, assumes it with the tenant tags, fences the session with the profile's policy,
+caches the credentials and retires them before expiry. One function, usually the oldest or the most
+performance-sensitive, keeps its own version of that: it calls the token service itself, passes the
+tags it remembers, builds a client from the raw credentials through a factory, and caches the client
+in a module-scope map with its own expiry margin. The result is a second credential path in the same
+codebase. It has no session policy, so the session carries the role's whole grant rather than the
+profile's narrowing; its cache and expiry logic are maintained separately from the library's and
+diverge when the library's are fixed; and any control that recognises tenant isolation by reading
+the library's entry points — or by following credentials into a client it can see constructed — sees
+an access through a client it cannot classify and reports it as unknown, or worse, as clean.
+
+**Detect.** Search the tenant-facing code for the token service's assume-role call outside the
+session library, and for client constructors that take a credentials object. Each hit is a second
+path; confirm by asking what fences the session (nothing but the role) and who evicts the cache (the
+function's own arithmetic). The isolation control's own output is a second signal: an access whose
+client is "unknown" or "unresolved" next to accesses attributed to profiles.
+
+**False positives.** The session library itself. A function that assumes a platform role, not a
+tenant role, where no per-tenant fence exists to bypass. Code that predates the library and is
+scheduled for removal with an owner and a date.

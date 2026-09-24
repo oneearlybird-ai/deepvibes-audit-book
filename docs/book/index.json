@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1157,
+ "rule_count": 1158,
  "sections": [
   {
    "id": "A",
@@ -822,7 +822,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "F:1",
@@ -1015,6 +1015,10 @@
     {
      "id": "F:48",
      "title": "An attribute-list fence on a secondary-index query names the fields the request names - the index keys and the projection - but the service also counts the base table's own key attributes as read, so the fence denies every request from its first day"
+    },
+    {
+     "id": "F:49",
+     "title": "A handler learns which tenant it serves only after a lookup, so its shared role is granted the credential path for every tenant, although a per-tenant role that grants exactly the one path already exists and the handler already knows which one to use by the time it reads"
     }
    ]
   },

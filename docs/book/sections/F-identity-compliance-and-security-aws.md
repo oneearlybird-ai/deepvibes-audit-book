@@ -874,3 +874,30 @@ secondary indexes, which share the base partition key, measure rather than assum
 are counted. An attribute-list condition without the specific-attributes requirement is a different
 defect (it admits any request that omits a projection) and is flagged by the provider's own policy
 validator.
+
+## F:49 — A handler learns which tenant it serves only after a lookup, so its shared role is granted the credential path for every tenant, although a per-tenant role that grants exactly the one path already exists and the handler already knows which one to use by the time it reads
+
+**Statement.** A webhook or callback does not arrive carrying a trusted tenant: it resolves the tenant
+from its own records first (a dialled number, a call id, a signed state), then reads that tenant's
+provider credential - often to verify the request's signature, before the request is trusted. Because
+the tenant is not known when the role is written, the handler's own role gets the credential path
+with the tenant segment wildcarded, and every invocation can read every tenant's credential. The
+platform usually already has what the narrow read needs: a per-tenant role whose policy pins the path
+to the tenant it is assumed for, and that the handler is already trusted to assume for its data
+calls. The wildcard survives because the credential read sits in a shared helper that takes clients
+from the caller, the table-isolation checks the estate runs look only at data stores, and the
+secrets carry the provider's default key, so no key grant ever draws a reviewer's eye to them. A
+single leaked credential from that role is every tenant's provider account.
+
+**Detect.** List every role statement that allows reading secrets on a path with a wildcard in its
+tenant segment; for each, find the code that makes the read and ask when the tenant is known - if the
+code has resolved the tenant before the read (it passes a tenant id into the helper), the read can
+ride the per-tenant role instead. Check that the per-tenant role grants the pinned path and trusts
+the handler, and prove the narrow read on the live system before removing the wildcard: simulate the
+per-tenant role against one tenant's secret, and the wildcard role against another tenant's to show
+the exposure. Include instance roles and compliance scanners, which accumulate the same grant.
+
+**False positives.** A reader that genuinely serves all tenants in one invocation (a rotation job, an
+inventory scan) and records that posture; a wildcard statement cancelled by an explicit Deny on the
+same paths in the same principal's policies; a path whose wildcard segment is not the tenant (a
+version or a key name inside one tenant's tree).

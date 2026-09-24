@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1168,
+ "rule_count": 1169,
  "sections": [
   {
    "id": "A",
@@ -2930,7 +2930,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "V:1",
@@ -3027,6 +3027,10 @@
     {
      "id": "V:24",
      "title": "A time-sensitive value is computed when the work is queued and replayed verbatim when the work finally runs, so a delay or a retry delivers an offer that has already expired"
+    },
+    {
+     "id": "V:25",
+     "title": "A scheduled job keeps computing and storing a derived record that nothing reads, and everything built around the job — its role, its grant, its dead-letter wiring, the alarms that watch its schedule — stays alive to protect output with no consumer"
     }
    ]
   },

@@ -376,3 +376,27 @@ delivered once stale, where the staleness is already handled by not delivering. 
 time reference is relative and re-rendered at delivery from the current clock. And cases where the
 stored value is a request for a recomputation rather than a result, which is the shape the fix
 usually takes.
+
+## V:25 — A scheduled job keeps computing and storing a derived record that nothing reads, and everything built around the job — its role, its grant, its dead-letter wiring, the alarms that watch its schedule — stays alive to protect output with no consumer
+
+**Statement.** A periodic task was written to precompute something a screen or a report would
+read: a health score, a rollup, a snapshot. The reader was never built, was built against a
+different source, or was removed. The task keeps running on its schedule, writing rows that expire
+and are rewritten, and because it runs cleanly it produces no signal that anything is wrong. Around
+it the platform accumulates the apparatus a real job deserves: an execution role with a scoped write
+grant, a dead-letter queue policy naming it, an alarm that fires if the schedule stops, another if
+the invocation fails, monitoring tokens for its error lines, an isolation verdict that flags its
+direct write in every review. All of that is maintained, audited and paid for so that a row nobody
+reads is refreshed on time. The cost is not the compute; it is the attention: each artefact is
+reviewed as if it mattered, the job's write is reasoned about in every isolation pass, and the data
+model carries a key family whose only purpose is to describe the unread rows.
+
+**Detect.** For every scheduled writer, name its reader by tracing the key it writes (partition and
+sort prefix) to a read site in code across every client surface — services, web, native. A writer
+whose key appears only in itself, its test and the schema is the finding; a derived value with the
+same name on a client is not evidence of a reader until the client's source is traced to that key.
+Confirm live: rows present and freshly written, with no code path that reads them.
+
+**False positives.** Writers whose reader is an external system (an export, a data share, an audit
+reader) that is named and reachable; writers built ahead of a reader that is tracked as open work
+with an owner; rows an operator reads by hand on a documented runbook.

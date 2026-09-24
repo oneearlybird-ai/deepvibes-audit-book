@@ -1877,7 +1877,12 @@ Cross-check from the permission side, which has no such resolver — a principal
 governed resource whose component is scored as touching none is the same defect seen from the
 outside. Confirm the direction of the failure by reading what the downstream checks do with an empty
 set: if they clear and the verdict is stated as a fact rather than as unknown, the blindness is
-being published as a pass.
+being published as a pass. The same blindness has an OPERATION form as well as the operand form: a
+guardrail that recognises the audited call by the identifier written at the call site sees nothing
+when a module renames the import (`import { QueryCommand as DDBQueryCommand }`), even though the
+module's own import table maps that local name to the symbol; resolve every call-site identifier
+through the import table before matching, and let the permission-side cross-check (a grant on the
+resource with no access scored against it) catch the renamed calls the code side misses.
 
 **False positives.** A resolver that reports an unresolved operand as unknown — a distinct warning,
 a coverage gap, a refusal to score — is bounded rather than blind, and its misses are already

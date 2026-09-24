@@ -1274,3 +1274,36 @@ time of the burst confirm it.
 version that no longer needs it and its capacity reports ready. Functions with no pre-warmed
 capacity and no weighted routing, where the alias switch is atomic and the exposure is at most
 the ordering of two resources inside one apply. Grants the old code never exercised on any path.
+
+## CC:51 — Account-level hardening was applied by hand in the origin account and never became code, so every account the estate moves into or adds starts at the provider's permissive defaults, and the standard's findings there read as fresh noise rather than a lost setting
+
+**Statement.** Some protections are not properties of any workload resource but of the account and
+region themselves: whether documents or machine images may be shared publicly, whether disk
+snapshots may be made public, whether a default network with open default firewall rules exists at
+all. In the first account they are fixed the way one-off problems are fixed — a console toggle, a
+CLI call, a deleted default network — often in answer to a security-standard finding, and the fix is
+recorded, if at all, as "done" against that account. Because no workload stack owns them, nothing
+declares them. When the estate is rebuilt in a new account, or the organisation adds accounts for
+control and security functions, the workload stacks are applied and the account-level settings are
+not, since there is nothing to apply. The new accounts start at the provider defaults, which are the
+permissive ones. The security standard then reports the same controls failing there, but the team
+now reads them as the usual first-week noise of a fresh account rather than as a regression: the
+origin account passes, and the record of why it passes lives in a closed ticket about a different
+account. Exposure usually starts at zero — nothing has been shared yet — which is exactly why no one
+feels the loss until the first resource that the setting would have stopped.
+
+**Detect.** List the account- and region-level preventive settings the standards check (public
+sharing of documents and images, snapshot and volume public-access blocks, default network presence
+and default firewall rules, storage-wide public-access blocks, default encryption flags) and read
+each in every account of the organisation, including the origin. A setting hardened in one account
+and default in another is the finding when no code declares it; search the infrastructure code for
+the resource types that manage those settings and treat an empty result as confirmation. The
+creation date of the first failing finding in each new account usually equals the account's first
+day in the standard.
+
+**False positives.** Settings enforced above the account (organisation-wide service control or
+declarative policies) make the per-account value irrelevant — verify the enforcement, not its
+existence; an account deliberately left at defaults with the reason recorded (a sandbox with nothing
+of value); controls whose per-account failure is expected under an organisation-level service (an
+access analyzer or trail run from a delegated administrator), which are accepted postures rather than
+lost settings.

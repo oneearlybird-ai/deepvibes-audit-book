@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1163,
+ "rule_count": 1166,
  "sections": [
   {
    "id": "A",
@@ -488,7 +488,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 36,
+   "rule_count": 37,
    "rules": [
     {
      "id": "D:1",
@@ -633,6 +633,10 @@
     {
      "id": "D:36",
      "title": "Every new consumer of a table's changes is attached to its change stream directly, so the reader count grows one feature at a time past the per-shard limit and every consumer slows together"
+    },
+    {
+     "id": "D:37",
+     "title": "A managed database is pinned to an exact minor engine version in code while the service's automatic minor upgrade stays on, so the first upgrade the service schedules turns the declared version into a downgrade the API refuses, and every later plan of the stack carries a change that cannot apply"
     }
    ]
   },
@@ -1035,7 +1039,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 84,
+   "rule_count": 85,
    "rules": [
     {
      "id": "G:1",
@@ -1372,6 +1376,10 @@
     {
      "id": "G:84",
      "title": "An isolation control credits the sanctioned property to the whole component when it finds the sanctioned call anywhere in it, so a component that holds a scoped client and its own unscoped one side by side reads as isolated"
+    },
+    {
+     "id": "G:85",
+     "title": "A custom compliance rule's verdicts reach the findings store twice, through the pipeline's own import and through the recorder service's built-in integration, so triage built on the first path leaves a complete untriaged copy on the second, and the backlog count measures rows no decision can move"
     }
    ]
   },
@@ -3509,7 +3517,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 50,
+   "rule_count": 51,
    "rules": [
     {
      "id": "CC:1",
@@ -3710,6 +3718,10 @@
     {
      "id": "CC:50",
      "title": "A grant is withdrawn in the same change as the code that stops needing it, but the platform keeps the old code serving until the new version's warm capacity is ready, so for that window the old code runs without a permission it still uses"
+    },
+    {
+     "id": "CC:51",
+     "title": "Account-level hardening was applied by hand in the origin account and never became code, so every account the estate moves into or adds starts at the provider's permissive defaults, and the standard's findings there read as fresh noise rather than a lost setting"
     }
    ]
   },

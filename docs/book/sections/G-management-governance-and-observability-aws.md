@@ -2206,3 +2206,35 @@ genuinely judges per operation but summarises per component in its verdict text;
 implementation, not the summary. The resolve-then-scope lookup that must precede any scoped
 credential is a real unscoped operation and is reported as one - its acceptance is a recorded
 posture, not a reason to widen the credit.
+
+## G:85 — A custom compliance rule's verdicts reach the findings store twice, through the pipeline's own import and through the recorder service's built-in integration, so triage built on the first path leaves a complete untriaged copy on the second, and the backlog count measures rows no decision can move
+
+**Statement.** A first-party compliance rule runs inside the configuration recorder, and a reporter
+imports its verdicts into the findings store under the team's own product so that each row can carry
+a triage state: an accepted posture suppressed with the record that accepted it, known debt marked
+as tracked. That repair works, and it is verified on the rows it touches. What it does not see is the
+recorder service's own integration with the findings store, which is on by default and publishes the
+evaluation of every rule — custom rules included — as a finding under the recorder's product name.
+Each verdict therefore exists twice: once where triage happens, once where nothing ever writes a
+workflow state. The second copy also keeps rows for subjects the rule has stopped judging (their
+compliance becomes not-available, their workflow stays new). A digest or dashboard that counts every
+active untriaged row counts the verdicts again, at the recorder's severity, beside the settled copy,
+and the owner is asked every day to triage rows whose decision already exists one product over. The
+same blind spot catches producers retired in an account move: when the rule and its reporter are
+rebuilt in a new account, the old account's rows — under the old product and the old recorder — are
+outside every filter the new reporter uses, so they stay active and untriaged until the store's
+retention clock removes them.
+
+**Detect.** Group the store's active untriaged rows by product and generator. For each first-party
+rule, look for two populations of the same subjects: the team's import (with notes and workflow
+states) and the recorder's copy (generator is the rule's own identifier, no notes). Compare the
+recorder copy's failed count with the rule's live non-compliant count — equality proves the copy is
+current and duplicated, not stale. Then read the reporter's triage and archive queries: filters that
+name its own product or account only are the mechanism. Finally group active rows by producing
+account and last-updated date: a product or rule whose rows stopped updating on one date, in an
+account where the rule no longer exists, is a retired producer that nothing will archive.
+
+**False positives.** A store whose recorder integration is disabled for custom rules, or whose
+digest and dashboards filter the recorder's product out by design with that choice recorded; a
+reporter that deliberately triages the recorder's copy as well (one path, applied to both products).
+A recorder copy that lags the import by one evaluation cycle is timing, not this defect.

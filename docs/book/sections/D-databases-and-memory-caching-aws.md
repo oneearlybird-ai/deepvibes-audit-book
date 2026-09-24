@@ -332,3 +332,36 @@ the new transport cannot match, which silently checkpoints the whole batch as de
 platform reader outside the count the guidance addresses. A second reader deliberately added as
 the fan-out point itself during a migration away from direct readers, where the plan and the
 count going down are both recorded.
+
+## D:37 — A managed database is pinned to an exact minor engine version in code while the service's automatic minor upgrade stays on, so the first upgrade the service schedules turns the declared version into a downgrade the API refuses, and every later plan of the stack carries a change that cannot apply
+
+**Statement.** The infrastructure code names the engine as an exact minor version — the one that
+was current the day the database was built — and says nothing about automatic minor upgrades, so
+the provider default (on) applies to the cluster and to every instance. The two agree until the
+service runs an upgrade campaign. It announces the campaign weeks ahead as a scheduled-change
+notice, schedules the resource into a maintenance window, and in that window moves the database to
+the newer minor. Nothing in the code changed, so no review sees it. The next plan does: the IaC
+provider refreshes the engine version from the live resource (most keep the configured value only
+when it is a version prefix of the live one), so the plan now proposes moving back to the declared
+minor — an in-place downgrade that the service refuses. From that window on, every plan of the stack
+carries a change that cannot apply. Applies fail, or the change is waved through as familiar noise
+and masks the next real diff on the same resource; drift gates go red with no commit to blame; and
+unrelated work on the stack — cache, keys, network — is blocked behind it. The upgrade itself was a
+writer restart on the service's timetable, not in a change anyone planned. The only early witness
+is the scheduled-change notice, which lands in a feed nobody who owns the stack reads.
+
+**Detect.** For every managed relational or document database, read the declared engine version and
+the effective automatic-minor-upgrade setting on the cluster and on every instance (declared, or the
+provider default when absent). An exact minor pin with automatic upgrade on is the finding. Confirm
+it is live rather than theoretical: the service's pending-maintenance list for the resource carries
+a scheduled minor upgrade with a date, and the account's health events carry the campaign naming the
+resource. Then read the IaC provider's refresh logic for the engine version at the version the stack
+pins: if it replaces a non-prefix configured value with the live one, the first plan after that date
+proposes the downgrade. Instances whose version is wired to the cluster's inherit the same diff.
+
+**False positives.** A declaration that names only the major version (or any prefix the provider
+treats as matching) with automatic upgrade on, when the team has accepted service-scheduled restarts;
+automatic upgrade explicitly off with the exact minor declared and bumped through the change process
+before any forced date; a lifecycle ignore on the version with its reason recorded — which removes
+the failing plan but is the drift-masking posture CC:4 describes, so record it as a decision, not a
+fix.

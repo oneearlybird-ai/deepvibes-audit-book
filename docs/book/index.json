@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1160,
+ "rule_count": 1161,
  "sections": [
   {
    "id": "A",
@@ -1027,7 +1027,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 83,
+   "rule_count": 84,
    "rules": [
     {
      "id": "G:1",
@@ -1360,6 +1360,10 @@
     {
      "id": "G:83",
      "title": "An alert topic's email subscription is declared as code, created unconfirmed, and deleted by the notification service days later, so between applies the topic has no subscriber and every plan shows only a harmless-looking create"
+    },
+    {
+     "id": "G:84",
+     "title": "An isolation control credits the sanctioned property to the whole component when it finds the sanctioned call anywhere in it, so a component that holds a scoped client and its own unscoped one side by side reads as isolated"
     }
    ]
   },

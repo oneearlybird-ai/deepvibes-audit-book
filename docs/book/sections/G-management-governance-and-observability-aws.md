@@ -2157,3 +2157,52 @@ subscription back with an identifier rather than the pending marker.
 same account); topics that are deliberately unsubscribed because nothing publishes to them any more
 (then the finding is the dead topic); and addresses fronted by an automated confirmer that validates
 the topic belongs to the organisation before confirming - check that it ran for this topic.
+
+## G:84 — An isolation control credits the sanctioned property to the whole component when it finds the sanctioned call anywhere in it, so a component that holds a scoped client and its own unscoped one side by side reads as isolated
+
+**Statement.** A component may hold several credentials at once: a client scoped to one customer,
+built through the sanctioned path, and the component's own execution identity, which the platform
+hands it for free and which usually reaches the same stores without any scoping condition. A
+control that reads the component's source has to decide whether its data access is isolated. The
+cheap decision is made per component: if the sanctioned call appears anywhere in the archive, the
+archive has the property, and every store operation in it is presumed to ride the scoped client.
+That presumption is false exactly where it matters. The dangerous shape is not the component that
+never scopes anything - that one is caught - but the component that scopes most of its operations
+and issues one or two through its own identity: a lookup added before the scoped client exists, a
+write in an error path, a helper in shared code that carries a module-level client of its own. Each
+of those operations is unconditioned and cross-customer, and the control clears every one of them
+because the file also contains the sanctioned call. The same per-component credit makes the
+control's own repairs dangerous: teaching it one more sanctioned shape (a layer's factory, an inline
+role assumption) widens the clearance to every operation in every archive that contains the shape,
+and a real unscoped write that shares a file with it turns green on the day the control learns to
+see the sanctioned case.
+
+The sound control attributes each store operation to the credential that performs it. It follows the
+client of each call back to where it was made - through the dependency container, the factory, the
+destructured parameter, the shared module the component actually calls - and asks, per operation,
+whether that credential was scoped, and to what; the table the operation names must lie inside what
+that credential was given. Shared code is charged to a component only where the component's own code
+reaches it, so a library attached but never called is not a finding, and a library function the
+component calls is judged at its own file and line. What the control cannot attribute it must not
+clear: a client or a store name it could not resolve is a third verdict - insufficient data, or the
+platform's equivalent - never a pass with a note, because a pass with a note is a clearance the
+control did not earn and the note is the first thing the reader stops reading.
+
+**Detect.** Take a component known to use the sanctioned path and add one operation through its
+execution identity on the same store; if the control still passes the component, it credits per
+component. Read the control's own source for where it decides isolation: a boolean derived from the
+presence of an import or a call, tested once per archive, is the mechanism. In the control's
+findings, look for the absence of a file-and-line - a per-operation control can always say which
+call it judged; a per-component one can only name the file. Look at the population the last repair
+of the control turned green and ask, for each, whether the archive also contains an unscoped
+operation. A control that offers no way to say "could not read this" folds unread cases into passes;
+count the passes whose annotation contains an unresolved expression.
+
+**False positives.** A component whose only unscoped operation is on a store the platform classes as
+shared rather than customer-scoped (the class, not the control's presumption, decides). A component
+whose "second client" is a different scoped credential (two sessions on two customers, both
+sanctioned) - the control should state both provenances, not report a bypass. A control that
+genuinely judges per operation but summarises per component in its verdict text; read the
+implementation, not the summary. The resolve-then-scope lookup that must precede any scoped
+credential is a real unscoped operation and is reported as one - its acceptance is a recorded
+posture, not a reason to widen the credit.

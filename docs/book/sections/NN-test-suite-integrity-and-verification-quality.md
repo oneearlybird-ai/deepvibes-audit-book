@@ -599,7 +599,13 @@ exception nobody is ever forced to remove is a deleted rule wearing a comment.
 **Detect.** For every allowlist, skip-list, or deferral inside a gate, ask two questions: does any
 check FAIL when an entry stops matching anything, and does each entry carry its reason and intended
 end-state? A list failing both is the finding, independent of whether its entries are currently
-valid. The repair is the tripwire plus a dated reason per entry.
+valid. The repair is the tripwire plus a dated reason per entry. The strongest shape for a
+PERMANENT acceptance (a read that must happen before identity exists, a sweep that is
+cross-scope by purpose) is not an exception list at all but a typed declaration the checker keeps
+testing: the entry names the subject, the exact shape it is accepted in (the index, the key family,
+the action set) and the decision record, and the checker matches the live subject against that
+shape on every run - a read in another shape, or a grant wider than declared, fails as its own
+finding, so the acceptance can never silently widen into the blanket a suppression becomes.
 
 **False positives.** Permanent, semantically-justified exceptions — a vendor API's own name, an
 enforcement pattern that must literally name what it bans — which should be commented as permanent

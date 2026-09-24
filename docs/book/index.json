@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1170,
+ "rule_count": 1171,
  "sections": [
   {
    "id": "A",
@@ -1039,7 +1039,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 85,
+   "rule_count": 86,
    "rules": [
     {
      "id": "G:1",
@@ -1380,6 +1380,10 @@
     {
      "id": "G:85",
      "title": "A custom compliance rule's verdicts reach the findings store twice, through the pipeline's own import and through the recorder service's built-in integration, so triage built on the first path leaves a complete untriaged copy on the second, and the backlog count measures rows no decision can move"
+    },
+    {
+     "id": "G:86",
+     "title": "A control evaluates a subject against a registry loaded from the control's own deployment rather than the subject's, so a registry change rolled out across a fleet scores every subject deployed before the control as violating"
     }
    ]
   },

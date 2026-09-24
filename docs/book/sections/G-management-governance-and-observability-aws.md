@@ -2243,3 +2243,26 @@ account where the rule no longer exists, is a retired producer that nothing will
 digest and dashboards filter the recorder's product out by design with that choice recorded; a
 reporter that deliberately triages the recorder's copy as well (one path, applied to both products).
 A recorder copy that lags the import by one evaluation cycle is timing, not this defect.
+
+## G:86 — A control evaluates a subject against a registry loaded from the control's own deployment rather than the subject's, so a registry change rolled out across a fleet scores every subject deployed before the control as violating
+
+**Statement.** A compliance control resolves names it finds in a subject — session profiles, policy
+templates, allowed shapes — through a registry module. It already fetches the subject's own
+artefacts to read its code, and the very same registry ships inside those artefacts, but the control
+imports the registry from its own runtime instead. The two copies agree until the registry changes.
+A fleet rollout then deploys the subjects and the control in whatever order the batch chooses; every
+subject the control evaluates before its own redeploy names an entry the control's copy does not
+have, and the control records a violation — "unknown", "not covered" — that describes the control's
+staleness, not the subject. The false verdicts stand until each subject changes again or a full
+sweep is forced, and a forced sweep has its own cost. Operators learn to deploy the control first,
+which is folklore standing in for a property the control should have had.
+
+**Detect.** For each control that names things by a registry, find where the registry is imported:
+from the control's own bundle, or from the subject's artefact it already downloaded. Look in the
+control's verdict history for "unknown <name>" annotations stamped within minutes of a fleet
+rollout, on subjects whose artefact carried that name at the time. Check the deploy lane for an
+ordering rule that puts the control first — its presence is the symptom.
+
+**False positives.** Registries that are not part of the subject's artefact (a central document
+both read at runtime), where the subject cannot carry a newer copy than the control. Controls that
+are pinned to the same artefact version as their subjects by construction.

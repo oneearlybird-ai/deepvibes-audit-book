@@ -1202,3 +1202,30 @@ differ from the declared roots.
 nothing outside the system package manager; applications shipped as container images scanned by
 the registry scanner instead of on the host (check that the host itself does not also carry a
 tree); and scanners configured to walk the whole filesystem.
+
+## U:60 — A gate installs a suite's dependencies only when the install folder is missing, so a dependency added later never reaches a checkout that already has one, and the gate fails on some checkouts and not others for a change that touched nothing near it
+
+**Statement.** A test or lint gate provisions each sub-package lazily: "if the dependency folder is
+not there, run the locked install; otherwise use what is there". That is correct once, on a fresh
+checkout, and wrong from the first commit that adds or bumps a dependency: every checkout that
+already holds an install keeps its old tree, because the guard asks whether an install exists, not
+whether it matches the lockfile. The commit that added the dependency lands green from the one
+checkout where it was installed by hand; every other long-lived checkout — parallel work slots,
+build agents with warm workspaces, a developer's second clone — now fails the gate with a missing
+module, on changes that never touched that package. The failure reads as the new change's fault
+("it passed for you before, so the combination fails"), and the usual remedy is a manual reinstall
+in the failing checkout, which fixes that one and teaches nobody. Which checkouts fail depends on
+their install history, so the same tree is green in one place and red in another.
+
+**Detect.** Find every lazy install in the gate scripts and read its guard: a test for the existence
+of the install folder (or of one package inside it) is this defect; a comparison of the lockfile's
+content against a stamp written by the last install, or an unconditional locked install, is not.
+Then find the most recent commit that changed one of those lockfiles and check the long-lived
+checkouts for the added package; any checkout whose install predates that commit and still lacks it
+will fail the gate. The runtime tell is a module-not-found failure in a suite the change did not
+touch, on one checkout, while the same tree passed elsewhere.
+
+**False positives.** Ephemeral checkouts that are always fresh (a clean runner per job), where
+existence and currency are the same thing; guards that key on a lockfile hash or on the package
+manager's own integrity check; packages whose lockfile has not changed since the checkouts were
+provisioned.

@@ -400,3 +400,33 @@ Confirm live: rows present and freshly written, with no code path that reads the
 **False positives.** Writers whose reader is an external system (an export, a data share, an audit
 reader) that is named and reachable; writers built ahead of a reader that is tracked as open work
 with an owner; rows an operator reads by hand on a documented runbook.
+
+## V:26 — The inspector files "I could not read the subject" in the same record as "the subject is wrong", so every control-plane throttle is handed to the repairer as a defect it has no repair for, and the read error that would tell the two apart is dropped before anything logs it
+
+**Statement.** A self-healing lane inspects each subject on a schedule and hands failures to a
+repairer. Each check reads some control-plane state and returns a reason; the read itself sits in a
+try/catch whose fallback returns a generic reason ("check failed") with the SDK error tucked into a
+hint field. That reason travels in the same list as real findings. The repairer — correctly strict,
+after an earlier lesson that it must never report success for a class it cannot fix — has no
+handler for a failed read, so it throws. Nothing is broken: the read failed because some other
+client in the account (a bulk audit script, a compliance sweep, a fleet rollout) had used up the
+control plane's shared rate limit for a few seconds. The next inspection passes and everything
+clears. But the lane's error alarms fire on every such burst, so the page means "someone else read
+a lot of IAM" as often as "a subject is broken", and the operator cannot tell which, because the
+inspection log records only the check name, the repairer logs only the reason, and the hint holding
+the actual error is never written anywhere. The same path also hides the real case the fallback
+exists for — a permission regression that makes the read fail every time looks exactly like a
+throttle.
+
+**Detect.** In the inspector, find each catch-all that turns an exception into a reason and check
+whether that reason goes into the same list the repairer consumes. In the repairer, check whether
+read-failure reasons have a class of their own (retry next cycle, alarm only if it persists) or fall
+to the unknown-reason path. Trace the hint field: is it logged by the inspector, carried to the
+repairer, or dropped? Confirm live: the repairer's unknown-reason errors should cluster at moments
+of heavy control-plane reading by other principals (read the audit trail for that minute), each
+followed by a clean inspection a cycle later.
+
+**False positives.** Inspectors that retry the read with backoff and report a distinct
+could-not-inspect state the repairer skips without throwing; lanes whose alarm on a failed read is
+deliberate and fires only after the failure persists across several cycles; reads whose failure
+genuinely means the subject is broken (a not-found on a resource that must exist).

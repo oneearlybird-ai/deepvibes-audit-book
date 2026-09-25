@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1171,
+ "rule_count": 1173,
  "sections": [
   {
    "id": "A",
@@ -1039,7 +1039,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 86,
+   "rule_count": 87,
    "rules": [
     {
      "id": "G:1",
@@ -1384,6 +1384,10 @@
     {
      "id": "G:86",
      "title": "A control evaluates a subject against a registry loaded from the control's own deployment rather than the subject's, so a registry change rolled out across a fleet scores every subject deployed before the control as violating"
+    },
+    {
+     "id": "G:87",
+     "title": "A compliance rule's could-not-judge verdict borrows a status from the recorder's reporting vocabulary that its submit API refuses, so the one subject the rule cannot judge makes the submission fail — and in a batched sweep, every verdict in the batch is lost with it"
     }
    ]
   },
@@ -2938,7 +2942,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 25,
+   "rule_count": 26,
    "rules": [
     {
      "id": "V:1",
@@ -3039,6 +3043,10 @@
     {
      "id": "V:25",
      "title": "A scheduled job keeps computing and storing a derived record that nothing reads, and everything built around the job — its role, its grant, its dead-letter wiring, the alarms that watch its schedule — stays alive to protect output with no consumer"
+    },
+    {
+     "id": "V:26",
+     "title": "The inspector files \"I could not read the subject\" in the same record as \"the subject is wrong\", so every control-plane throttle is handed to the repairer as a defect it has no repair for, and the read error that would tell the two apart is dropped before anything logs it"
     }
    ]
   },

@@ -1121,7 +1121,9 @@ of the rule's most recent published evaluation against its invocation schedule. 
 than several evaluation intervals on a rule whose function is being invoked is this defect, and
 it is the only signal that separates it from a rule that is genuinely evaluating and finding
 nothing. The correct shape is a per-member catch that publishes an explicit
-could-not-evaluate verdict, so that failing to check is never recorded as having checked.
+could-not-evaluate verdict, so that failing to check is never recorded as having checked — in a
+value the submit API accepts: a could-not-evaluate status borrowed from the service's reporting
+vocabulary is itself refused and loses the batch the same way (G:87).
 
 **False positives.** Evaluators whose submit call is itself inside the loop, where a member's
 failure costs only that member. Rules that deliberately abort a run on a dependency failure AND
@@ -2266,3 +2268,33 @@ ordering rule that puts the control first — its presence is the symptom.
 **False positives.** Registries that are not part of the subject's artefact (a central document
 both read at runtime), where the subject cannot carry a newer copy than the control. Controls that
 are pinned to the same artefact version as their subjects by construction.
+
+## G:87 — A compliance rule's could-not-judge verdict borrows a status from the recorder's reporting vocabulary that its submit API refuses, so the one subject the rule cannot judge makes the submission fail — and in a batched sweep, every verdict in the batch is lost with it
+
+**Statement.** A custom compliance rule learns to say "I could not judge this" instead of passing
+what it could not read — the right instinct. It names that verdict after a status the compliance
+service itself shows on its dashboards and in its read APIs ("insufficient data", "not available"),
+reasoning that the service keeps that status for exactly this case. But the service reports that
+status for rules and resources it has no evaluation for; its submit API accepts only a narrower set
+(pass, fail, not applicable) and rejects anything else with a parameter error. So the first subject
+the rule cannot judge does not get a could-not-judge verdict: the submission fails. A per-subject
+submission loses that subject's verdict and keeps its previous one — often a pass, the very
+clearance the new verdict existed to withdraw. A batched sweep loses the whole batch, and an
+exception that escapes the batch loop loses every later batch too; retries repeat the same rejected
+call, and the invocation ends in a dead-letter queue. The rule's report then shows the fleet as it
+stood before the sweep, with nothing marking it stale, while the only evidence is an error on the
+rule's own telemetry. The unit tests usually agree with the code, because the fake submit client
+accepts any value: the suite encodes the author's belief about the API instead of the API.
+
+**Detect.** List every literal the rule assigns as a verdict or compliance type, including those in
+rarely-taken branches, and diff the list against the submit API's documented accepted values (not
+the values its read APIs return). Check the test fake for the submit call: if it records whatever
+it is given, it cannot catch this; a fake that rejects values outside the accepted set, the way the
+service does, turns the belief into a red test. At runtime, search the rule's logs and its
+failure destination for the service's parameter error on submission, and compare the timestamp of
+the newest recorded verdict against the rule's schedule.
+
+**False positives.** Rules that map the could-not-judge state onto an accepted value before
+submission (a failing verdict carrying an explanatory annotation, or not-applicable where that is
+the documented meaning); services whose submit API does accept the reporting status; statuses that
+are only logged and never submitted.

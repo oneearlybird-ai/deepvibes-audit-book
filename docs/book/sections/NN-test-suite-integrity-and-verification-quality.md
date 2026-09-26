@@ -1045,7 +1045,13 @@ a clean empty capture. Open the artifact and count what is inside it, never trus
 this rule's whole failure mode is a success line printed over a hollow object. Any guard whose
 output can say "nothing was found" must be structurally able to distinguish that from "nowhere
 was looked", and a guard that resolves its target from the action's own plan cannot drift the
-way one taking a hand-passed flag will.
+way one taking a hand-passed flag will. The same failure has a LOOP form in staleness and parity
+gates: the gate lists live subjects from the ambient account and then skips every expected subject
+the listing does not contain ("not deployed, nothing to grade"), so a wrong-account read grades
+only the few leftovers that happen to exist there and prints OK with a count that the other passes
+still inflate. When one lookup of such a gate is moved onto the subject's account, move every
+lookup in the same file in the same change - the sibling left on ambient credentials keeps the
+hollow verdict - and make the gate refuse when the graded population is far below the expected one.
 
 **False positives.** A guard that deliberately runs against a central control-plane account is
 correct on the ambient identity — an artifact registry, an audit bucket, a shared secret store.

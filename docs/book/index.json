@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1174,
+ "rule_count": 1175,
  "sections": [
   {
    "id": "A",
@@ -834,7 +834,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 49,
+   "rule_count": 50,
    "rules": [
     {
      "id": "F:1",
@@ -1031,6 +1031,10 @@
     {
      "id": "F:49",
      "title": "A handler learns which tenant it serves only after a lookup, so its shared role is granted the credential path for every tenant, although a per-tenant role that grants exactly the one path already exists and the handler already knows which one to use by the time it reads"
+    },
+    {
+     "id": "F:50",
+     "title": "A call is moved from a function's own grant onto a shared per-tenant role through a named session profile, the profile's session policy lists the action, the shared role's own policy never granted it, and because a session policy can only narrow, the call is denied on its first real run while every static reading shows it permitted"
     }
    ]
   },

@@ -901,3 +901,40 @@ the exposure. Include instance roles and compliance scanners, which accumulate t
 inventory scan) and records that posture; a wildcard statement cancelled by an explicit Deny on the
 same paths in the same principal's policies; a path whose wildcard segment is not the tenant (a
 version or a key name inside one tenant's tree).
+
+## F:50 — A call is moved from a function's own grant onto a shared per-tenant role through a named session profile, the profile's session policy lists the action, the shared role's own policy never granted it, and because a session policy can only narrow, the call is denied on its first real run while every static reading shows it permitted
+
+**Statement.** Estates that move tenant data access off broad function roles and onto per-tenant
+roles usually do it with a registry of named profiles: each profile names the role family to assume
+and carries an inline session policy that narrows that role to the calls one code path makes. The
+migration of a call path is written as three edits - add or extend a profile, point the code at it,
+delete the function role's old grant - and the fourth edit, extending the SHARED role family's own
+policy template, is easy to forget because the profile already "says" the action is allowed. It is
+not: the effective permission is the intersection of the role's identity policy and the session
+policy, so an action present only in the profile is denied. Every static reading agrees with the
+author - the profile lists the action, the code issues it, the old grant is gone as intended - and
+the checks estates build for session policies look the other way (code actions against the profile,
+the profile's packed size, the role's trust), so nothing compares the profile against the role it
+narrows. The denial surfaces only when the path runs. For paths that run rarely - onboarding steps,
+operator actions, cleanup in a `finally` - that can be weeks later, on the one call that matters,
+and when the denied call is best-effort cleanup the path reports success while its residue
+accumulates.
+
+**Detect.** For every profile, render its session policy and the identity policy of the role family
+it names exactly as they are built for a real tenant, and require each allowed (action, resource) in
+the profile to be granted by some statement of the role - treating item actions listed against index
+resources, and actions the role grants on narrower resources than the profile, as covered. Any
+triple the role does not grant is a live denial for whatever code issues it and dead text otherwise;
+trace which it is by finding the code that requests the profile and the commands it sends through
+that client. Confirm on the live system with a policy simulation of the stamped role for the exact
+action and table (with the tenant's key-prefix and tag context supplied, and a control action that
+must come back allowed), and search runtime logs for the credential service's wording that no
+IDENTITY-based policy allows the action - distinct from the session-policy wording F:34 describes.
+Gate the registry so a profile grant with no role backing fails the change that introduces it.
+
+**False positives.** Profile statements the role deliberately does not back because the profile is
+also used with a different role family that does (check every family the profile can resolve to);
+actions granted to the tenant role by a resource-based policy on the target (a table or key policy
+naming the role) rather than by its identity policy; and a profile that no code requests, which is
+dead registry text to delete rather than a denial - still worth removing, since the next caller
+inherits the trap.

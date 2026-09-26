@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1175,
+ "rule_count": 1176,
  "sections": [
   {
    "id": "A",
@@ -1043,7 +1043,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 87,
+   "rule_count": 88,
    "rules": [
     {
      "id": "G:1",
@@ -1392,6 +1392,10 @@
     {
      "id": "G:87",
      "title": "A compliance rule's could-not-judge verdict borrows a status from the recorder's reporting vocabulary that its submit API refuses, so the one subject the rule cannot judge makes the submission fail — and in a batched sweep, every verdict in the batch is lost with it"
+    },
+    {
+     "id": "G:88",
+     "title": "The alarm names the metric without the dimensions its publisher always attaches, or the publisher emits only when an input field is present that its orchestrator delivers under another path, so the alarm's series never receives a datapoint and not-breaching renders it healthy"
     }
    ]
   },

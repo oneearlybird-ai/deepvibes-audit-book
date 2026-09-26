@@ -98,6 +98,10 @@ LoadBalancer/TargetGroup ARNs, TableName, QueueName), verify the resource exists
 INSUFFICIENT_DATA state since creation are the runtime tell (`StateValue` +
 `StateUpdatedTimestamp` from describe-alarms). Prefer dimensions resolved from the same source of
 truth that provisions the resource (resource references, SSM parameters) over pasted literals.
+An alarm written with missing data treated as not-breaching never shows that tell: it reads OK,
+so a state-based sweep for INSUFFICIENT_DATA finds nothing - resolve each hardcoded dimension
+against the live resource list instead, and compare replaced resources' sibling alarms (one
+alarm on the new load balancer beside two on the old one is the signature).
 
 **False positives.** Alarms on metrics that are legitimately sparse (custom metrics emitted only
 on rare events) — distinguish "resource gone" from "metric quiet" by checking the resource, not
@@ -2298,3 +2302,36 @@ the newest recorded verdict against the rule's schedule.
 submission (a failing verdict carrying an explanatory annotation, or not-applicable where that is
 the documented meaning); services whose submit API does accept the reporting status; statuses that
 are only logged and never submitted.
+
+## G:88 — The alarm names the metric without the dimensions its publisher always attaches, or the publisher emits only when an input field is present that its orchestrator delivers under another path, so the alarm's series never receives a datapoint and not-breaching renders it healthy
+
+**Statement.** A metrics service identifies a series by its name AND its complete dimension set:
+the same metric name published with dimensions {table, environment} and read with no dimensions
+are two different series, and nothing aggregates one into the other. A publisher that always
+attaches a dimension set, paired with an alarm written with the name alone, therefore watches a
+series that has never existed. A second route to the same silence sits in the publisher: the
+emission is guarded on an optional input (`if (event.breakerState) publish(...)`), and the
+orchestrator that invokes it passes that value nested inside another object, so the guard is false
+on every run and the metric is never written at all. Either way the alarm, written with missing
+data treated as not-breaching - the right choice for a sparse event metric - reports OK forever.
+Every artifact agrees it is armed: the alarm exists with the right name, namespace and threshold,
+the publisher's code contains the metric, the job runs green on schedule. The alarms written this
+way are usually the watchdogs added after an incident (pool exhaustion, a tripped breaker, a
+quota nearing its limit), so the next occurrence of exactly that incident is the one that goes
+unseen.
+
+**Detect.** For every alarm on a custom metric, list the live series under that name
+(list-metrics with the namespace and name) and require one whose dimension set equals the alarm's
+exactly; an alarm with no dimensions beside series that all carry dimensions is the finding.
+For each custom metric an alarm names, confirm the series has datapoints in a recent window; when
+it has none, read the publisher's guard around the emit and trace the value it tests back through
+the invoker's payload mapping (the state-machine task parameters, the event pattern's input
+transformer) to prove the field arrives at the path the code reads. Sibling metrics published
+under the same guard (a counter written beside the state flag) that are also absent confirm the
+guard, not the alarm, is the break.
+
+**False positives.** Event metrics that are genuinely rare and published without dimensions by
+design (confirm the publisher's call carries none); alarms deliberately on a metric-math
+expression that sums across dimensions (the expression, not a bare metric name, is then the
+contract); and guards whose input is absent only on a degradation path the orchestrator documents,
+while the normal path delivers it.

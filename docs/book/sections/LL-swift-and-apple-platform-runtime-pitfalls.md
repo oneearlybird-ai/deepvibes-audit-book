@@ -278,7 +278,9 @@ every interactive element is reachable. In code, flag fixed heights on any conta
 any deliberately non-scrolling screen — the remedy there is a scroll container whose content is
 pinned to at least the viewport height, which is pixel-identical to the centred layout until the
 content genuinely does not fit. Treat multi-element horizontal rows of text and links as a
-separate case: they must be allowed to wrap as a group rather than compress.
+separate case: they must be allowed to wrap as a group rather than compress. A blocking first-run overlay (a welcome or consent card over the whole
+screen) is the sharpest instance, because nothing behind it can be reached either: its dismissal must scroll into reach
+and must also answer the platform's accessibility escape gesture.
 
 **False positives.** Surfaces that legitimately opt out of text scaling by platform convention
 (a video player's transport, a camera viewfinder); controls whose label is a fixed-width glyph;

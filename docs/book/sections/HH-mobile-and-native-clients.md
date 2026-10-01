@@ -202,30 +202,10 @@ carry this blast radius even where clients disagree about it. And a client delib
 editing surface the others lack as a stated, role-gated administrative tool is a design decision
 rather than an omission, provided the gate is enforced server-side.
 
-## HH:14 — A blocking first-run overlay is a centred card with fixed-height controls and no scrolling, so at the largest text sizes its dismiss controls leave the screen and the person who needs large text cannot get past it
+## HH:14 — Withdrawn: a duplicate of LL:17, which already states this mechanism
 
-**Statement.** An overlay that covers the whole screen and has to be answered before the app can be
-used — a welcome card, a consent card, a tour introduction — is built as a card sized to its content,
-centred in the screen, with its buttons given a fixed height and no scroll container around it. At
-the default text size it fits. At the platform's largest accessibility text sizes the same text is
-several times as tall: a centred card that cannot scroll is cut off at both ends at once, so the
-close control at the top and the primary and secondary buttons at the bottom leave the screen
-together, and a fixed-height button shows a fragment of its wrapped label. The overlay is modal and
-appears on first run, so the people who set the largest sizes meet it before anything else with no
-reachable control and no way to the screen behind it. The defect hides from every check run at the
-default size, including screenshots, snapshot tests and design review, because the overlay looks
-finished there.
-
-**Detect.** For each overlay that blocks the screen beneath it, open it at the largest accessibility
-text size on the smallest supported screen and confirm that every control needed to dismiss or answer
-it can be reached, by scrolling if need be, and that no label is clipped. In source, list blocking
-overlays whose content is not inside a scroll container, and text-bearing controls that carry a
-fixed height rather than a minimum. The remedy is a scroll container whose content has a minimum
-height equal to the screen and is centred — a short card is centred, a tall one scrolls — minimum
-heights on the controls, and a dismissal that the platform's accessibility escape gesture also
-performs.
-
-**False positives.** A bounded one-line notice that cannot outgrow the screen at any text size. A
-non-blocking banner that leaves the screen behind it usable. A control whose text is deliberately
-excluded from scaling is a different defect — the text cannot be enlarged at all — and belongs to
-the rule on honouring the platform's text size, not to this one.
+**Statement.** Withdrawn before any finding cited it. The mechanism it described — a centred, non-scrolling card with
+fixed-height controls that becomes unreachable at the largest accessibility text sizes, hardest on the first screens a
+person meets — is LL:17. Cite LL:17; the one point this entry added (a blocking first-run overlay must also be
+dismissable through the platform's accessibility escape gesture) now sits in LL:17's Detect. The number stays reserved
+because the Book never renumbers.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1183,
+ "rule_count": 1184,
  "sections": [
   {
    "id": "A",
@@ -4542,7 +4542,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "LL:1",
@@ -4623,6 +4623,10 @@
     {
      "id": "LL:20",
      "title": "A desktop window's minimum size is declared smaller than its content's real minimum width, so at the floor the primary action and the window chrome beside the offending strip run past the window's edge"
+    },
+    {
+     "id": "LL:21",
+     "title": "A persistent status chip is drawn as a corner overlay on top of each screen's content instead of taking a layout row of its own, so it covers whatever that screen puts in that corner, and copied per screen it collides differently on each"
     }
    ]
   },

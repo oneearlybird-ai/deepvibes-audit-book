@@ -334,3 +334,26 @@ conditions reintroduce the defect.
 **Detect.** For every window-floor declaration, render each screen at the floor and at a ladder of widths above it (the floor, then 80 points more at a time, up to the width where the screen last changes) and look at the right edge: the primary action, the screen's chrome and the last column of any grid must all be present. In code, flag a horizontal strip of content-sized children with no wrapping, collapsing or scrolling fallback inside a column whose width the window sets, and flag a floor whose comment says the content fits when no test renders it. The remedy is a fallback inside the strip (wrap onto rows, collapse labels to icons, or scroll), not a higher floor, which only moves the problem to smaller screens.
 
 **False positives.** A strip that already wraps or scrolls; a screen built to scroll horizontally as a whole; a floor set at the screen's measured minimum and verified.
+
+## LL:21 — A persistent status chip is drawn as a corner overlay on top of each screen's content instead of taking a layout row of its own, so it covers whatever that screen puts in that corner, and copied per screen it collides differently on each
+
+**Statement.** A small, always-on indicator — a "read only" chip, an environment tag, a sync badge — is
+added to many screens by overlaying it at one corner of the screen's content. An overlay occupies no
+space, so the screen lays out as if the chip did not exist and the chip lands on whatever happens to
+be in that corner: a count, a date, a tab, the first row's trailing text. Because the same block of
+code is pasted into each screen, the defect is not one bug but one per screen, each with a different
+victim, and it is found only on the screen where someone happened to look. It survives review because
+the chip looks right in the design (the corner was empty on the screen it was drawn for), and because
+the state that shows it is rare — it appears only for the restricted account, so the ordinary test
+account never renders it.
+
+**Detect.** List every overlay anchored to a screen corner or edge that is not part of the navigation
+chrome, then render each carrying screen in the state that shows the indicator and check what lies under
+it, at the default text size and at the largest. In source, count the copies of the same overlay block
+across screens; more than one is the finding, even before any collision is photographed. The remedy is
+one shared modifier that reserves its own row (a top inset on the container) so content is laid out around
+it, used by every screen.
+
+**False positives.** An overlay that is meant to sit on content and be dismissed (a toast, a coach mark)
+and is not persistent. An indicator placed inside the navigation bar or a toolbar, which the platform
+already lays out.

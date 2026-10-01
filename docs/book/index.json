@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1178,
+ "rule_count": 1179,
  "sections": [
   {
    "id": "A",
@@ -4530,7 +4530,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "LL:1",
@@ -4603,6 +4603,10 @@
     {
      "id": "LL:18",
      "title": "A duplicate type name inside one module fails at every point the name is READ, so the compiler's error list names files nobody edited and buries the one real cause"
+    },
+    {
+     "id": "LL:19",
+     "title": "A count badge or other adornment drawn outside its host control's frame, inside a container that cuts every item to its own frame, arrives with its outer edges sliced flat"
     }
    ]
   },

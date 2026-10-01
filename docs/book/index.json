@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1181,
+ "rule_count": 1182,
  "sections": [
   {
    "id": "A",
@@ -4252,7 +4252,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "JJ:1",
@@ -4437,6 +4437,10 @@
     {
      "id": "JJ:46",
      "title": "A calendar date sent to a server or used as a key is written through the viewer's calendar or locale, so a device in a non-Gregorian region sends another year and the screen goes empty with no error"
+    },
+    {
+     "id": "JJ:47",
+     "title": "A port of a reference function is written from its doc comment, which describes behavior the function no longer has, so the twin disagrees with the reference in every case the comment gets wrong"
     }
    ]
   },

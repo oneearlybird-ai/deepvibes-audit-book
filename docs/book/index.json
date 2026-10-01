@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1182,
+ "rule_count": 1183,
  "sections": [
   {
    "id": "A",
@@ -4118,7 +4118,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "HH:1",
@@ -4171,6 +4171,10 @@
     {
      "id": "HH:13",
      "title": "A setting the other clients present as administrator-owned and read-only is left editable on one client, so the weakest surface becomes the way to change it"
+    },
+    {
+     "id": "HH:14",
+     "title": "A blocking first-run overlay is a centred card with fixed-height controls and no scrolling, so at the largest text sizes its dismiss controls leave the screen and the person who needs large text cannot get past it"
     }
    ]
   },

@@ -962,3 +962,11 @@ infrastructure upstream of the handler (a gateway or authorizer that reads the b
 audit) - trace the path rather than assuming. Version or idempotency fields consumed by the domain
 function and not the handler: follow the call before flagging. Analytics-only fields whose sink is
 written down.
+
+## JJ:46 — A calendar date sent to a server or used as a key is written through the viewer's calendar or locale, so a device in a non-Gregorian region sends another year and the screen goes empty with no error
+
+**Statement.** A calendar date that a machine reads (a `YYYY-MM-DD` query value, a bucket id, a cache or grouping key) is built with a formatter or a calendar read that takes the device's calendar, locale or numbering system. On a device set to a Thai Buddhist, Japanese-era, Islamic, Hebrew or Persian region the same day is written with another year (2569 for 2026), another era or non-ASCII digits. The server reads a day centuries away, finds nothing, and the list, the open times or the brief comes back empty, with no error and no clue. Every test run on a Gregorian machine passes.
+
+**Detect.** Find every place a date becomes a string a machine reads, in all three shapes: a formatter with a fixed pattern (`yyyy-MM-dd`); a helper that takes a calendar parameter and assigns it to a formatter, so the default argument is the device's; and code that reads year, month and day components from the current calendar and prints them. The calendar must be explicitly Gregorian and the locale explicitly invariant (POSIX); only the time zone may come from the device or the business. Prove it with a test that runs the same instant under each non-Gregorian calendar and is red when the pin is removed, and by running the suite once with the device's calendar and locale switched.
+
+**False positives.** Dates shown to a person, which should follow the viewer's calendar and locale; formats that are Gregorian by definition (ISO 8601 formatters, epoch milliseconds); a formatter that sets an invariant locale and assigns no calendar, on a platform where that locale fixes the calendar (verify on the platform before relying on it).

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1180,
+ "rule_count": 1181,
  "sections": [
   {
    "id": "A",
@@ -4534,7 +4534,7 @@
    "title": "Swift & Apple Platform Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/LL-swift-and-apple-platform-runtime-pitfalls.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "LL:1",
@@ -4611,6 +4611,10 @@
     {
      "id": "LL:19",
      "title": "A count badge or other adornment drawn outside its host control's frame, inside a container that cuts every item to its own frame, arrives with its outer edges sliced flat"
+    },
+    {
+     "id": "LL:20",
+     "title": "A desktop window's minimum size is declared smaller than its content's real minimum width, so at the floor the primary action and the window chrome beside the offending strip run past the window's edge"
     }
    ]
   },

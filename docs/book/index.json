@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1176,
+ "rule_count": 1178,
  "sections": [
   {
    "id": "A",
@@ -1695,7 +1695,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "K:1",
@@ -1856,6 +1856,10 @@
     {
      "id": "K:40",
      "title": "One writer widens a stored field from a scalar to a structured value while every other reader still hands it straight to the renderer, so the surface breaks for exactly the records the new form has touched"
+    },
+    {
+     "id": "K:41",
+     "title": "An optimistic update rebuilds the record from a hand-written field list, so every field the list leaves out disappears and every derived field it copies goes stale until the next fetch"
     }
    ]
   },
@@ -4248,7 +4252,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "JJ:1",
@@ -4425,6 +4429,10 @@
     {
      "id": "JJ:44",
      "title": "A resolver that always returns its best candidate is read as having found the thing, so a partial match is stored with the same confidence as an exact one and every downstream reader treats an approximation as a fact"
+    },
+    {
+     "id": "JJ:45",
+     "title": "A write endpoint's clients collect operator input the handler never reads, so the form works, the call succeeds, and what the operator typed is gone"
     }
    ]
   },

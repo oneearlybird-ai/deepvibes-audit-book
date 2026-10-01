@@ -931,3 +931,34 @@ requirement and is documented as such. Services that genuinely return nothing ra
 fallback, where presence really is a match. Resolutions whose consumer only needs a rough region —
 a timezone, a currency, a service-area test — provided no other consumer reads the same stored
 field expecting precision, which is the thing to verify rather than assume.
+
+## JJ:45 — A write endpoint's clients collect operator input the handler never reads, so the form works, the call succeeds, and what the operator typed is gone
+
+**Statement.** A mutation endpoint reads a few named fields from its request body and ignores
+the rest. The clients, written against an earlier or intended contract, collect more and send it:
+a reason, a note, a free-text explanation, a flag that reads as "also tell the customer". Nothing
+fails. JSON bodies tolerate extra keys, the handler returns success, the screen says done, and the
+operator's words are discarded. The handler's tests send the fields it reads; each client's tests
+assert that a request was made; neither side has a test that follows the field to a place where it
+is stored or acted on.
+
+Two shapes are worth separating. A free-text field that is never stored loses information that was
+asked for on purpose, and the record can never explain itself later (why a booking was cancelled,
+why a refund was issued). A flag whose name promises an effect — notify, send, silent, override,
+force — that no code consults is worse, because the screen implies a behaviour the system does not
+have, and the operator believes they chose it. The loss is silent and permanent: by the time
+anyone looks for the reason, the only copy was in a request nobody kept.
+
+**Detect.** For each write endpoint, list the fields the handler and the domain function it calls
+actually read from the body. List what every client sends (web hooks, native apps, tool servers).
+Diff both ways: fields sent and never read, and input controls whose value reaches the request body
+but no reader. Rank by name: anything that promises an effect first. Confirm by reading the stored
+record after the call: the field is absent. Fix by storing or using the field, or by deleting the
+control and the field from every client in the same change; a field kept "for later" is the same
+defect with a date on it.
+
+**False positives.** Fields documented as reserved for a named later change. Fields read by
+infrastructure upstream of the handler (a gateway or authorizer that reads the body for routing or
+audit) - trace the path rather than assuming. Version or idempotency fields consumed by the domain
+function and not the handler: follow the call before flagging. Analytics-only fields whose sink is
+written down.

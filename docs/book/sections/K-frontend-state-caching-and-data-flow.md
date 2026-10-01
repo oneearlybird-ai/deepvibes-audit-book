@@ -633,3 +633,32 @@ surface, and with the stored type widened to say what a record can really carry.
 normalization must be read, not inferred from a comment; fields whose structured form is written
 only to a new, separately-keyed attribute, leaving the original scalar untouched; and surfaces
 proven unreachable, where the reader is dead code.
+
+## K:41 — An optimistic update rebuilds the record from a hand-written field list, so every field the list leaves out disappears and every derived field it copies goes stale until the next fetch
+
+**Statement.** To make a mutation feel instant, a client store replaces the cached record with a
+locally built copy. Value types with immutable fields push the author to construct the new record by
+naming its fields one by one instead of copying it with a single change. The list is written once,
+against the record as it was that day; every field added since is left out and falls back to its
+default (a colour, an owner, a location, a flag), and fields that depend on the one that changed -
+an end time that follows a start time, a status that follows a move - are copied unchanged or set by
+hand. The screen then shows a half-built record for as long as the cache lives, which is until the
+confirmation fetch, and many success paths skip that fetch because the optimistic copy already
+looks right.
+
+The symptom is flicker, lost colours and names, a card of zero length, and it is reported as the
+server returning bad data. It only shows on records with many optional fields filled in, which is
+why a test record with five fields never reveals it.
+
+**Detect.** Find every optimistic update and read how the replacement record is built. A constructor
+call that lists fields by name is the signature: count the record's stored fields against the ones
+passed, and name the omitted ones. List the fields that depend on the changed one and check each is
+recomputed. Then read the success path: is the cache re-fetched or reconciled from the response?
+Confirm in the running app by performing the mutation on a record with every optional field filled
+and watching what disappears. Fix with a copy-with-change on the record type, so a new field cannot
+be forgotten, with a test that every stored field survives and that dependent fields move together,
+and reconcile from the server's answer.
+
+**False positives.** Updates that patch one field through a copy-with-change or a per-field store.
+Caches refetched at once, where the optimistic window is never rendered. Records so small that the
+omission is provably complete and a test pins the field count.

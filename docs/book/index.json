@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1184,
+ "rule_count": 1185,
  "sections": [
   {
    "id": "A",
@@ -4183,7 +4183,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "II:1",
@@ -4248,6 +4248,10 @@
     {
      "id": "II:16",
      "title": "A version-guarded conditional write applied to rows a second writer creates without the version"
+    },
+    {
+     "id": "II:17",
+     "title": "A single-use grant runs its irreversible effects first and its atomic consume last, and treats the consume's conditional failure as a harmless replay, so the guard records the race instead of preventing it"
     }
    ]
   },

@@ -245,3 +245,34 @@ operation against a row created by each writer, not just the primary one.
 
 **False positives.** Tables where a single writer is structurally guaranteed; guards written to
 tolerate absence explicitly (`attribute_not_exists OR version = :v`).
+
+## II:17 — A single-use grant runs its irreversible effects first and its atomic consume last, and treats the consume's conditional failure as a harmless replay, so the guard records the race instead of preventing it
+
+**Statement.** A redeem-once credential (an invitation, a password-reset or magic link, a voucher,
+a one-time code) is redeemed in this order: read the record and check a status field in
+application code, perform the grant's irreversible effects (set a credential, create a membership,
+mint a session, issue value), and only then write the "consumed" marker with a conditional
+expression. The conditional write is real and survives review. But its failure branch is caught
+and logged as an expected duplicate ("already consumed, idempotent"), and the grant proceeds. Two
+concurrent redemptions both pass the application-level check, both execute the effects, and both
+receive the grant; the later one can overwrite state the first one established, such as a
+credential set over the rightful holder's. So can one redemption racing a stale,
+eventually-consistent read of the status. The atomic guard exists, sits on the wrong write, and
+gates nothing. This escapes II:1 because the final write does carry the precondition: the defect
+is the guard's position and the swallowed rejection, not its absence.
+
+**Detect.** For every single-use token or code redemption path, find the conditional consume and
+its position relative to the grant's effects. Any one of these is the finding:
+1. The consume runs after any irreversible effect.
+2. The consume's conditional-failure branch continues to the grant instead of aborting it.
+3. The status pre-check reads without strong consistency and is the only gate.
+
+The correct shape is consume-first. An atomic transition (pending to redeeming, or pending to
+consumed) is the gate that every effect is conditioned on. Retry after a transient failure is
+handled by an explicit redemption lease, or by effects that are idempotent per redemption id.
+
+**False positives.** Effects that are fully idempotent and bound to the token's own principal, so
+a duplicate redemption yields identical state and no second grant (re-confirming the same address
+twice). Consume-first designs whose trailing bookkeeping write is allowed to fail. Tokens
+redeemable only from an already-authenticated session of the intended principal, so a second
+holder cannot redeem them.

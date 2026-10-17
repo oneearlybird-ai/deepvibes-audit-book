@@ -655,3 +655,21 @@ account capability, never with an administrator.
 **False positives.** A surface that genuinely composes account-level management (inviting members,
 changing plans) and whose routes the server gates under that capability; a map that intentionally
 narrows below the server (documented as a product choice, not as a mirror of the server's table).
+
+
+## T:41 — A guard that refuses a session with no selected tenant is applied to every route of a service, including a read whose answer belongs to the account and not to the tenant, so the read is refused in exactly the state a fresh sign-in lands in
+
+**Statement.** After sign-in a user may hold an account session before any tenant is chosen. A shared
+handler wrapper that demands a selected tenant is correct for routes that act on tenant data and wrong
+for a read whose answer is a fact of the account (who bills it, who owns it). Applied uniformly, that
+read fails or returns an empty identity in the first screens the user sees, and the page that needs
+it renders blank or wrong until a tenant is picked.
+
+**Detect.** List the routes behind each wrapper and classify the data each returns as account-scoped
+or tenant-scoped. An account-scoped read behind a tenant-required guard is the signature. Trace the
+state right after sign-in (no tenant selected) through the page that calls it. Fix by exempting that
+single route in the guard, keeping every write and tenant-scoped route refused, and pin the exemption
+with a verifier that fails if a second route joins it.
+
+**False positives.** Routes whose answer genuinely differs per tenant; a documented product rule that
+the tenant must be chosen first.

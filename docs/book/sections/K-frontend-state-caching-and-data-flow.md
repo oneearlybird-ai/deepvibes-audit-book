@@ -662,3 +662,24 @@ and reconcile from the server's answer.
 **False positives.** Updates that patch one field through a copy-with-change or a per-field store.
 Caches refetched at once, where the optimistic window is never rendered. Records so small that the
 omission is provably complete and a test pins the field count.
+
+
+## K:42 — A client-side "setup done" indicator tests a weaker condition than the server precondition it summarises, so the step ticks and the alert clears while the server keeps refusing the action the step exists to unlock
+
+**Statement.** An onboarding step, a checklist tick or a notification count tells the user that a
+prerequisite is met so a gated action will work. The client decides "met" with its own predicate
+(any contact method saved, any field non-empty) written when the gate was looser or guessed from the
+field names. The server's gate asks for one specific thing (a particular channel, a verified value,
+a non-expired record). The two drift: the indicator reports done on a value the server does not
+accept, the user is told they are finished, and the gated action keeps failing with a refusal the
+screen never explains.
+
+**Detect.** For every completion indicator, badge count and "finish setup" alert, find the server
+check it stands for and read both predicates side by side. A client predicate that is an OR over
+fields where the server requires one of them, or that tests presence where the server tests validity,
+is the signature. Reproduce by saving only the value the client accepts and the server does not, then
+performing the gated action. Fix by naming the one thing the server needs in the indicator's copy and
+predicate, sharing the predicate from one place where possible, and pinning both with a test.
+
+**False positives.** An indicator that is deliberately looser and says so in its copy ("contact saved",
+not "ready to invite"); gates whose server predicate is itself the exported function the client calls.

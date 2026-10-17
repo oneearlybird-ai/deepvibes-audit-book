@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1185,
+ "rule_count": 1187,
  "sections": [
   {
    "id": "A",
@@ -1695,7 +1695,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "K:1",
@@ -1860,6 +1860,10 @@
     {
      "id": "K:41",
      "title": "An optimistic update rebuilds the record from a hand-written field list, so every field the list leaves out disappears and every derived field it copies goes stale until the next fetch"
+    },
+    {
+     "id": "K:42",
+     "title": "A client-side \"setup done\" indicator tests a weaker condition than the server precondition it summarises, so the step ticks and the alert clears while the server keeps refusing the action the step exists to unlock"
     }
    ]
   },
@@ -2540,7 +2544,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "T:1",
@@ -2701,6 +2705,10 @@
     {
      "id": "T:40",
      "title": "A client-side permission hint maps a surface to a capability the server issues for a different purpose, so the hint hides the surface from exactly the members the server would let in"
+    },
+    {
+     "id": "T:41",
+     "title": "A guard that refuses a session with no selected tenant is applied to every route of a service, including a read whose answer belongs to the account and not to the tenant, so the read is refused in exactly the state a fresh sign-in lands in"
     }
    ]
   },

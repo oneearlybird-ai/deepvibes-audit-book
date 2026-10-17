@@ -673,3 +673,21 @@ with a verifier that fails if a second route joins it.
 
 **False positives.** Routes whose answer genuinely differs per tenant; a documented product rule that
 the tenant must be chosen first.
+
+
+## T:42 — A generator that derives an allow-list from policy resource strings treats any resource containing a wildcard character as "all targets", so a version- or alias-qualified single resource widens the list to everyone
+
+**Statement.** Tooling that reads IAM-style policy statements to build a caller allow-list (who may
+invoke which function) must distinguish a wildcard in the target's name from a wildcard in its
+qualifier. A resource that names one target followed by a trailing `:*` (any alias or version of that
+one target) is a single target. A parser that tests only "does the string contain `*`" collapses it to
+"every target", and the generated list then admits every caller to every such target, silently
+defeating the least-privilege shape the policies actually express.
+
+**Detect.** Find code that turns policy `Resource` values into a grant or allow table. Feed it a
+resource of the form `arn:...:function:<name>:*` and one with a wildcard inside the name, and check
+that only the second yields "all". Compare the generated table's count of unrestricted entries against
+the policies' real unrestricted statements.
+
+**False positives.** Statements that really use a bare `*`, a wildcard in the name, or `NotResource`;
+a deliberately broad grant documented as a posture.

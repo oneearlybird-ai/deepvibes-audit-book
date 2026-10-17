@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1187,
+ "rule_count": 1188,
  "sections": [
   {
    "id": "A",
@@ -2544,7 +2544,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "T:1",
@@ -2709,6 +2709,10 @@
     {
      "id": "T:41",
      "title": "A guard that refuses a session with no selected tenant is applied to every route of a service, including a read whose answer belongs to the account and not to the tenant, so the read is refused in exactly the state a fresh sign-in lands in"
+    },
+    {
+     "id": "T:42",
+     "title": "A generator that derives an allow-list from policy resource strings treats any resource containing a wildcard character as \"all targets\", so a version- or alias-qualified single resource widens the list to everyone"
     }
    ]
   },

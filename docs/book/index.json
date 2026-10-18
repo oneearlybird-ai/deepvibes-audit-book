@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1188,
+ "rule_count": 1189,
  "sections": [
   {
    "id": "A",
@@ -1043,7 +1043,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 88,
+   "rule_count": 89,
    "rules": [
     {
      "id": "G:1",
@@ -1396,6 +1396,10 @@
     {
      "id": "G:88",
      "title": "The alarm names the metric without the dimensions its publisher always attaches, or the publisher emits only when an input field is present that its orchestrator delivers under another path, so the alarm's series never receives a datapoint and not-breaching renders it healthy"
+    },
+    {
+     "id": "G:89",
+     "title": "A runtime move changes how a log call is framed into records, so every term filter, metric filter, canary matcher and parser that correlates fields within one record stops matching while the alarms built on them read healthy or latch for an unrelated reason"
     }
    ]
   },

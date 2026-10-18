@@ -154,6 +154,13 @@ instances run it concurrently — duplicate side effects, corrupted schema state
 **Detect.** Find `if (!initialized) { initialized = true; await setup() }` patterns and boot-time
 migration hooks. For anything with external side effects, require a distributed once-guard
 (conditional insert of a migration/init record) or single-flight promise reuse for in-process cases.
+A guard that publishes the resource handle (a name, a client, a token) to the cache BEFORE the
+creating call has answered is the same race one step later: the second caller finds the handle,
+skips creation and uses a resource that does not exist yet. Audit this with special care when a
+workload moves from a runtime that served one request per process (a managed function container)
+to one that serves requests concurrently: every lazy-init guard that was dormant under single
+concurrency goes live on the first cold start under load, and its only symptom is one dropped
+side effect per cold start.
 
 **False positives.** Pure in-process setup (client construction) using the single-flight promise
 pattern correctly; migrations run exclusively from a dedicated single-run deploy step, never at

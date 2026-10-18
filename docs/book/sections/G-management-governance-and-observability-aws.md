@@ -2335,3 +2335,38 @@ design (confirm the publisher's call carries none); alarms deliberately on a met
 expression that sums across dimensions (the expression, not a bare metric name, is then the
 contract); and guards whose input is absent only on a degradation path the orchestrator documents,
 while the normal path delivers it.
+
+## G:89 — A runtime move changes how a log call is framed into records, so every term filter, metric filter, canary matcher and parser that correlates fields within one record stops matching while the alarms built on them read healthy or latch for an unrelated reason
+
+**Statement.** A log consumer never reads "the log"; it reads records, and a record's boundary is
+set by the runtime that framed it, not by the code that called the logger. A managed function
+runtime that wraps each console call into one structured record (one record carrying the label and
+the inspected object, however many lines the object spans) teaches every downstream consumer a
+contract it never wrote down: a term filter asking for two words, a metric filter reading a field
+beside the message, a synthetic probe that filters by an identifier and then checks the same
+record's prefix, a parser lifting a nested error type. Moving the workload to a plain process whose
+stdout is tailed line by line keeps every call site and every consumer unchanged and silently breaks
+the contract: the object now arrives as one record per line, the identifier and the label live on
+different records, a two-term filter can never match, a level-keyed counter counts lines instead of
+calls, and a shipper that merges structured fields may still overwrite the message with the raw
+line so even a producer that writes single-line JSON cannot restore the shape. Nothing errors. The
+alarms built on the broken filters do not fire for the condition they watch; a "no success in a
+day" alarm fires every day regardless, so the control's signal is dead in both directions while the
+dashboard shows the alarm "working". The probe is the worst case: it reports a failure of the plane
+it checks when the plane succeeded, and the team spends the incident on the plane.
+
+**Detect.** For every workload that changed runtime, host or log transport, take one multi-argument
+log call and read its records in the destination before and after the move; a call that was one
+record and is now several is the finding, whatever the filters currently say. Then enumerate the
+consumers of that log group - metric filters and their alarms, synthetic probes that poll the group,
+parsers and indexers - and classify each by what it needs to co-occur within one record (two terms,
+a label and a field, a prefix and an identifier); every consumer needing co-occurrence is broken.
+Confirm with the metrics: a success counter whose only datapoints are the filter's default value, a
+failure counter with no datapoints since the move, an error counter whose datapoints are multiples
+of the lines an inspected object prints. Treat a probe failure that began at the move as suspect
+until the probe's own target has been read directly.
+
+**False positives.** Producers that already write one JSON object per call through their own
+formatter and whose shipper preserves the parsed record's message and timestamp; filters that only
+ever needed a single token per record; a move in which the framing was reproduced deliberately and
+proven by reading records in the destination, not by reading the manifests.

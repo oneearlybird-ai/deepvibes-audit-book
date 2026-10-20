@@ -135,3 +135,30 @@ change — a policy edit alone is not evidence.
 holds no invoke permission at all — check the invoke action first. A model in a region the request
 never routes to. A first-invocation cold-subscribe in an account deliberately given the enablement
 actions, where the denial is genuinely transient.
+
+
+## H:19 — An agent tool accepts the acting principal's identity (a phone number, an account or customer identifier) as a model-supplied argument, so the model, or whoever steers it, chooses whom the action is performed for
+
+**Statement.** In an agent that acts on behalf of a caller, a user or an account, the identity it
+acts for is a fact the server establishes from the transport and the session - the number the
+carrier presented, the authenticated subject, the account the credential names. A tool whose input
+schema carries that identity (a "customer_phone" the model may fill, a "customer_id" it may pick)
+lets the model's output decide the principal: a hallucinated, misheard or injected value creates or
+selects a record for someone else, and the server then binds the action - a booking, a message, a
+consent - to the wrong person with the same confidence as a right one. The defect is structural
+even when the model usually copies the right value: the schema is the permission, and the model
+holds it.
+
+**Detect.** List every tool the agent can call and every argument on each. Any argument that names
+a principal, an owner or an account - phone, email used as a key, account or customer id - is the
+signature. Trace what the server does with it: a lookup or create keyed by that value proves the
+model chooses the principal. Then find where the server already knows the identity (the session
+record, the carrier's number, the credential's subject) and confirm the tool could resolve it from
+there with no argument. Descriptive attributes the principal gives about themselves (a name, an
+address, an email as a contact detail) are not identity and may stay as inputs, written only onto
+the principal's own record.
+
+**False positives.** A tool whose identity argument is validated against the session's own
+identity and refused on mismatch (the argument is then a confirmation, not a choice); an operator
+console where the operator is the principal and names a customer deliberately; a descriptive
+attribute that never keys a lookup or a create.

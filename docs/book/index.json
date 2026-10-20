@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1189,
+ "rule_count": 1191,
  "sections": [
   {
    "id": "A",
@@ -1408,7 +1408,7 @@
    "title": "AI & Data Analytics (AWS)",
    "group": "aws-backend",
    "file": "sections/H-ai-and-data-analytics-aws.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "H:1",
@@ -1481,6 +1481,10 @@
     {
      "id": "H:18",
      "title": "Managed-model access is an account-level entitlement separate from the IAM grant, so a correctly-scoped invoke policy still fails at runtime, and the denial names permissions the caller does not need"
+    },
+    {
+     "id": "H:19",
+     "title": "An agent tool accepts the acting principal's identity (a phone number, an account or customer identifier) as a model-supplied argument, so the model, or whoever steers it, chooses whom the action is performed for"
     }
    ]
   },
@@ -2548,7 +2552,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "T:1",
@@ -2717,6 +2721,10 @@
     {
      "id": "T:42",
      "title": "A generator that derives an allow-list from policy resource strings treats any resource containing a wildcard character as \"all targets\", so a version- or alias-qualified single resource widens the list to everyone"
+    },
+    {
+     "id": "T:43",
+     "title": "A per-session capability credential is handed to the caller before, or regardless of, the durable write of the record every verifier resolves it against, so a failed write yields a live credential nothing can honour and a session the system never records"
     }
    ]
   },

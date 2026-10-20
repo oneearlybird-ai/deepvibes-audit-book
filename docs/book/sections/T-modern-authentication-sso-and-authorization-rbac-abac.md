@@ -691,3 +691,35 @@ the policies' real unrestricted statements.
 
 **False positives.** Statements that really use a bare `*`, a wildcard in the name, or `NotResource`;
 a deliberately broad grant documented as a posture.
+
+
+## T:43 — A per-session capability credential is handed to the caller before, or regardless of, the durable write of the record every verifier resolves it against, so a failed write yields a live credential nothing can honour and a session the system never records
+
+**Statement.** A capability credential (a signed ticket, a session token, a one-call bearer) is only
+as real as the record its verifiers look up: the row that says which principal, which account and
+which lifecycle state the credential names. When the issuing path mints the credential, attempts
+the write, catches the write's failure as a logged warning and still returns the credential to the
+caller, the system enters a state that cannot exist by design: a credential that verifies
+cryptographically and binds to nothing. Every downstream check that resolves it answers "no such
+session", every action the holder attempts is refused with a generic failure, and the completion
+pipeline keyed on the record never sees the session at all. The failure is silent at the point that
+matters: the caller is answered as if served. The same shape appears when the principal the
+credential should bind to is created only after the session ends - an in-session action that needs
+the principal has nothing to attach to, and the record is reconstructed afterwards from a
+different source than the one the session used.
+
+**Detect.** Find every place a credential is minted and trace from the mint to the response: is the
+write of the credential's backing record inside a try whose catch does not return, retry or fail the
+request? Does the response path run even when the write threw? Then trace the verifier side: what
+does it resolve the credential against, and what does it answer when that record is absent? If the
+answer is a refusal, the issuing path must refuse first. Check the same for the principal: is the
+identity the credential acts for created before the credential is issued, or by a later step?
+Measure in the live system: a credential issued with no row behind it leaves a recognisable pair -
+an issuance log line followed by verifier refusals for the same identifier and no completion
+record.
+
+**False positives.** A deliberately advisory record (an analytics stamp, a cache) that no verifier
+resolves the credential against; a write-once record whose conditional-write failure means the row
+already exists (a redelivery), which is success for the issuing path; an issuing path that fails
+closed (refuses to answer, or answers with a degraded path that never presents the credential) when
+the write fails after its retries.

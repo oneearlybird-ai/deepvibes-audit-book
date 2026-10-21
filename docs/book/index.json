@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1197,
+ "rule_count": 1198,
  "sections": [
   {
    "id": "A",
@@ -1707,7 +1707,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "K:1",
@@ -1876,6 +1876,10 @@
     {
      "id": "K:42",
      "title": "A client-side \"setup done\" indicator tests a weaker condition than the server precondition it summarises, so the step ticks and the alert clears while the server keeps refusing the action the step exists to unlock"
+    },
+    {
+     "id": "K:43",
+     "title": "A screen hand-writes a request body in a casing the handler never reads, so its required-field check refuses every submission, and because the request bypasses the typed API contract nothing fails until a person tries the feature"
     }
    ]
   },

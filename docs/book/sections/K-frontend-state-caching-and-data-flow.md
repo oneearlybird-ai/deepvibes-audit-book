@@ -683,3 +683,27 @@ predicate, sharing the predicate from one place where possible, and pinning both
 
 **False positives.** An indicator that is deliberately looser and says so in its copy ("contact saved",
 not "ready to invite"); gates whose server predicate is itself the exported function the client calls.
+
+## K:43 — A screen hand-writes a request body in a casing the handler never reads, so its required-field check refuses every submission, and because the request bypasses the typed API contract nothing fails until a person tries the feature
+
+**Statement.** A client that otherwise talks to its backend through generated, contract-checked types
+builds one request body by hand: an older form, a settings sub-page, a flow written before the
+handler's contract settled. Its keys follow a different convention (snake_case where the handler reads
+camelCase, an old field name, a nested object the handler expects flat), so the field the handler
+requires is absent and every submission is refused. The screen turns the refusal into a generic error
+toast or a status it never re-reads, the endpoint's own tests feed it the correct shape, and the
+contract checker never sees the body because it was written as a string, not through the generated
+client. The feature looks built in review and is dead in production; on a surface that only matters
+during onboarding or setup, nobody notices until a customer reports it, and a sibling client on another
+platform that calls the same endpoint correctly hides the failure from anyone testing there.
+
+**Detect.** For every endpoint, list each client call site and compare the keys it sends with the keys
+the handler reads, field by field, including nesting and casing. Treat a body assembled with
+`JSON.stringify({...})` or a dictionary literal, rather than through the generated request type, as
+unverified until the comparison is done. Check the handler's required fields against each caller's
+payload, not against the handler's own tests. A 4xx rate of 100% on one endpoint from one client
+family, or no successful request from it ever, is the live confirmation.
+
+**False positives.** An adapter between client and handler that rewrites keys (verify it covers that
+route); handlers that deliberately accept both spellings during a published deprecation window with a
+removal date.

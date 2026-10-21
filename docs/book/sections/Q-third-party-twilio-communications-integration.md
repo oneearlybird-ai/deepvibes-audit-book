@@ -186,3 +186,58 @@ message IS the product (appointment reminders designed for voicemail); providers
 classification asynchronously after the instruction request, where the correct branch lives in the
 status callback instead and the handler genuinely cannot know; flows whose orchestration has no
 distinct no-contact behaviour to reach, where reading the verdict would change nothing.
+
+## Q:19 — A sender-registration filing is assembled from the fields that were mandatory when it was written; the registrar later requires more for new submissions, and because nothing has filed since, every new sender is rejected while existing approvals hide it
+
+**Statement.** An integration that registers senders with a carrier-side registrar (toll-free
+verification, brand and campaign registration, short-code applications) assembles the submission
+from a fixed list of fields, behind its own "do we hold everything" check. Registrars tighten their
+requirements on announced dates (a business tax identifier, the business type, a named contact
+person, separate links to the sender's privacy policy and terms) and apply them to new submissions
+only. Senders approved before the change keep working, so live traffic shows nothing wrong. The
+integration's completeness check still passes because it checks the old list, the business is
+marked submitted, and the refusal arrives days later as an asynchronous status with a reason code
+that lands in an operations queue instead of in front of the person who must supply the missing
+value. Where no new sender has been onboarded since the change, nothing has exercised the path at
+all, and the first customer to try discovers that the capability can never turn on, while the
+onboarding flow never even asked for the value the registrar now demands.
+
+**Detect.** Find the function that builds the registration payload and list every field it sends.
+Diff that list against the registrar's current API reference, counting fields described as
+"required for all business types except …" or "required from <date>" even where the schema still
+marks them optional. For each newly mandatory value, confirm three things: the platform's data
+model has a home for it, the onboarding flow collects it, and the completeness gate names it so a
+missing value stops the filing with a clear request. Then find the date of the last successful new
+submission (registrar records, logs, the registration table); none since the registrar's change
+means the path is unproven, whatever the tests say.
+
+**False positives.** Fields required only for a sender type the platform never files (political
+senders, the sole-proprietor path where the integration files that type and the exemption applies);
+registrars that take the value from a linked profile the integration already maintains, proven by a
+successful new submission after the change date.
+
+## Q:20 — A second path that sends from the same business sender enforces only the control it was written for, while the time-of-day window, the volume cap and the duplicate guard live inside the primary notifier, so the message with the thinnest consent footing is the least gated
+
+**Statement.** Messaging systems usually grow one primary sending function (confirmations,
+reminders) that applies every compliance gate in order: consent, the recipient's time-of-day
+window, a per-sender daily volume cap, duplicate suppression, content rules. Later a second path is
+added beside it for a special message (the consent request itself, a re-send when a sender is
+approved, a verification text) and it calls the provider's send primitive directly. It enforces the
+gate that motivated it, usually the consent state, and none of the others, because those gates were
+never part of the shared primitive; they were steps inside the primary function. The message most
+exposed to consent law, the first text to someone who has not confirmed anything yet, can then go
+out at two in the morning, outside the daily cap, and again on every replay. Bulk re-drive handlers
+make it worse: an "on approval, send to everyone pending" loop runs at whatever hour the approval
+arrives and inherits no per-message gate at all.
+
+**Detect.** Enumerate every caller of the provider's send primitive for one sender identity. For
+each, list the gates that run before the call. A gate that runs on one caller and not on another
+for the same sender is the finding, unless a documented exemption covers that message class.
+Re-drive handlers that loop over pending recipients deserve a separate look: check the hour they
+can fire, whether each iteration passes the window and cap, and whether a replay of the triggering
+event sends the batch again.
+
+**False positives.** Messages on a different sender with a different legal basis (a one-time
+passcode the user just requested on the platform's own number, emergency alerts under a written
+exemption); a second path that calls the same gate functions in the same order, so the gates are
+shared even though the send call is not.

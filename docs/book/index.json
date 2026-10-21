@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1195,
+ "rule_count": 1197,
  "sections": [
   {
    "id": "A",
@@ -2285,7 +2285,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 18,
+   "rule_count": 20,
    "rules": [
     {
      "id": "Q:1",
@@ -2358,6 +2358,14 @@
     {
      "id": "Q:18",
      "title": "The integration pays the provider to classify who answered and the verdict rides the very callback that asks what to do next, but the handler branches on everything except that field"
+    },
+    {
+     "id": "Q:19",
+     "title": "A sender-registration filing is assembled from the fields that were mandatory when it was written; the registrar later requires more for new submissions, and because nothing has filed since, every new sender is rejected while existing approvals hide it"
+    },
+    {
+     "id": "Q:20",
+     "title": "A second path that sends from the same business sender enforces only the control it was written for, while the time-of-day window, the volume cap and the duplicate guard live inside the primary notifier, so the message with the thinnest consent footing is the least gated"
     }
    ]
   },

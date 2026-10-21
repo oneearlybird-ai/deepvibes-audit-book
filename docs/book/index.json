@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1194,
+ "rule_count": 1195,
  "sections": [
   {
    "id": "A",
@@ -645,7 +645,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 45,
+   "rule_count": 46,
    "rules": [
     {
      "id": "E:1",
@@ -826,6 +826,10 @@
     {
      "id": "E:45",
      "title": "A second API plane reaches backend functions by direct invocation with its own event shape, the functions read only the first plane's shape, and each answers with its HTTP error envelope as an ordinary return value, so the second plane serves every such field as empty data and nothing errors anywhere"
+    },
+    {
+     "id": "E:46",
+     "title": "A dead-letter drain tool reads the messages to classify them and then asks the queue service to move the queue back, but the read has locked those messages and the service's bulk move leaves locked messages where they are, so the drain reports success, records a redrive, and moves nothing"
     }
    ]
   },

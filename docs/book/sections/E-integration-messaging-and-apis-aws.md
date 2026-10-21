@@ -659,3 +659,28 @@ dispatchers that turn any non-2xx envelope into a schema-level error, which make
 visible (the mismatch is then a loud outage, a different and lesser finding); and fields that no
 client's operation documents name and that are removed from the schema rather than repaired, where
 the finding is the dead surface, not the dispatch.
+
+## E:46 — A dead-letter drain tool reads the messages to classify them and then asks the queue service to move the queue back, but the read has locked those messages and the service's bulk move leaves locked messages where they are, so the drain reports success, records a redrive, and moves nothing
+
+**Statement.** The operator's drain tool does two reasonable things in a row: it receives the
+dead-lettered messages so it can describe them (kind, origin, age) and decide, holding them with a
+visibility timeout long enough to work; then, for a queue-fed dead-letter queue, it starts the
+service's native move task, which is the right primitive because it moves the whole queue back
+without re-publishing. The two steps do not compose: the move task operates on visible messages
+only, and the tool's own read has just made every message in-flight for the length of its hold.
+The task completes at once with "moved 0 of N", the tool prints its success line and appends an
+audit record that says the queue was redriven, and the messages reappear untouched when the hold
+expires. Every documented drain of that queue since the tool was written has been a no-op with
+a green audit trail, and the depth alarm that follows looks like a new failure.
+
+**Detect.** Read the drain tool: a receive with a non-zero visibility timeout followed by a
+move/redrive call on the same queue in the same run is this defect unless the tool releases the
+hold (visibility set to zero, or the messages deleted-and-republished) in between. Prove it on the
+service: run the drain and read the move task's status - a task that completed with fewer moved
+than to-move while the queue's not-visible count equals the shortfall is the live symptom. Audit
+history that shows repeated "redriven" lines for the same message ids is the paper symptom.
+
+**False positives.** Tools that receive with a zero visibility timeout, or that release the hold
+before the move. Tools that republish each message and delete it individually instead of using
+the bulk move. A move task that reports a shortfall because a consumer, not the tool, holds the
+messages.

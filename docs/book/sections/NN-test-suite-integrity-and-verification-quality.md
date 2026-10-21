@@ -1791,3 +1791,28 @@ finalizer stamping ARNs after the create), where the control tolerates their abs
 phase, or evaluates only subjects past it. A control deliberately red as a launch gate, where the
 population is expected to fail until a documented step is done and the annotation names that
 step.
+
+## NN:69 — A cross-repo freshness gate resolves its producer by directory adjacency, so inside an isolated per-task workspace it reads a sibling clone that lags the trunk by weeks and certifies a stale vendored snapshot as fresh
+
+**Statement.** A consumer repository vendors an artifact the producer owns (a schema, a route
+manifest, a contract) and guards it with a gate that regenerates from "the producer" and demands
+no diff. The gate finds the producer by walking the filesystem: the first directory of the right
+name beside the consumer wins. On the shared reference layout that is the trunk checkout. In a
+per-task workspace - a slot that holds its own clone of each repository, a worktree farm - the
+first match is the sibling *slot* clone, which fast-forwards only when someone claims it and
+otherwise sits where its last task left it, weeks behind the trunk. The gate then compares the
+vendored copy against that stale producer, reports it fresh, and lets the consumer land against a
+contract the trunk has already moved past; a regeneration run in the same workspace silently
+*removes* fields the trunk added. Unlike the absent-sibling case (NN:67) nothing aborts and nothing
+looks wrong: the output is a plausible, older snapshot with a green gate beside it.
+
+**Detect.** Read the gate's producer resolution. If it is a relative hop or a name search, run the
+gate from an isolated workspace while the sibling clone is deliberately behind the trunk and
+watch what it certifies. Any resolution that can land on a clone other than the designated
+reference (trunk checkout or a pinned revision) without checking that clone's revision against the
+trunk is this defect. A regeneration whose diff deletes fields that exist on the trunk is the live
+symptom.
+
+**False positives.** Gates that resolve the producer through a single declared reference path and
+refuse every other, or that compare the resolved clone's head against the remote trunk before
+trusting it. Gates that fetch the producer artifact from the remote at a pinned revision.

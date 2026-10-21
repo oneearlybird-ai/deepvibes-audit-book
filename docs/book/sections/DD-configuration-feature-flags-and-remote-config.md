@@ -968,3 +968,31 @@ a library in lax mode, is not this check.
 **False positives.** Schemas the service compiles at apply time and refuses then, loudly. Profiles
 without a schema validator. Patterns valid in the service's dialect that a local engine rejects: the
 check must use the service's dialect, not the local default.
+
+## DD:41 — A vendor-side reconciler's parity is "every declared key equals live", so a live property a platform lane depends on but never declares sits outside parity's view and can be set, changed or lost with every check green
+
+**Statement.** A declare-then-apply lane owns a vendor object (an agent, a webhook, a server
+record): the repository declares the keys it cares about, the apply writes them, and the parity
+check compares each declared key to the live value and leaves undeclared live keys alone - a
+deliberate posture that lets the vendor add fields without breaking the lane. The blind spot is a
+property the platform *depends on* without declaring it: a mode flag set once by hand in the
+console, a default the vendor chose at creation, a binding a one-off script wrote. A scheduled
+probe, a tool route or a billing path then relies on that property, parity reports the object in
+sync because every declared key matches, and the property can be flipped in the console, reset by
+a vendor migration, or missing on a recreated object without a single check turning red. The
+failure surfaces as the dependent lane breaking (a probe that stops getting answers, a route that
+stops firing) while the reconciler's own report says nothing drifted.
+
+**Detect.** For each vendor object the lane manages, list the live properties any first-party
+code path reads or assumes (grep the consumers for the vendor's field names and for behaviour that
+only one mode produces) and intersect that list with the declared keys; every property in the
+first set and not the second is an undeclared dependency. Prove it live: read the object from the
+vendor API, change nothing, and ask whether the parity check would notice if that one property
+flipped - if the check iterates declared keys only, it would not. A property that was set by hand
+and never declared usually shows up as a difference between two sibling objects the lane treats
+as identical (one has the flag, one does not).
+
+**False positives.** Properties the lane deliberately leaves to the vendor and that no
+first-party path depends on. Objects the lane owns end to end with a full-record compare. A
+property declared on a template the object inherits from, where the inheritance is itself
+verified.

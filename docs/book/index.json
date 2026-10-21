@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1191,
+ "rule_count": 1194,
  "sections": [
   {
    "id": "A",
@@ -3794,7 +3794,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 40,
+   "rule_count": 41,
    "rules": [
     {
      "id": "DD:1",
@@ -3955,6 +3955,10 @@
     {
      "id": "DD:40",
      "title": "A schema attached as a deploy-time validator is exercised only by the configuration service, so a pattern that is not a valid regular expression under the service's dialect deploys silently and then refuses every document"
+    },
+    {
+     "id": "DD:41",
+     "title": "A vendor-side reconciler's parity is \"every declared key equals live\", so a live property a platform lane depends on but never declares sits outside parity's view and can be set, changed or lost with every check green"
     }
    ]
   },
@@ -4097,7 +4101,7 @@
    "title": "Cost Management & FinOps",
    "group": "platform-delivery",
    "file": "sections/GG-cost-management-and-finops.md",
-   "rule_count": 9,
+   "rule_count": 10,
    "rules": [
     {
      "id": "GG:1",
@@ -4134,6 +4138,10 @@
     {
      "id": "GG:9",
      "title": "The provider's billing standing is an undeclared dependency of provisioning, and nothing in the platform watches it"
+    },
+    {
+     "id": "GG:10",
+     "title": "A synthetic probe keeps a metered vendor session open while it polls an out-of-band success signal, so a failing run costs the full timeout at the vendor's per-second rate and the failure mode is the expensive one"
     }
    ]
   },
@@ -4724,7 +4732,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 68,
+   "rule_count": 69,
    "rules": [
     {
      "id": "NN:1",
@@ -4997,6 +5005,10 @@
     {
      "id": "NN:68",
      "title": "A compliance control reads fields from one record that the producer writes to a sibling record, so every subject fails from the control's first evaluation, the control is red from birth, and its other checks lose their signal behind the constant failure"
+    },
+    {
+     "id": "NN:69",
+     "title": "A cross-repo freshness gate resolves its producer by directory adjacency, so inside an isolated per-task workspace it reads a sibling clone that lags the trunk by weeks and certifies a stale vendored snapshot as fresh"
     }
    ]
   },

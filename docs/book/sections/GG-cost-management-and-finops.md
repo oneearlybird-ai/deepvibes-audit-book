@@ -73,3 +73,29 @@ least two contacts are registered, so a single lapsed address cannot silence the
 mechanism does not apply. Sandbox or throwaway accounts that provision nothing on demand.
 Organizations where a central finance function owns and monitors standing under a documented
 control, and the platform's dependence on it is stated.
+
+## GG:10 — A synthetic probe keeps a metered vendor session open while it polls an out-of-band success signal, so a failing run costs the full timeout at the vendor's per-second rate and the failure mode is the expensive one
+
+**Statement.** A canary opens a real, billed session with a vendor (a voice or chat conversation
+charged per second or per minute), sends its question, and then waits - not on the session's own
+reply, but on a separate signal that lags by design (the platform's own execution log, a webhook
+arriving minutes later). It holds the session open the whole time because the vendor may still
+route the pending work through it. On a good day the session lasts seconds. On a bad day - the
+answer never comes, the vendor's model stays silent, the out-of-band signal is delayed - the
+session stays open until the probe's own timeout, and the vendor meters every idle second.
+A single silent run can cost tens of times a passing one, and the probe is scheduled, so the
+expensive case repeats every period for as long as the fault lasts; the alarm that pages for the
+failure says nothing about the bill. The pattern also hides in one-off verification runs against
+the wrong target (a voice-only object fed text), where the whole timeout is spent idle.
+
+**Detect.** For each synthetic probe that opens a billed vendor session, find what it waits on
+after sending its input and whether the session is still open during that wait; read the vendor's
+per-session cost on a passing run and on a timed-out run (the vendor's conversation record usually
+carries duration and cost). If the timed-out cost is a multiple of the passing cost and the probe
+runs on a schedule, the failure cost is unbounded by anything but the timeout. Check whether the
+probe closes the session as soon as the vendor side can make no further progress (the model's turn
+ended without the expected action, an error event arrived) rather than at its own deadline.
+
+**False positives.** Probes whose session is free or flat-rate. Probes that close the session the
+moment the vendor-side turn ends and wait on the out-of-band signal with nothing open. A wait that
+is itself the thing under test (a latency probe) with a bounded, costed timeout the owner accepted.

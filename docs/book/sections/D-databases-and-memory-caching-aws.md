@@ -373,3 +373,11 @@ fix.
 **Detect.** For every table with time-to-live enabled, find every writer of the TTL attribute and record the type each writes (number of epoch seconds, string, null) and whether business logic also reads the attribute as a validity check. Compare the effective lifetime with the published retention for that record class. A count of items whose TTL attribute is a string, or of evidence records whose TTL equals their validity end, is the live confirmation.
 
 **False positives.** A TTL attribute that every writer stores as epoch seconds and that nothing reads as a business field; tables whose never-expiring posture is declared and documented; short-lived operational rows (sessions, locks) where expiring at validity end is the intent.
+
+## D:39 — A choice that must be stable is taken as "the first member" of an unordered collection read from the store, so which record receives a write or a grant can change between reads
+
+**Statement.** Code that must pick one target from many - which business receives a transfer, which address is primary - sometimes takes the first element of a collection whose order the store does not define: a DynamoDB string set, a map's keys, an unsorted scan. It works in tests with one element and looks stable in development, but the order is an implementation detail of the store and its client library. When the collection grows, is rewritten, or the client changes, the "first" member changes and the write lands on a different record than before, with no error and nothing recording why.
+
+**Detect.** Search for destructuring or index-zero reads on values from set-typed attributes or unsorted query results where the chosen element is then written to or credited. Check whether the domain defines which element should be chosen (an explicit primary flag, a creation timestamp, a user's choice), and whether the collection can hold more than one element in production.
+
+**False positives.** Collections held to at most one element by an enforced invariant; reads where any member is equally correct, such as picking any healthy replica; sorted reads whose sort key encodes the intended choice.

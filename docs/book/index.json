@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1205,
+ "rule_count": 1208,
  "sections": [
   {
    "id": "A",
@@ -492,7 +492,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 38,
+   "rule_count": 39,
    "rules": [
     {
      "id": "D:1",
@@ -645,6 +645,10 @@
     {
      "id": "D:38",
      "title": "A table's time-to-live is set on an attribute the application writes for its own meaning and as text, so expiry never runs - and fixing only the type would delete each record when the thing it evidences lapses rather than when its retention ends"
+    },
+    {
+     "id": "D:39",
+     "title": "A choice that must be stable is taken as \"the first member\" of an unordered collection read from the store, so which record receives a write or a grant can change between reads"
     }
    ]
   },
@@ -2212,7 +2216,7 @@
    "title": "Third Party: Stripe Payments Integration",
    "group": "third-party",
    "file": "sections/P-third-party-stripe-payments-integration.md",
-   "rule_count": 21,
+   "rule_count": 23,
    "rules": [
     {
      "id": "P:1",
@@ -2297,6 +2301,14 @@
     {
      "id": "P:21",
      "title": "A provider webhook carries a catalog identifier the local plan map does not contain, so the event fails permanently while the provider keeps retrying it"
+    },
+    {
+     "id": "P:22",
+     "title": "An invoice is created after its charge was added as a loose pending item, so the provider's create-invoice default leaves the charge out and the invoice finalizes empty, is marked paid at zero, and the grant keyed to it still fires"
+    },
+    {
+     "id": "P:23",
+     "title": "An idempotency key is built from an owner label that is the same for every tenant, so two tenants processed in one run share a key and the provider returns one tenant's object for the other's request or refuses it"
     }
    ]
   },

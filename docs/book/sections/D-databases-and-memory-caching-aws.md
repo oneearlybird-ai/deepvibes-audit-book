@@ -365,3 +365,11 @@ automatic upgrade explicitly off with the exact minor declared and bumped throug
 before any forced date; a lifecycle ignore on the version with its reason recorded — which removes
 the failing plan but is the drift-masking posture CC:4 describes, so record it as a decision, not a
 fix.
+
+## D:38 — A table's time-to-live is set on an attribute the application writes for its own meaning and as text, so expiry never runs - and fixing only the type would delete each record when the thing it evidences lapses rather than when its retention ends
+
+**Statement.** A key-value store's time-to-live is enabled on an attribute the application already uses for a domain meaning - when a consent, offer, token or entitlement stops being valid - and the writers store it as an ISO timestamp string or null. The store's expiry acts only on a number of epoch seconds and silently skips anything else, so no item ever expires and a published "kept N years, then deleted" promise becomes "kept forever" without an error anywhere. The obvious repair is worse for evidence records: write the same attribute as epoch seconds and the store now deletes each record at the moment the thing it evidences lapses - the day a consent expires is the day its proof is destroyed, which is exactly what the retention period exists to prevent. Retention needs its own numeric attribute computed from the retention rule (recorded-at plus the period), separate from any field the business logic reads.
+
+**Detect.** For every table with time-to-live enabled, find every writer of the TTL attribute and record the type each writes (number of epoch seconds, string, null) and whether business logic also reads the attribute as a validity check. Compare the effective lifetime with the published retention for that record class. A count of items whose TTL attribute is a string, or of evidence records whose TTL equals their validity end, is the live confirmation.
+
+**False positives.** A TTL attribute that every writer stores as epoch seconds and that nothing reads as a business field; tables whose never-expiring posture is declared and documented; short-lived operational rows (sessions, locks) where expiring at validity end is the intent.

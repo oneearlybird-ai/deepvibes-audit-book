@@ -220,3 +220,11 @@ second write is refused rather than applied. Keys whose tags are applied by a ru
 evaluates at write time from the request itself, so every writer's put carries them. Buckets
 where versioning plus a read path pinned to the tagged version makes the later overwrite
 irrelevant to every consumer, verified rather than assumed.
+
+## B:34 — On a versioned bucket an expiry rule only hides the current object, and a noncurrent-version rule as long as the retention period restarts the clock, so the bytes outlive the published retention by the whole period again
+
+**Statement.** Retention on a versioned bucket is written as "expire current objects after N days" plus "expire noncurrent versions after N days", often copied from one number. Expiring a current object in a versioned bucket only adds a delete marker; the object's bytes become a noncurrent version, and that version's own clock starts then. The record therefore physically exists for about 2N days - a seven-year audit or retention promise holds the data for fourteen - while the configuration reads as if it implemented N. Cost doubles silently, and a legal or contractual statement that records are deleted after N years is false for the second N.
+
+**Detect.** For each versioned bucket with an expiration rule, add the noncurrent-version expiry to the current-object expiry: that sum is the physical retention. Compare it with the published or declared period. For retention-bound data the noncurrent window after a current expiry should be a day or two; a noncurrent window equal to the retention period is the signature. Confirm by asking the store for the expiry date of a sample object and of its noncurrent version.
+
+**False positives.** Buckets where noncurrent versions are the deliberate protection against overwrite or tamper during the retention period and the physical retention is documented as such; per-version retention set by an object lock retain-until date that already ends the record at N; recovery windows for accidental deletion stated separately from the retention promise.

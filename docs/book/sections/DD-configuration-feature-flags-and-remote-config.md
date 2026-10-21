@@ -996,3 +996,11 @@ as identical (one has the flag, one does not).
 first-party path depends on. Objects the lane owns end to end with a full-record compare. A
 property declared on a template the object inherits from, where the inheritance is itself
 verified.
+
+## DD:42 — A key-shape registry that downstream tools trust drifts from the writers - the code writes partitions and sort families the registry never declared and the registry declares shapes or resources no writer produces - and no gate compares them, so every consumer that plans from the registry acts on fiction
+
+**Statement.** A central registry (an isolation contract, a data map, a schema catalogue) declares each table's partition shapes and sort-key families, and sometimes named resources such as key aliases, and other machinery plans from it: grant generation, deletion and export engines, analytics, access reviews. The writers evolve independently: a feature adds row families under new sort prefixes, renames a partition, or keeps writing an archive shape the registry describes differently, and a resource the registry names is never created. Nothing compares the declaration with what the code writes, because the gates that exist check shape syntax or that names resolve, not that each family a writer produces is declared and each declared family has a writer. A deletion that walks the declared families leaves the undeclared ones behind; an export misses them; a grant scoped to a declared prefix refuses the real one; a resource lookup through the registry fails only when some future caller first uses it.
+
+**Detect.** Extract every key template each writer builds (partition and sort prefixes in put, update and transact calls, including helper builders) and compare the set, per table, with the registry's declared families in both directions. List registry-named resources (aliases, buckets, queues) and confirm each exists and has a caller. A registry entry whose shape has no writer, or a writer prefix no entry declares, is a finding; so is a registry section that declares no key shapes at all for tables other tools act on.
+
+**False positives.** Families written only by tests or fixtures; generic attribute-name entries that intentionally stand for every item of a single-family table; resources reserved for a documented future build with a dated owner decision.

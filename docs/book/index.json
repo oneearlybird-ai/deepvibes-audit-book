@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1199,
+ "rule_count": 1205,
  "sections": [
   {
    "id": "A",
@@ -218,7 +218,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 33,
+   "rule_count": 34,
    "rules": [
     {
      "id": "B:1",
@@ -351,6 +351,10 @@
     {
      "id": "B:33",
      "title": "Two writers put the same object key and only one of them tags it, so the evidence tags survive or vanish depending on which write lands last"
+    },
+    {
+     "id": "B:34",
+     "title": "On a versioned bucket an expiry rule only hides the current object, and a noncurrent-version rule as long as the retention period restarts the clock, so the bytes outlive the published retention by the whole period again"
     }
    ]
   },
@@ -488,7 +492,7 @@
    "title": "Databases & Memory Caching (AWS)",
    "group": "aws-backend",
    "file": "sections/D-databases-and-memory-caching-aws.md",
-   "rule_count": 37,
+   "rule_count": 38,
    "rules": [
     {
      "id": "D:1",
@@ -637,6 +641,10 @@
     {
      "id": "D:37",
      "title": "A managed database is pinned to an exact minor engine version in code while the service's automatic minor upgrade stays on, so the first upgrade the service schedules turns the declared version into a downgrade the API refuses, and every later plan of the stack carries a change that cannot apply"
+    },
+    {
+     "id": "D:38",
+     "title": "A table's time-to-live is set on an attribute the application writes for its own meaning and as text, so expiry never runs - and fixing only the type would delete each record when the thing it evidences lapses rather than when its retention ends"
     }
    ]
   },
@@ -1051,7 +1059,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 89,
+   "rule_count": 90,
    "rules": [
     {
      "id": "G:1",
@@ -1408,6 +1416,10 @@
     {
      "id": "G:89",
      "title": "A runtime move changes how a log call is framed into records, so every term filter, metric filter, canary matcher and parser that correlates fields within one record stops matching while the alarms built on them read healthy or latch for an unrelated reason"
+    },
+    {
+     "id": "G:90",
+     "title": "A finding, alert or remediation record links responders to a domain the organization does not own - a placeholder or truncated hostname - so the most-trusted security surface sends people to a site anyone can register"
     }
    ]
   },
@@ -3814,7 +3826,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 41,
+   "rule_count": 42,
    "rules": [
     {
      "id": "DD:1",
@@ -3979,6 +3991,10 @@
     {
      "id": "DD:41",
      "title": "A vendor-side reconciler's parity is \"every declared key equals live\", so a live property a platform lane depends on but never declares sits outside parity's view and can be set, changed or lost with every check green"
+    },
+    {
+     "id": "DD:42",
+     "title": "A key-shape registry that downstream tools trust drifts from the writers - the code writes partitions and sort families the registry never declared and the registry declares shapes or resources no writer produces - and no gate compares them, so every consumer that plans from the registry acts on fiction"
     }
    ]
   },
@@ -3987,7 +4003,7 @@
    "title": "Real-time: WebSockets, SSE & Push",
    "group": "platform-delivery",
    "file": "sections/EE-real-time-websockets-sse-and-push.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "EE:1",
@@ -4052,6 +4068,10 @@
     {
      "id": "EE:16",
      "title": "The bridge closes the user's transport before it asks the carrier to end the session, so the carrier's stream-ended continuation races the completion and a finished user hears the abandonment script"
+    },
+    {
+     "id": "EE:17",
+     "title": "Removing a device from an account deletes the platform's pointer to its push endpoint but never the endpoint at the push provider, so device tokens and endpoint records accumulate at the provider with nothing left that references or can delete them"
     }
    ]
   },
@@ -5078,7 +5098,7 @@
    "title": "Third-Party Data Sync & Canonical Mapping",
    "group": "third-party",
    "file": "sections/PP-third-party-data-sync-and-canonical-mapping.md",
-   "rule_count": 24,
+   "rule_count": 25,
    "rules": [
     {
      "id": "PP:1",
@@ -5175,6 +5195,10 @@
     {
      "id": "PP:24",
      "title": "The loop breaker keys on the row's permanent origin instead of the change's origin"
+    },
+    {
+     "id": "PP:25",
+     "title": "Disconnecting an integration deletes the platform's stored tokens but never calls the provider's revocation endpoint, so the grant stays live at the provider - the customer still sees the app authorized, and any copy of the refresh token keeps working"
     }
    ]
   }

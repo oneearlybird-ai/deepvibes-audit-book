@@ -2370,3 +2370,11 @@ until the probe's own target has been read directly.
 formatter and whose shipper preserves the parsed record's message and timestamp; filters that only
 ever needed a single token per record; a move in which the framing was reproduced deliberately and
 proven by reading records in the destination, not by reading the manifests.
+
+## G:90 — A finding, alert or remediation record links responders to a domain the organization does not own - a placeholder or truncated hostname - so the most-trusted security surface sends people to a site anyone can register
+
+**Statement.** Custom compliance or security findings, alarm descriptions and runbook links carry a remediation URL built from a placeholder or a truncated hostname (a short name that resembles the organization's documentation domain but is not it). Responders trust links that appear inside the security console, so the link sends them to whoever controls that domain - today possibly nobody, tomorrow anyone who registers it - which turns the organization's own control plane into a phishing vector and leaves the real remediation guidance unreachable.
+
+**Detect.** List every URL emitted into findings, alarms, tickets and runbooks by code and configuration; resolve each hostname against the organization's owned domains (the first-party list) and flag any that is not owned. A hostname that does not resolve, or resolves to a parked page, is the confirmation.
+
+**False positives.** Links to the cloud provider's or a vendor's official documentation domains; internal hostnames on private DNS that the organization controls.

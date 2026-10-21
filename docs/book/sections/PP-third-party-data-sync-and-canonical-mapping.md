@@ -419,3 +419,11 @@ stamps it — including cosmetic patch paths, which must not inherit the mirror'
 edit to a mirrored row and assert it dispatches.
 
 **False positives.** Single-direction mirrors where no local write exists.
+
+## PP:25 — Disconnecting an integration deletes the platform's stored tokens but never calls the provider's revocation endpoint, so the grant stays live at the provider - the customer still sees the app authorized, and any copy of the refresh token keeps working
+
+**Statement.** When a customer disconnects a third-party integration, or their account is deleted, the platform removes its connection row and the encrypted tokens and considers the integration gone. The authorization at the provider is untouched: the provider still lists the application as connected in the customer's settings, the refresh token is still valid until it naturally expires or is revoked, and any copy of it - a backup, a log line, a cache, a leaked secret - still mints access tokens against the customer's system of record. The customer believes access ended; the provider believes it continues.
+
+**Detect.** For each integration provider, find the disconnect and account-deletion paths and check for a call to the provider's token revocation or app-uninstall endpoint (OAuth 2.0 revocation, provider-specific deauthorize) made with the stored token before it is deleted. A disconnect that is a pure local delete is the finding. Confirm against one provider's connected-apps page after a test disconnect.
+
+**False positives.** Providers that offer no revocation endpoint (record the limitation and the token lifetime); integrations whose tokens expire within minutes and have no refresh token; disconnects that trigger a provider-side webhook the platform verifies revokes the grant.

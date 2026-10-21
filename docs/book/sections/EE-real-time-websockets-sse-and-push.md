@@ -254,3 +254,11 @@ issue the completion before any socket close and close the socket only as a fall
 the user, where the carrier ends the session itself and the continuation reports it as ended; the
 abandonment path being a silent hangup rather than an announced failure, which turns the race into a
 logging defect rather than a user-facing one.
+
+## EE:17 — Removing a device from an account deletes the platform's pointer to its push endpoint but never the endpoint at the push provider, so device tokens and endpoint records accumulate at the provider with nothing left that references or can delete them
+
+**Statement.** Push delivery registers each device with a provider (an SNS platform endpoint, an FCM or APNs registration record) and stores the returned endpoint id on the user's record. Removing the device, signing out, deleting the user or deleting the account removes the id from the platform's record, but no code calls the provider's delete-endpoint operation. The provider keeps the endpoint and its device token indefinitely; nothing in the platform still points at it, so a later cleanup or a deletion program cannot find it, and an account deletion that claims to remove the person's data leaves their device tokens behind.
+
+**Detect.** Find every place an endpoint is created and every place a device is removed or a user or account is deleted; check for a delete-endpoint call with the stored id before the pointer is dropped. Count provider endpoints against the endpoints the platform's records reference; the difference is the orphan population.
+
+**False positives.** Providers that expire endpoints automatically after a short documented period; endpoints the provider disables and purges on its own after delivery failures, when that purge is relied on deliberately and documented.

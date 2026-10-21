@@ -938,3 +938,33 @@ actions granted to the tenant role by a resource-based policy on the target (a t
 naming the role) rather than by its identity policy; and a profile that no code requests, which is
 dead registry text to delete rather than a denial - still worth removing, since the next caller
 inherits the trap.
+
+## F:51 — A service-principal trust policy scopes aws:SourceArn to the resource that looks narrowest instead of the resource type the service actually presents, so the service can never assume the role and every call through it fails from its first day
+
+**Statement.** When a cloud service assumes a customer role to act for one of its resources (a
+scheduler firing a schedule, an event bus delivering to a target, a topic or stream delivering), it
+supplies one specific ARN in the aws:SourceArn condition key, and the documented value is not always
+the resource that intuitively owns the action: a scheduler presents the schedule GROUP, not the
+individual schedule, and its own guidance says never to scope the key to a schedule or a name prefix.
+Confused-deputy hardening written from intuition picks the narrowest-looking child
+(`schedule/<group>/*`). Every static reading approves it — the condition exists, it is
+account-scoped, the operator fits the wildcard — and unit tests that fake the SDK client never see the
+trust at all, so the change ships green while the role is unassumable. Some services check at
+creation and refuse the create call with a validation error naming the role; others accept the
+resource and fail when it fires, visible only in a delivery-failure metric or a dead-letter queue.
+When the path is rare (an after-hours hold, a month-end job) the defect waits for its first real use,
+and when the caller treats the failure as retryable the work loops until it dead-letters.
+
+**Detect.** For every trust statement with a Service principal and an aws:SourceArn condition, look up
+the ARN type that service documents for the key (each service's confused-deputy page) and compare it
+with the condition's pattern; a different resource type — usually a child of the documented one — is
+a finding. Live-confirm with one real call that makes the service take the role (a create in a
+harmless scope; a create-time validation error is the answer). Mechanize it as a verifier that matches
+the condition against the documented type, proven red against the child-resource shape before it is
+trusted.
+
+**False positives.** Services that document the child resource as the SourceArn value (the documented
+type differs between services — check each one); trust statements scoped by aws:SourceAccount alone
+(weaker, but assumable — a hardening note, not this defect); a second statement in the same trust
+policy that admits the service without the mismatched condition (the role then works and the narrow
+statement is dead text to remove).

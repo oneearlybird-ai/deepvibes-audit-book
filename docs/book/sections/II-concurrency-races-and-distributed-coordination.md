@@ -283,3 +283,11 @@ a duplicate redemption yields identical state and no second grant (re-confirming
 twice). Consume-first designs whose trailing bookkeeping write is allowed to fail. Tokens
 redeemable only from an already-authenticated session of the intended principal, so a second
 holder cannot redeem them.
+
+## II:18 — A side effect is fired only when the write that performs a state transition reports it observed the old state, so a failure between the write and the side effect is never retried: the retry sees the new state and skips it
+
+**Statement.** A handler writes a new status and reads back the previous one (a conditional update returning the old value, a compare-and-set, an UPDATED_OLD read), then announces the transition (an event, a notification, a downstream job) only when the previous status differed. The announcement is therefore owned by the one attempt that performed the write. If that attempt fails after the write and before the announcement (the emit call errors, the process restarts, the request times out), the platform's retry or the provider's redelivery runs the handler again, sees that the status already matches, and does nothing: the transition happened and nobody was told. Everything that depends on the announcement (a re-drive of waiting work, a customer notice) silently never runs.
+
+**Detect.** Find state writes whose result decides whether a side effect runs (old-value comparisons after an update, "if previous !== new then emit"). Check the order: if the write commits before the side effect and the side effect can fail, the pair is not retry-safe. Safe shapes: announce first and write second (a retry repeats the announcement, so consumers must tolerate duplicates); write a durable outbox row in the same write as the status and deliver from it; or record the announcement's own success on the record and re-announce while it is missing.
+
+**False positives.** A side effect that is idempotent and re-derived on every run regardless of the transition (the handler always re-sends while the status holds); a transition whose consumers also reconcile from the stored state on their own schedule, so a lost announcement only delays them.

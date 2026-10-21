@@ -293,3 +293,11 @@ schema, verified at every call site, not merely believed — though the pattern 
 free-form fields exist. The reversible mode paired with a withheld override permission, which
 looks similar in a configuration diff but keeps the escape hatch the rule is about. Short
 retention floors measured in days, where the lock expires long before any deletion deadline.
+
+## Y:23 — A consent flag that the request may leave out is read as consent when it is absent, so any client or retry that omits it turns a recorded refusal into an opt-in
+
+**Statement.** An endpoint that records a person's or a business's permission (to be texted, called, recorded or billed) takes the decision as an optional request field and treats an absent value as yes, usually so that an early client that never sent the field kept working. The same endpoint is often also the re-entry path for later actions (re-filing, retrying, finishing setup), so a client written for one of those actions sends the request without the field and the endpoint stamps a fresh grant over the refusal on file. Nothing errors and the record looks well formed: it carries a decision, a timestamp and an actor, but the person never made that decision.
+
+**Detect.** For every endpoint that writes a consent or authorization record, find how the decision is read from the request: a default of true, `!== false`, `?? true` or a missing-field branch that grants is the finding. List every caller of the endpoint, including retry and re-drive paths, and check which of them send the field. The safe shape requires the decision as an explicit boolean and refuses the request otherwise, before anything is written.
+
+**False positives.** An endpoint whose only purpose is to grant (an explicit opt-in action whose call itself is the decision) and which never overwrites a stored refusal; a default applied only when no decision has ever been recorded and the absent field is documented as "keep what is on file" rather than "grant".

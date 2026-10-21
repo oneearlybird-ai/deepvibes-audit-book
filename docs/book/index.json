@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1208,
+ "rule_count": 1210,
  "sections": [
   {
    "id": "A",
@@ -3305,7 +3305,7 @@
    "title": "Compliance, Auditing & Data Privacy (GDPR/CCPA/SOC2)",
    "group": "saas-core",
    "file": "sections/Y-compliance-auditing-and-data-privacy-gdpr-ccpa-soc2.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "Y:1",
@@ -3394,6 +3394,10 @@
     {
      "id": "Y:22",
      "title": "Storage is configured with a retention lock that no principal can lift, so an erasure duty the same platform has contracted to honour becomes impossible to perform for the life of the lock"
+    },
+    {
+     "id": "Y:23",
+     "title": "A consent flag that the request may leave out is read as consent when it is absent, so any client or retry that omits it turns a recorded refusal into an opt-in"
     }
    ]
   },
@@ -4267,7 +4271,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "II:1",
@@ -4336,6 +4340,10 @@
     {
      "id": "II:17",
      "title": "A single-use grant runs its irreversible effects first and its atomic consume last, and treats the consume's conditional failure as a harmless replay, so the guard records the race instead of preventing it"
+    },
+    {
+     "id": "II:18",
+     "title": "A side effect is fired only when the write that performs a state transition reports it observed the old state, so a failure between the write and the side effect is never retried: the retry sees the new state and skips it"
     }
    ]
   },

@@ -684,3 +684,31 @@ history that shows repeated "redriven" lines for the same message ids is the pap
 before the move. Tools that republish each message and delete it individually instead of using
 the bulk move. A move task that reports a shortfall because a consumer, not the tool, holds the
 messages.
+
+## E:47 — The request authorizer computes a per-request decision and returns it in its context, but the hop to the backend forwards only an allowlist of context keys written before that decision existed, so every backend reads it as absent and the capability it gates is silently off for everyone
+
+**Statement.** An API gateway's authorizer can return a context alongside its allow/deny: who the
+caller is, and increasingly what the caller may do - a flag such as "may see full contact
+details", or the action the authorizer granted. With a Lambda-proxy integration the whole context
+reaches the function untouched. With an HTTP-proxy or VPC-link integration, or a router in front of
+containers that rebuilds the authorizer context from request headers, a context key reaches the
+backend only if the integration maps it explicitly (one request parameter per key, one header per
+key in the router's list). That list is written once, when the platform moves behind the bridge,
+and nothing ties it to the authorizer: a decision added to the authorizer's context later is
+computed, logged and discarded at the hop. Backends written to read it see "absent", which a
+correctly fail-closed reader treats as "no" - so the capability is off for every caller, owners
+included, no request fails, and no hop logs an error, because each one does exactly what it was
+written to do. The symptom is a feature that "never shows" for anyone, usually blamed on the
+permission data.
+
+**Detect.** List every key the authorizer writes into its returned context. List every key the
+integration forwards: the request-parameter mappings of each integration (or the shared mapping
+they are generated from) and the router's header-to-context reconstruction. Diff the two: a key the
+authorizer sets, a handler reads (search the handlers and their shared auth adapter for the key
+name), and the integration does not forward is this defect. Prove it on the live API, not the
+template - read one deployed integration's request parameters - and on a backend's received event.
+
+**False positives.** A key the authorizer sets only for its own logs or decision cache and no
+backend reads. Integrations that pass the native proxy event, where the full authorizer context
+arrives without mapping. A key a backend reads only on another plane (a GraphQL proxy that makes its
+own authorization decision for the same flag) and never on the bridged route.

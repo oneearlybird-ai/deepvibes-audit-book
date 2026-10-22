@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1210,
+ "rule_count": 1211,
  "sections": [
   {
    "id": "A",
@@ -657,7 +657,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "E:1",
@@ -842,6 +842,10 @@
     {
      "id": "E:46",
      "title": "A dead-letter drain tool reads the messages to classify them and then asks the queue service to move the queue back, but the read has locked those messages and the service's bulk move leaves locked messages where they are, so the drain reports success, records a redrive, and moves nothing"
+    },
+    {
+     "id": "E:47",
+     "title": "The request authorizer computes a per-request decision and returns it in its context, but the hop to the backend forwards only an allowlist of context keys written before that decision existed, so every backend reads it as absent and the capability it gates is silently off for everyone"
     }
    ]
   },

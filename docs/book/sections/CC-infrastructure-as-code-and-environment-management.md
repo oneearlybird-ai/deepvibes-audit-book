@@ -1339,3 +1339,29 @@ itself carries. A registry change that lands and deploys in a release of its own
 document that needs it. A platform stack that deploys the document itself through IaC from a
 published-version pointer: there publish-first is right, and a validator change must be split into
 its own release instead.
+
+## CC:53 — A table's secondary indexes are declared as a set inside the table resource, and the provider compares that set by a hash of each index's attributes, so adding or removing one index deletes and rebuilds every untouched index whose stored form differs from the declared form, taking each offline for its whole backfill
+
+**Statement.** Infrastructure-as-code providers commonly model a key-value table's secondary
+indexes as a nested set inside the table resource. A set element is identified by a hash of all its
+attributes, not by the index name. When the provider changes how an index is written - a new block
+form for its keys, a computed attribute it now fills - the state written under the old form and the
+declaration in the new form hash differently even though they describe the same live index. Nothing
+shows while the set is untouched. The first change to the set - one index added or removed - makes
+the plan list every such index as removed and re-added, and the provider's update reconciles by
+deleting and recreating them, one at a time. Each recreated index is unavailable to queries for its
+full backfill (minutes on a small table, hours on a large one), so features that read it fail in
+production while the change that triggered it touched a different index. The plan output does
+warn, but as an ordinary-looking in-place update, with no destroy counted.
+
+**Detect.** For every table with nested index blocks, read the latest plan that changes its index
+set: an existing index name that appears both as removed and as added is this defect unless its
+attributes genuinely changed. Compare one live index description with the declaration and the state
+entry to see which attribute forms differ. Prove it live by watching the table during such an apply:
+an index the change did not name going to a creating/backfilling status is the symptom. Inventory the
+tables still carrying state in the old form - each one rebuilds its indexes on its next index change.
+
+**False positives.** An index whose key schema or projection really changed (a rebuild is the only
+way to change it). Providers or resources that manage each index as its own resource, or that
+reconcile nested indexes by name. A plan that shows the removed and re-added element identical
+after the state has been rewritten in the new form.

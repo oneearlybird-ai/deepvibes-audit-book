@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1211,
+ "rule_count": 1212,
  "sections": [
   {
    "id": "A",
@@ -3629,7 +3629,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 52,
+   "rule_count": 53,
    "rules": [
     {
      "id": "CC:1",
@@ -3838,6 +3838,10 @@
     {
      "id": "CC:52",
      "title": "A publish-before-apply gate written for the consumers of a configuration document is also applied to the stack that ships the document's validator, so the only way to widen the validator's registry is to let a deployment be refused first"
+    },
+    {
+     "id": "CC:53",
+     "title": "A table's secondary indexes are declared as a set inside the table resource, and the provider compares that set by a hash of each index's attributes, so adding or removing one index deletes and rebuilds every untouched index whose stored form differs from the declared form, taking each offline for its whole backfill"
     }
    ]
   },

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1212,
+ "rule_count": 1216,
  "sections": [
   {
    "id": "A",
@@ -1067,7 +1067,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 90,
+   "rule_count": 91,
    "rules": [
     {
      "id": "G:1",
@@ -1428,6 +1428,10 @@
     {
      "id": "G:90",
      "title": "A finding, alert or remediation record links responders to a domain the organization does not own - a placeholder or truncated hostname - so the most-trusted security surface sends people to a site anyone can register"
+    },
+    {
+     "id": "G:91",
+     "title": "The gateway's contract makes a designed rejection an exception, the function runtime counts every exception as an invocation error, and an error alarm on that native metric - and every status rollup built on it - reports an outage for ordinary signed-out traffic"
     }
    ]
   },
@@ -2781,7 +2785,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 60,
+   "rule_count": 61,
    "rules": [
     {
      "id": "U:1",
@@ -3022,6 +3026,10 @@
     {
      "id": "U:60",
      "title": "A gate installs a suite's dependencies only when the install folder is missing, so a dependency added later never reaches a checkout that already has one, and the gate fails on some checkouts and not others for a change that touched nothing near it"
+    },
+    {
+     "id": "U:61",
+     "title": "The deploy-freshness gate compares the newest build artifact with source and never reads the code that is running, so a rebuild that was never applied grades as deployed"
     }
    ]
   },
@@ -3850,7 +3858,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 42,
+   "rule_count": 43,
    "rules": [
     {
      "id": "DD:1",
@@ -4019,6 +4027,10 @@
     {
      "id": "DD:42",
      "title": "A key-shape registry that downstream tools trust drifts from the writers - the code writes partitions and sort families the registry never declared and the registry declares shapes or resources no writer produces - and no gate compares them, so every consumer that plans from the registry acts on fiction"
+    },
+    {
+     "id": "DD:43",
+     "title": "Public content carries literal copies of an identifier owned by a provisioned resource, so when the resource is recycled the pages keep advertising it and nothing connects the two"
     }
    ]
   },
@@ -4360,7 +4372,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 47,
+   "rule_count": 48,
    "rules": [
     {
      "id": "JJ:1",
@@ -4549,6 +4561,10 @@
     {
      "id": "JJ:47",
      "title": "A port of a reference function is written from its doc comment, which describes behavior the function no longer has, so the twin disagrees with the reference in every case the comment gets wrong"
+    },
+    {
+     "id": "JJ:48",
+     "title": "A reconciler compares a platform-wide aggregate that outlives account deletion with per-account source rows that are deleted with the account, so the first deletion latches the invariant in breach forever"
     }
    ]
   },

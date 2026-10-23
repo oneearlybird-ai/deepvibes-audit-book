@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1216,
+ "rule_count": 1220,
  "sections": [
   {
    "id": "A",
@@ -1067,7 +1067,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 91,
+   "rule_count": 92,
    "rules": [
     {
      "id": "G:1",
@@ -1432,6 +1432,10 @@
     {
      "id": "G:91",
      "title": "The gateway's contract makes a designed rejection an exception, the function runtime counts every exception as an invocation error, and an error alarm on that native metric - and every status rollup built on it - reports an outage for ordinary signed-out traffic"
+    },
+    {
+     "id": "G:92",
+     "title": "The organization's management account, meant to hold the organization and nothing else, acquires hand-built workload infrastructure under a long-lived user credential, and no control notices because the estate's drift and inventory checks are scoped to the member accounts"
     }
    ]
   },
@@ -1735,7 +1739,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "K:1",
@@ -1908,6 +1912,10 @@
     {
      "id": "K:43",
      "title": "A screen hand-writes a request body in a casing the handler never reads, so its required-field check refuses every submission, and because the request bypasses the typed API contract nothing fails until a person tries the feature"
+    },
+    {
+     "id": "K:44",
+     "title": "A form prefills from whichever of two sources answers first and latches, so when the lower-priority source wins the race the record the form exists to show is never loaded into it"
     }
    ]
   },
@@ -2785,7 +2793,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 61,
+   "rule_count": 62,
    "rules": [
     {
      "id": "U:1",
@@ -3030,6 +3038,10 @@
     {
      "id": "U:61",
      "title": "The deploy-freshness gate compares the newest build artifact with source and never reads the code that is running, so a rebuild that was never applied grades as deployed"
+    },
+    {
+     "id": "U:62",
+     "title": "A gate script expands its allow-list array bare under strict-variable mode, so the day the list is legitimately emptied the gate aborts with \"unbound variable\" on the interpreter the platform ships, for everyone"
     }
    ]
   },
@@ -4226,7 +4238,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "HH:1",
@@ -4283,6 +4295,10 @@
     {
      "id": "HH:14",
      "title": "Withdrawn: a duplicate of LL:17, which already states this mechanism"
+    },
+    {
+     "id": "HH:15",
+     "title": "A row's wrapped state is never designed: the layout is checked only at the width where the longest expected value fits beside its label, so the one value that wraps renders in the container's default alignment nobody chose"
     }
    ]
   },

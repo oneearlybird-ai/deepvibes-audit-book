@@ -209,3 +209,11 @@ fixed-height controls that becomes unreachable at the largest accessibility text
 person meets — is LL:17. Cite LL:17; the one point this entry added (a blocking first-run overlay must also be
 dismissable through the platform's accessibility escape gesture) now sits in LL:17's Detect. The number stays reserved
 because the Book never renumbers.
+
+## HH:15 — A row's wrapped state is never designed: the layout is checked only at the width where the longest expected value fits beside its label, so the one value that wraps renders in the container's default alignment nobody chose
+
+**Statement.** A label/value row is composed from a shared primitive that lays the two out side by side. On the wide client every allowed value fits. On the narrow client one long but legitimate value (a status sentence, a provider-specific name) cannot fit beside its label, the primitive stacks it, and the stacked block takes the alignment of the enclosing container rather than the leading edge every other row shares - so the one row that wraps sits centred in a card of left-aligned rows. Nothing is clipped or hidden; the row reads as a different component. The row was built against the short values the fixtures carry and the long value appears only in one state (one lane, one error, one locale), so the regression is seen in a screenshot of that state and nowhere else. The sibling client with explicit wrap handling shows the same value correctly, which is the parity evidence.
+
+**Detect.** For each composed label/value row, list the longest value each state can produce (status sentences, localized strings, provider names) and render the row at the narrowest supported width with that value. A stacked result whose alignment differs from the row's unwrapped alignment, or from the sibling client's wrapped row, is the finding. In code: a stacking fallback inside the primitive with no explicit frame/alignment on the stacked branch inherits the container's default; the fix is one explicit full-width, leading-aligned frame on the row.
+
+**False positives.** Rows whose stacked state is intentionally centred (a hero or summary tile, by design and matching the sibling client); values that are truncated with an ellipsis rather than wrapped, where the question is truncation not alignment; primitives that already pin alignment on both branches.

@@ -1816,3 +1816,11 @@ symptom.
 **False positives.** Gates that resolve the producer through a single declared reference path and
 refuse every other, or that compare the resolved clone's head against the remote trunk before
 trusting it. Gates that fetch the producer artifact from the remote at a pinned revision.
+
+## NN:70 — A handler accepts two event shapes, its tests feed the one production never sends, and the green suite certifies a branch no request reaches while the path every real request takes runs untested
+
+**Statement.** A handler written for one invocation format (an API gateway's newer payload, a direct invoke) is moved behind a different front (an older payload, a router that rebuilds the event in another shape). Rather than pick one, it reads every field through both shapes - `event.requestContext.http.method || event.httpMethod`, `authorizer.lambda || authorizer`, an id taken from a path regex or else from path parameters. Its tests keep building the shape they were written with. Every test passes through the branch production never takes, so the tests prove the dead half and nothing about the live half; a change that breaks only the live shape (a renamed path parameter, an id format the regex does not match) ships green. The dual reading is also the reason no one notices that the shapes diverged.
+
+**Detect.** For each handler, find what actually builds its event in production (the router, the gateway integration, the invoker) and record the shape. Grep the handler for `||` chains or ternaries over alternative field paths of the same fact; each is a dual path. Then read the handler's tests and classify each fixture by shape: tests that only build the non-production shape are the finding. Confirm by deleting the non-production branch in a scratch copy and watching which tests fail - none failing means the live branch is the untested one.
+
+**False positives.** Handlers that genuinely serve two fronts in production (both shapes observed in live logs), each covered by its own tests; shared adapters that normalize the event once at the entry and are tested against the production builder's output.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1229,
+ "rule_count": 1230,
  "sections": [
   {
    "id": "A",
@@ -4868,7 +4868,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 69,
+   "rule_count": 70,
    "rules": [
     {
      "id": "NN:1",
@@ -5145,6 +5145,10 @@
     {
      "id": "NN:69",
      "title": "A cross-repo freshness gate resolves its producer by directory adjacency, so inside an isolated per-task workspace it reads a sibling clone that lags the trunk by weeks and certifies a stale vendored snapshot as fresh"
+    },
+    {
+     "id": "NN:70",
+     "title": "A handler accepts two event shapes, its tests feed the one production never sends, and the green suite certifies a branch no request reaches while the path every real request takes runs untested"
     }
    ]
   },

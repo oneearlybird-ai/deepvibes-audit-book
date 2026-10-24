@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1253,
+ "rule_count": 1254,
  "sections": [
   {
    "id": "A",
@@ -1553,7 +1553,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 31,
+   "rule_count": 32,
    "rules": [
     {
      "id": "I:1",
@@ -1678,6 +1678,10 @@
     {
      "id": "I:31",
      "title": "A shared component makes its interaction an optional callback and draws the same interactive-looking element either way, so one mount site that omits the callback ships controls that look tappable and do nothing"
+    },
+    {
+     "id": "I:32",
+     "title": "Error boundaries are attached where tabs are lazily loaded, so the eagerly loaded default screen is the one without one, and a third-party renderer that throws on an unsupported device takes down the whole app"
     }
    ]
   },

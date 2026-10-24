@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1242,
+ "rule_count": 1244,
  "sections": [
   {
    "id": "A",
@@ -854,7 +854,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 52,
+   "rule_count": 53,
    "rules": [
     {
      "id": "F:1",
@@ -1063,6 +1063,10 @@
     {
      "id": "F:52",
      "title": "An attribute-list fence (a key-value store's per-attribute IAM condition) with no condition on what the request asks to return does not fence a read that names no projection or a write that asks for the old item, so the fence holds only for callers that already behave"
+    },
+    {
+     "id": "F:53",
+     "title": "The shared secret that proves a request came through the gateway is kept in the gateway stage's variables, which every principal with read access to the API's configuration can read in plain text"
     }
    ]
   },
@@ -1071,7 +1075,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 92,
+   "rule_count": 93,
    "rules": [
     {
      "id": "G:1",
@@ -1440,6 +1444,10 @@
     {
      "id": "G:92",
      "title": "The organization's management account, meant to hold the organization and nothing else, acquires hand-built workload infrastructure under a long-lived user credential, and no control notices because the estate's drift and inventory checks are scoped to the member accounts"
+    },
+    {
+     "id": "G:93",
+     "title": "A WebSocket (or any) API's connect step refuses every client with a 4xx, the API's alarms watch only integration errors and latency, and a total outage of the plane runs for days with every metric that is alarmed reading zero"
     }
    ]
   },

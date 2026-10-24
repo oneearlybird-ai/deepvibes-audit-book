@@ -712,3 +712,11 @@ template - read one deployed integration's request parameters - and on a backend
 backend reads. Integrations that pass the native proxy event, where the full authorizer context
 arrives without mapping. A key a backend reads only on another plane (a GraphQL proxy that makes its
 own authorization decision for the same flag) and never on the bridged route.
+
+## E:48 — A WebSocket API's connect route moves from a function-proxy integration to an HTTP integration, and the client's query-string credential stops arriving, because the HTTP hop forwards only the query values the route declares and the integration maps
+
+**Statement.** On a managed WebSocket API, a connect route that invokes a function receives the whole client request, query string included, so a client that sends its ticket as ?ticket= just works and no one declares anything. Replacing that integration with an HTTP hop (to a container router, a private service) changes the contract silently: the HTTP integration carries a query value only when the route declares it as a route request parameter and the integration maps it to an integration request parameter. Without both, the backend sees no ticket and refuses every connect with an authentication error. The cutover's plan shows only the integration changing; the service answers 4xx, which integration-error alarms ignore (G:93); and the backend's own "missing ticket" refusal looks like ordinary bad clients.
+
+**Detect.** For every connect-type route on a WebSocket API, list the query values the backend reads from the connect event and check that each is declared on the route and mapped on the integration; any read value without both is the finding when the integration is an HTTP or private-link hop. After any integration-type change, compare the backend's credential lookups (table reads, cache hits) with the credentials issued per day: a drop to zero while issuance continues is the live symptom.
+
+**False positives.** Function-proxy integrations, which receive the full request; backends that take the credential from a header the integration maps or from the first message rather than the connect query.

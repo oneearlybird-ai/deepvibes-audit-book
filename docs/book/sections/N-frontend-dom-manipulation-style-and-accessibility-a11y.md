@@ -195,3 +195,11 @@ the first translucent theme turns real.
 **Detect.** For each value type with a formatter, grep views and presenters for direct reads of the model field into a text element without the formatter; compare surfaces that show the same record at once.
 
 **False positives.** Surfaces that deliberately show the canonical stored form (an admin or debug view, a copy-to-clipboard field) and label it so.
+
+## N:19 — A chart pulls its plot left with a negative margin to save space, and the axis's fixed label width no longer fits the widest tick, so the clipped SVG cuts the leading digit and a value reads as a different number
+
+**Statement.** Charting libraries reserve a fixed width for the value axis and draw inside an SVG whose overflow is hidden. A negative left margin, added to tighten the layout for small numbers, shifts the axis labels left of the SVG's edge. When the data grows a digit (hundreds, thousands), the widest label starts outside the visible box and its first digit is partly cut off: 800 reads as 300, 600 as 500. The chart still renders and every test that snapshots the component passes, because tests use small fixture values.
+
+**Detect.** Grep chart components for negative margins on the plot and a fixed axis width; render with the largest realistic values and measure the first tick label's left edge against the SVG's (a negative x is the finding). Size the axis width from the formatted longest tick, or drop the negative margin.
+
+**False positives.** Axes whose tick formatter guarantees a bounded label length (compact notation) that fits the reserved width; charts with overflow visible and room to the left.

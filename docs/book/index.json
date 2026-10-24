@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1240,
+ "rule_count": 1242,
  "sections": [
   {
    "id": "A",
@@ -2037,7 +2037,7 @@
    "title": "Frontend: Component Lifecycle & Performance",
    "group": "frontend",
    "file": "sections/M-frontend-component-lifecycle-and-performance.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "M:1",
@@ -2098,6 +2098,10 @@
     {
      "id": "M:15",
      "title": "An effect's setup performs a global side effect whose cleanup has a delayed consequence (a pushed history entry popped asynchronously), so the development double-invoke lands the first cleanup's late event on the second setup and the component tears itself down"
+    },
+    {
+     "id": "M:16",
+     "title": "A provider wraps its children in a second provider only once a resource exists, so the moment the resource arrives the element tree changes shape at that position and React remounts the whole subtree, resetting every piece of local state below it"
     }
    ]
   },
@@ -2106,7 +2110,7 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "N:1",
@@ -2179,6 +2183,10 @@
     {
      "id": "N:18",
      "title": "The same value is formatted by one presenter and printed raw by another on the same screen, so one record reads two ways side by side"
+    },
+    {
+     "id": "N:19",
+     "title": "A chart pulls its plot left with a negative margin to save space, and the axis's fixed label width no longer fits the widest tick, so the clipped SVG cuts the leading digit and a value reads as a different number"
     }
    ]
   },

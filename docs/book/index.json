@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1245,
+ "rule_count": 1246,
  "sections": [
   {
    "id": "A",
@@ -4924,7 +4924,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 71,
+   "rule_count": 72,
    "rules": [
     {
      "id": "NN:1",
@@ -5209,6 +5209,10 @@
     {
      "id": "NN:71",
      "title": "A fixture or demo mode's canned responses hand out a live production endpoint, so every offline run connects to production with a fake credential and retries it for as long as the run lasts"
+    },
+    {
+     "id": "NN:72",
+     "title": "A visual fix is proven on a stand-in (a bare probe page, an isolated story) instead of the screen that shows the defect, and its source test asserts the fix's own shape, so both pass while the real screen breaks in a new way"
     }
    ]
   },

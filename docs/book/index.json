@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1236,
+ "rule_count": 1237,
  "sections": [
   {
    "id": "A",
@@ -3191,7 +3191,7 @@
    "title": "Advanced API Security, Management & Rate Limiting",
    "group": "saas-core",
    "file": "sections/W-advanced-api-security-management-and-rate-limiting.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "W:1",
@@ -3284,6 +3284,10 @@
     {
      "id": "W:23",
      "title": "The declared input schema strips the very keys the repair table promises to heal, because validation runs before repair, so an alias with no matching schema field is dead on arrival"
+    },
+    {
+     "id": "W:24",
+     "title": "The published API contract lists paths, methods and parameters but no request or response body schemas, so every client's types are copied by hand from handler code and the contract gates can check only that a route exists"
     }
    ]
   },

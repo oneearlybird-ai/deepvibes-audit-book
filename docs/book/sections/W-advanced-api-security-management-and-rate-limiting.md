@@ -282,3 +282,11 @@ authoritative and the schema sees only canonical keys. Nested field names that c
 canonical parameter name but belong to a sub-object — the parser must be depth-aware before any of
 its reports are actionable. Baselined known gaps that are recorded, counted, and tracked rather than
 silently tolerated.
+
+## W:24 — The published API contract lists paths, methods and parameters but no request or response body schemas, so every client's types are copied by hand from handler code and the contract gates can check only that a route exists
+
+**Statement.** An API's contract document is generated or templated mainly to configure the gateway: it carries each path, method, path and header parameter and the integration, and nothing about the bodies. Clients that generate types from it get routes with untyped bodies, and each client team reads the handler source to learn what to send and what comes back. Every contract gate built on the document (route-manifest freshness, drift between deployed and source) passes as long as the route exists, so a handler that renames a field, adds a required one or changes a refusal code ships with every gate green, and each client finds out at runtime. The more clients there are (web, native apps, an agent tool plane), the more hand-copies of the same shape drift independently.
+
+**Detect.** Count requestBody objects and response content schemas in the contract; compare with the routes that take or return JSON. For a sample of routes, diff the handler's actual body handling against what each client sends and decodes. Check whether any gate compares a body shape across the server and a client.
+
+**False positives.** Contracts that keep bodies in a separate, gated schema registry every client generates from; routes with no body; deliberately opaque passthrough routes whose body is another document's contract.

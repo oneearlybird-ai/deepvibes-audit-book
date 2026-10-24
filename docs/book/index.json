@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1239,
+ "rule_count": 1240,
  "sections": [
   {
    "id": "A",
@@ -3078,7 +3078,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 27,
+   "rule_count": 28,
    "rules": [
     {
      "id": "V:1",
@@ -3187,6 +3187,10 @@
     {
      "id": "V:27",
      "title": "A dispatcher drops work it cannot schedule within its delay ceiling and defers it, in a comment, to the next periodic cycle; a caller added later has no such cycle, so the drop is permanent while its entry point reports the whole batch queued"
+    },
+    {
+     "id": "V:28",
+     "title": "A scheduled consumer reads a derived record that is refreshed only when a person opens a screen, so the scheduled output depends on whether anyone happened to look recently"
     }
    ]
   },

@@ -438,3 +438,11 @@ genuinely means the subject is broken (a not-found on a resource that must exist
 **Detect.** For every function that can return a deferral or "try later" outcome, find each caller and ask what retries it: a schedule that re-runs the same selection, a re-queue with the remaining items, or nothing. A caller with no retry path that reports success (or an item count) to a person is the finding. Check its tests for a fixed always-open window, and run one with the window closed.
 
 **False positives.** Callers that re-enqueue deferred items themselves (a delayed message to their own queue, a stored remainder a later run picks up); entry points that answer with what was actually dispatched rather than what was requested; deferral windows shorter than the delay ceiling by construction.
+
+## V:28 — A scheduled consumer reads a derived record that is refreshed only when a person opens a screen, so the scheduled output depends on whether anyone happened to look recently
+
+**Statement.** An interactive endpoint computes an expensive summary on request and stores it with a short cache lifetime, so the next viewer gets it fast. Later a scheduled job (a daily digest, a nightly report) starts reading the stored summary instead of recomputing it, and guards against staleness by ignoring a summary older than some window. Nothing refreshes the summary on a schedule: it is written only when a person opens the screen. On any period in which nobody looked, the job's guard correctly drops the stale data and the scheduled output silently loses those parts - for the businesses that use the screen least, which are often the ones the digest exists for. Each piece is correct in isolation, and tests that seed a fresh summary pass.
+
+**Detect.** For each stored derived record a scheduled job reads, list every writer of that record and how it is triggered; if every writer is request-driven, the job's freshness depends on user activity. Confirm by reading the job's staleness window against the record's writers and checking a tenant with no recent interactive use.
+
+**False positives.** Records also refreshed by a schedule at least as frequent as the consumer's window; consumers that recompute when the stored copy is stale instead of dropping it; outputs where omission on inactivity is the documented intent.

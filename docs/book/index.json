@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1250,
+ "rule_count": 1251,
  "sections": [
   {
    "id": "A",
@@ -4318,7 +4318,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 16,
+   "rule_count": 17,
    "rules": [
     {
      "id": "HH:1",
@@ -4383,6 +4383,10 @@
     {
      "id": "HH:16",
      "title": "A desktop layout's breakpoint sits above the app's own default window size, so the layout the design describes appears only after a resize and the fallback is what every first run shows"
+    },
+    {
+     "id": "HH:17",
+     "title": "A native app declares an entitlement that its registered app identifier does not enable, so every build compiles and archives and then fails at signed export, and the release lane stays red until someone with portal access changes a setting no code review can see"
     }
    ]
   },

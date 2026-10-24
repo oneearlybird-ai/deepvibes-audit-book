@@ -731,3 +731,11 @@ removal date.
 **Detect.** Find where send keys are minted and when they are cleared; a key kept across edits of the payload, or across a change of recipient, is the finding. Read the server's duplicate check: if it compares only the key, confirm by sending text A, failing it, editing to B and retrying - the server's duplicate answer and the client's "sent" message with nothing delivered are the symptom.
 
 **False positives.** Servers that store a hash of the payload with the key and refuse a mismatched reuse (an error the client shows, rather than a silent "already sent"); clients that lock the text once a send has started.
+
+## K:47 — A view seeds a per-item UI state (expanded, selected, visible) once, from the first non-empty load, and never again, so every item that arrives later starts in the opposite state from its siblings
+
+**Statement.** A list of groups is meant to open fully expanded, so the component copies the group names into an "expanded" set the first time the data is non-empty and sets a flag so the seeding never repeats (the flag exists so a user who collapses a group is not overridden on the next refetch). A group that appears after that first load - created in this session, arriving from another device, revealed by a filter - is not in the set and renders collapsed while every older group is open. Nothing is wrong on any first load, so tests and demos pass; the defect shows only on the second-day path where the user adds the first item of a new group and watches it vanish into a closed section.
+
+**Detect.** Find effects or initialisers that copy item identities into UI state under a run-once guard (an "initialized" flag, an empty-dependency effect, a lazy initial state). Ask what happens to an identity that first appears after the guard flipped: if it lands in the non-default state while its siblings sit in the default, that is the finding. The correct shape tracks what the user changed (collapsed set) rather than what was seeded (expanded set), so new items take the default.
+
+**False positives.** States where the new item genuinely should differ (a newly arrived item highlighted on purpose); lists that reset all UI state on every load by design and say so.

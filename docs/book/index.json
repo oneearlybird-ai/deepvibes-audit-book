@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1252,
+ "rule_count": 1253,
  "sections": [
   {
    "id": "A",
@@ -1767,7 +1767,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 46,
+   "rule_count": 47,
    "rules": [
     {
      "id": "K:1",
@@ -1952,6 +1952,10 @@
     {
      "id": "K:46",
      "title": "A client mints one idempotency key per draft and keeps it while the person edits the text, and the server deduplicates by key without comparing the payload, so the edited request is answered \"already sent\" and never goes out"
+    },
+    {
+     "id": "K:47",
+     "title": "A view seeds a per-item UI state (expanded, selected, visible) once, from the first non-empty load, and never again, so every item that arrives later starts in the opposite state from its siblings"
     }
    ]
   },

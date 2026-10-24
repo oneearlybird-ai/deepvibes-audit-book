@@ -1018,3 +1018,11 @@ written down.
 **Detect.** For each outcome or audit row type, list the fields whose meaning depends on the row's status, and find every reader that groups, filters or labels by them. Confirm with one batch that has both a success and a refusal: the grouped view shows more groups than the batch has items.
 
 **False positives.** Fields documented as status-dependent where every reader branches on the status before reading them; rows that carry the item's identity in its own field and use the reason field only for display.
+
+## JJ:53 — A declared lifecycle omits a transition that the domain's own reference cases require, so the commonest real sequence strands the record in its initial state and no actor - caller, system or owner - can move it
+
+**Statement.** A domain configuration declares each entity's statuses and the events that move between them, and alongside it a set of reference cases (golden calls, worked examples) that say what should happen in realistic situations. The table was written status by status; the reference cases were written story by story. When a story's natural sequence skips a status the table makes mandatory (a deal goes straight from first contact to "under contract" without ever being marked "active"), the table has no edge for it. The engine correctly refuses the transition, the status never moves, every feature keyed on the later status never fires, and the owner's manual override - which also follows the table - cannot repair it. Tests written against the engine pin the stuck state as correct behaviour, because the engine is doing what the table says.
+
+**Detect.** For every reference case that names a status event, replay it from the entity's initial status and check that each event has a transition from the status the entity is actually in at that point; any event the table refuses is the finding. Also list, per status, which actors can leave it: a non-terminal status no actor can leave is the same defect seen from the other side.
+
+**False positives.** Reference cases deliberately written to show a refusal; tables where the skipped status is set by an event the platform does produce in that story (verify by replay with the platform's real inputs, not by assumption).

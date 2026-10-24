@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1237,
+ "rule_count": 1238,
  "sections": [
   {
    "id": "A",
@@ -4428,7 +4428,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 52,
+   "rule_count": 53,
    "rules": [
     {
      "id": "JJ:1",
@@ -4637,6 +4637,10 @@
     {
      "id": "JJ:52",
      "title": "One record field carries two meanings depending on the row's status - what the item is on the success path, why it was stopped on the refusal path - and a reader that groups by that field turns every refusal into a separate item named after its refusal reason"
+    },
+    {
+     "id": "JJ:53",
+     "title": "A declared lifecycle omits a transition that the domain's own reference cases require, so the commonest real sequence strands the record in its initial state and no actor - caller, system or owner - can move it"
     }
    ]
   },

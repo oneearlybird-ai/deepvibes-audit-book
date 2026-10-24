@@ -241,3 +241,11 @@ event sends the batch again.
 passcode the user just requested on the platform's own number, emergency alerts under a written
 exemption); a second path that calls the same gate functions in the same order, so the gates are
 shared even though the send call is not.
+
+## Q:21 — Texts are sent with no GSM normalisation (no Smart Encoding on the messaging service, no per-send flag), so one smart quote typed by a phone or laptop turns the whole message into UCS-2 and multiplies the segments billed
+
+**Statement.** An SMS is GSM-7 (160 characters a segment) only while every character is in the GSM alphabet; a single character outside it - a curly apostrophe, a long dash, a non-breaking space - makes the carrier encode the whole message as UCS-2 at 70 characters a segment. Desktop and phone keyboards insert those characters by default (smart quotes, smart punctuation), so owner-typed replies and templates written in word processors routinely contain them, and a 150-character reply bills as three segments instead of one. The provider can replace look-alike characters with GSM ones (a messaging-service setting, or a per-send flag), but only if it is asked to; a service created through the API without the setting, and sends that do not pass the flag, leave every message to whatever the account default is - which nobody on the team has read.
+
+**Detect.** List every send path (each message-create call and the helper it goes through) and check whether it passes the provider's GSM-normalisation flag; list every messaging-service create or update and check whether it sets the service's normalisation option; read one live service's setting where credentials allow. Any path with neither is the finding. Measure on a sample: messages whose body contains a non-GSM look-alike and their billed segment count.
+
+**False positives.** Platforms that send only in languages that need UCS-2 anyway; templates normalised server-side before send (verify the normaliser covers punctuation, dashes and spaces); providers whose default for API-created services is documented as on and verified on a live service.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1248,
+ "rule_count": 1249,
  "sections": [
   {
    "id": "A",
@@ -2377,7 +2377,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "Q:1",
@@ -2458,6 +2458,10 @@
     {
      "id": "Q:20",
      "title": "A second path that sends from the same business sender enforces only the control it was written for, while the time-of-day window, the volume cap and the duplicate guard live inside the primary notifier, so the message with the thinnest consent footing is the least gated"
+    },
+    {
+     "id": "Q:21",
+     "title": "Texts are sent with no GSM normalisation (no Smart Encoding on the messaging service, no per-send flag), so one smart quote typed by a phone or laptop turns the whole message into UCS-2 and multiplies the segments billed"
     }
    ]
   },

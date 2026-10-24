@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1235,
+ "rule_count": 1236,
  "sections": [
   {
    "id": "A",
@@ -4424,7 +4424,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "JJ:1",
@@ -4629,6 +4629,10 @@
     {
      "id": "JJ:51",
      "title": "A convenience default fills a required step with a placeholder value even when no valid value exists (a start time on a day the business is closed), so the step counts as complete and the flow submits something no one chose"
+    },
+    {
+     "id": "JJ:52",
+     "title": "One record field carries two meanings depending on the row's status - what the item is on the success path, why it was stopped on the refusal path - and a reader that groups by that field turns every refusal into a separate item named after its refusal reason"
     }
    ]
   },

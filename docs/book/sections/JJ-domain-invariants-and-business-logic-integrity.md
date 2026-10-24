@@ -1010,3 +1010,11 @@ written down.
 **Detect.** For each pre-filled field in a create flow, find the branch where no valid default exists and read what it writes: any concrete value written there is the finding when the step's completeness rule only tests presence. Confirm by starting the flow in that condition (a closed day, an empty roster) and checking whether the step reads as done.
 
 **False positives.** Defaults that are written only as a suggestion the completeness rule ignores until the person confirms it; flows where the fallback value is itself valid by rule; flows that refuse to open in the no-valid-value condition.
+
+## JJ:52 — One record field carries two meanings depending on the row's status - what the item is on the success path, why it was stopped on the refusal path - and a reader that groups by that field turns every refusal into a separate item named after its refusal reason
+
+**Statement.** A writer records outcomes for a batch of work in one row per item, with a free-form "reason" field. On the success path the field holds what the work is (a campaign's label); on the refusal path the writer reuses it for why the item was held (a guardrail code). Nothing breaks on the writer's side, and its tests check each path's value separately. A reader built later groups rows by that field to show one line per piece of work: each refusal reason becomes a phantom item ("frequency_capped" as if it were a campaign), and the real item's refused count stays zero because its refused rows went to the phantom. The report under-counts exactly the protections it is meant to show working.
+
+**Detect.** For each outcome or audit row type, list the fields whose meaning depends on the row's status, and find every reader that groups, filters or labels by them. Confirm with one batch that has both a success and a refusal: the grouped view shows more groups than the batch has items.
+
+**False positives.** Fields documented as status-dependent where every reader branches on the status before reading them; rows that carry the item's identity in its own field and use the reason field only for display.

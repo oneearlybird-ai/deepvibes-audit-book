@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1247,
+ "rule_count": 1248,
  "sections": [
   {
    "id": "A",
@@ -1759,7 +1759,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 45,
+   "rule_count": 46,
    "rules": [
     {
      "id": "K:1",
@@ -1940,6 +1940,10 @@
     {
      "id": "K:45",
      "title": "A composer keeps its draft in local state and is mounted without a key for the record it writes to, so switching records in a master-detail screen keeps the old draft and sends it to the newly selected record"
+    },
+    {
+     "id": "K:46",
+     "title": "A client mints one idempotency key per draft and keeps it while the person edits the text, and the server deduplicates by key without comparing the payload, so the edited request is answered \"already sent\" and never goes out"
     }
    ]
   },

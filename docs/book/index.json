@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1220,
+ "rule_count": 1221,
  "sections": [
   {
    "id": "A",
@@ -2793,7 +2793,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 62,
+   "rule_count": 63,
    "rules": [
     {
      "id": "U:1",
@@ -3042,6 +3042,10 @@
     {
      "id": "U:62",
      "title": "A gate script expands its allow-list array bare under strict-variable mode, so the day the list is legitimately emptied the gate aborts with \"unbound variable\" on the interpreter the platform ships, for everyone"
+    },
+    {
+     "id": "U:63",
+     "title": "A consumer's cross-repo gates run only in the consumer's landing lane, so a producer land that breaks them passes its own gates and leaves the consumer's trunk red, refusing every later consumer change, including unrelated ones and the catch-up itself"
     }
    ]
   },

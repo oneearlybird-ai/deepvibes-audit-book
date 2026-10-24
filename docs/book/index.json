@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1238,
+ "rule_count": 1239,
  "sections": [
   {
    "id": "A",
@@ -854,7 +854,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "F:1",
@@ -1059,6 +1059,10 @@
     {
      "id": "F:51",
      "title": "A service-principal trust policy scopes aws:SourceArn to the resource that looks narrowest instead of the resource type the service actually presents, so the service can never assume the role and every call through it fails from its first day"
+    },
+    {
+     "id": "F:52",
+     "title": "An attribute-list fence (a key-value store's per-attribute IAM condition) with no condition on what the request asks to return does not fence a read that names no projection or a write that asks for the old item, so the fence holds only for callers that already behave"
     }
    ]
   },

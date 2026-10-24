@@ -162,3 +162,11 @@ the principal's own record.
 identity and refused on mismatch (the argument is then a confirmation, not a choice); an operator
 console where the operator is the principal and names a customer deliberately; a descriptive
 attribute that never keys a lookup or a create.
+
+## H:20 — The extraction prompt offers the model every value of a field while the consumer accepts only the values one source may produce, so the model is invited to emit answers that are discarded and the evaluation counts them
+
+**Statement.** A structured-extraction prompt lists the allowed values of a field straight from the domain configuration - every status event of a subject type, every outcome of a call. The consumer that applies the model's output accepts only the subset that the extraction source may cause (what a caller can say happened, not what a booking or a clock decides). The model, shown the full list, picks values it was never entitled to pick: an "it was confirmed" or "it went stale" that no caller can make true. The consumer silently drops them, so nothing breaks, but the prompt spends instruction and output on choices with no effect, the model's attention is pulled toward events it should not infer, and an evaluation that scores extracted values against the prompt's own list reports those dropped values as correct recall. Narrowing the list later changes extraction behaviour, so it has to go through the same evaluation as any other prompt change.
+
+**Detect.** For each enumerated field in an extraction prompt, find where the list is built and where the output is applied; compare the two sets. Values the applier filters out by source (or ignores) but the prompt still offers are the finding. Confirm on a sample of extractions that the model does emit them and that they are dropped.
+
+**False positives.** Prompts that offer the full list deliberately so the model can say "not something the caller decides", with the consumer recording that distinction; fields where the source filter is applied when the prompt is built; evaluations that score only the applied output.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1225,
+ "rule_count": 1227,
  "sections": [
   {
    "id": "A",
@@ -1444,7 +1444,7 @@
    "title": "AI & Data Analytics (AWS)",
    "group": "aws-backend",
    "file": "sections/H-ai-and-data-analytics-aws.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "H:1",
@@ -1521,6 +1521,10 @@
     {
      "id": "H:19",
      "title": "An agent tool accepts the acting principal's identity (a phone number, an account or customer identifier) as a model-supplied argument, so the model, or whoever steers it, chooses whom the action is performed for"
+    },
+    {
+     "id": "H:20",
+     "title": "The extraction prompt offers the model every value of a field while the consumer accepts only the values one source may produce, so the model is invited to emit answers that are discarded and the evaluation counts them"
     }
    ]
   },
@@ -2616,7 +2620,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "T:1",
@@ -2789,6 +2793,10 @@
     {
      "id": "T:43",
      "title": "A per-session capability credential is handed to the caller before, or regardless of, the durable write of the record every verifier resolves it against, so a failed write yields a live credential nothing can honour and a session the system never records"
+    },
+    {
+     "id": "T:44",
+     "title": "The authorizer's verdict reaches the origin as request headers, and on routes where the authorizer leaves a key out the origin cannot tell the gateway's header from one the caller sent"
     }
    ]
   },

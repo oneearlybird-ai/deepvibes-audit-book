@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1230,
+ "rule_count": 1235,
  "sections": [
   {
    "id": "A",
@@ -2102,7 +2102,7 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "N:1",
@@ -2171,6 +2171,10 @@
     {
      "id": "N:17",
      "title": "A floating overlay is painted with the in-flow elevated-surface token, whose alpha is a theme variable set far below one on dark themes, so the overlay is see-through exactly where it must not be"
+    },
+    {
+     "id": "N:18",
+     "title": "The same value is formatted by one presenter and printed raw by another on the same screen, so one record reads two ways side by side"
     }
    ]
   },
@@ -4266,7 +4270,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 15,
+   "rule_count": 16,
    "rules": [
     {
      "id": "HH:1",
@@ -4327,6 +4331,10 @@
     {
      "id": "HH:15",
      "title": "A row's wrapped state is never designed: the layout is checked only at the width where the longest expected value fits beside its label, so the one value that wraps renders in the container's default alignment nobody chose"
+    },
+    {
+     "id": "HH:16",
+     "title": "A desktop layout's breakpoint sits above the app's own default window size, so the layout the design describes appears only after a resize and the fallback is what every first run shows"
     }
    ]
   },
@@ -4416,7 +4424,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 49,
+   "rule_count": 51,
    "rules": [
     {
      "id": "JJ:1",
@@ -4613,6 +4621,14 @@
     {
      "id": "JJ:49",
      "title": "An entity's lifecycle is held twice, as a boolean and as a status driven by a declared transition table, and one writer sets the boolean directly instead of firing the transition, so the two disagree and every surface that shows both contradicts itself"
+    },
+    {
+     "id": "JJ:50",
+     "title": "Opening a saved record for editing rebuilds a derived value from the reference data's current definition instead of the value the record stored, so the record shows a different value than it holds and a save writes it"
+    },
+    {
+     "id": "JJ:51",
+     "title": "A convenience default fills a required step with a placeholder value even when no valid value exists (a start time on a day the business is closed), so the step counts as complete and the flow submits something no one chose"
     }
    ]
   },
@@ -4868,7 +4884,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 70,
+   "rule_count": 71,
    "rules": [
     {
      "id": "NN:1",
@@ -5149,6 +5165,10 @@
     {
      "id": "NN:70",
      "title": "A handler accepts two event shapes, its tests feed the one production never sends, and the green suite certifies a branch no request reaches while the path every real request takes runs untested"
+    },
+    {
+     "id": "NN:71",
+     "title": "A fixture or demo mode's canned responses hand out a live production endpoint, so every offline run connects to production with a fake credential and retries it for as long as the run lasts"
     }
    ]
   },

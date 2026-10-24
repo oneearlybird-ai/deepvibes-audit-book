@@ -187,3 +187,11 @@ opaque backing or a backdrop filter beneath the content. Tooltips and scrims who
 to let the underlying content read through. Themes where the in-flow surface opacity is one
 everywhere, making the two tokens genuinely interchangeable — though this is a latent defect that
 the first translucent theme turns real.
+
+## N:18 — The same value is formatted by one presenter and printed raw by another on the same screen, so one record reads two ways side by side
+
+**Statement.** A phone number, amount or date has a formatter, and most surfaces call it. A newer card or step reads the stored value straight from the model (an E.164 number, a cents integer, an ISO timestamp) and prints it. Next to a formatted copy of the same value, the raw one looks like a different value or like an error, and screen readers announce it digit by digit. Nothing fails; the drift is only visible to a person.
+
+**Detect.** For each value type with a formatter, grep views and presenters for direct reads of the model field into a text element without the formatter; compare surfaces that show the same record at once.
+
+**False positives.** Surfaces that deliberately show the canonical stored form (an admin or debug view, a copy-to-clipboard field) and label it so.

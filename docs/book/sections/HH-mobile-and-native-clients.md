@@ -217,3 +217,11 @@ because the Book never renumbers.
 **Detect.** For each composed label/value row, list the longest value each state can produce (status sentences, localized strings, provider names) and render the row at the narrowest supported width with that value. A stacked result whose alignment differs from the row's unwrapped alignment, or from the sibling client's wrapped row, is the finding. In code: a stacking fallback inside the primitive with no explicit frame/alignment on the stacked branch inherits the container's default; the fix is one explicit full-width, leading-aligned frame on the row.
 
 **False positives.** Rows whose stacked state is intentionally centred (a hero or summary tile, by design and matching the sibling client); values that are truncated with an ellipsis rather than wrapped, where the question is truncation not alignment; primitives that already pin alignment on both branches.
+
+## HH:16 — A desktop layout's breakpoint sits above the app's own default window size, so the layout the design describes appears only after a resize and the fallback is what every first run shows
+
+**Statement.** A desktop app docks a side panel beside its main view from a minimum window width and floats it over the main view below that width. The threshold is chosen for the panel's comfort, and the app's default and minimum window size were set earlier for other reasons; when the default is below the threshold, every fresh launch shows the floating fallback - covering part of the main view the design says stays usable - and the docked layout is seen only by people who widen the window. Snapshot tests recorded at a larger size never show the default state.
+
+**Detect.** Read the app's default and minimum window size and every width threshold that switches a layout; a threshold above the default is the finding when the below-threshold layout breaks a stated property (a clickable main view, a visible column). Confirm by launching at the default size.
+
+**False positives.** Thresholds above the default where the fallback is the intended default layout and the design says so; apps that restore a saved window size larger than the threshold for every user, verified on first launch.

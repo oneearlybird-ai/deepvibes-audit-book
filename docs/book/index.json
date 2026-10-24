@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1221,
+ "rule_count": 1225,
  "sections": [
   {
    "id": "A",
@@ -2029,7 +2029,7 @@
    "title": "Frontend: Component Lifecycle & Performance",
    "group": "frontend",
    "file": "sections/M-frontend-component-lifecycle-and-performance.md",
-   "rule_count": 14,
+   "rule_count": 15,
    "rules": [
     {
      "id": "M:1",
@@ -2086,6 +2086,10 @@
     {
      "id": "M:14",
      "title": "Above-the-fold autoplay video shipped at source scale with no poster — the largest paint waits on a multi-megabyte decode"
+    },
+    {
+     "id": "M:15",
+     "title": "An effect's setup performs a global side effect whose cleanup has a delayed consequence (a pushed history entry popped asynchronously), so the development double-invoke lands the first cleanup's late event on the second setup and the component tears itself down"
     }
    ]
   },
@@ -2793,7 +2797,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 63,
+   "rule_count": 64,
    "rules": [
     {
      "id": "U:1",
@@ -3046,6 +3050,10 @@
     {
      "id": "U:63",
      "title": "A consumer's cross-repo gates run only in the consumer's landing lane, so a producer land that breaks them passes its own gates and leaves the consumer's trunk red, refusing every later consumer change, including unrelated ones and the catch-up itself"
+    },
+    {
+     "id": "U:64",
+     "title": "A hook sources its framework's wrapper with stderr discarded, and the wrapper re-executes the hook body inside that sourcing, so every diagnostic the hook prints - including the one naming the missing tool - goes to the null device and the commit fails with only \"exited with code 1\""
     }
    ]
   },
@@ -3653,7 +3661,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 53,
+   "rule_count": 54,
    "rules": [
     {
      "id": "CC:1",
@@ -3866,6 +3874,10 @@
     {
      "id": "CC:53",
      "title": "A table's secondary indexes are declared as a set inside the table resource, and the provider compares that set by a hash of each index's attributes, so adding or removing one index deletes and rebuilds every untouched index whose stored form differs from the declared form, taking each offline for its whole backfill"
+    },
+    {
+     "id": "CC:54",
+     "title": "The IaC tree was only ever initialised on its author's machine, so provider lock files carry package fingerprints for that one platform, a per-unit hook speaks that platform's shell, and the first lane on another OS or architecture stops at init"
     }
    ]
   },
@@ -4392,7 +4404,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "JJ:1",
@@ -4585,6 +4597,10 @@
     {
      "id": "JJ:48",
      "title": "A reconciler compares a platform-wide aggregate that outlives account deletion with per-account source rows that are deleted with the account, so the first deletion latches the invariant in breach forever"
+    },
+    {
+     "id": "JJ:49",
+     "title": "An entity's lifecycle is held twice, as a boolean and as a status driven by a declared transition table, and one writer sets the boolean directly instead of firing the transition, so the two disagree and every surface that shows both contradicts itself"
     }
    ]
   },

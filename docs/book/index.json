@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1249,
+ "rule_count": 1250,
  "sections": [
   {
    "id": "A",
@@ -657,7 +657,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "E:1",
@@ -850,6 +850,10 @@
     {
      "id": "E:48",
      "title": "A WebSocket API's connect route moves from a function-proxy integration to an HTTP integration, and the client's query-string credential stops arriving, because the HTTP hop forwards only the query values the route declares and the integration maps"
+    },
+    {
+     "id": "E:49",
+     "title": "A protocol bridge rebuilds a typed event from transport headers and fills a missing type with one of the real types, so a lost discriminator turns one kind of request into another and the handler's refusal looks like a client fault"
     }
    ]
   },

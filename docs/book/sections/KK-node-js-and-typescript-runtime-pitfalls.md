@@ -387,3 +387,11 @@ verify the row exists rather than assuming either way. Branches that provably ca
 with the downstream read. Defaults used purely for display or formatting, where nothing looks the value
 up. Unconditional loads whose result is legitimately absent for the subject, which is a data gap and
 should be reported as one.
+
+## KK:21 — A cleanup in a `finally` calls `.catch()` on the result of a function that is synchronous, so the TypeError it raises escapes the `finally` and turns every successful run into a failure
+
+**Statement.** Cleanup code is written defensively as `await cleanup(x).catch(() => {})`, on the assumption that `cleanup` returns a promise. When `cleanup` is synchronous and returns nothing, `.catch` is read off `undefined` and throws a TypeError. Inside a `finally`, that throw replaces whatever the `try` produced: a job that completed all of its work is reported as failed. In a queue worker the acknowledgement that follows (deleting the message, committing the offset) is skipped, so the message comes back after its visibility timeout and the whole job - with every side effect it already performed - runs again, until the redrive limit moves it to the dead-letter queue and pages someone. The suppression the author wrote to make cleanup harmless is exactly what makes it fatal, and it hides from tests whenever the module under test cannot be imported without booting its poll loop.
+
+**Detect.** For every `.catch(` chained directly on a call (and every `await f().then`), resolve the callee and check that it returns a promise on every path; a callee declared without `async` that returns nothing is the finding. Give the finally block special attention: a throw there overrides the try's result. Confirm with a minimal reproduction of the call shape, then trace what the caller does on a throw (acknowledgement skipped, retry, dead-letter).
+
+**False positives.** Callees that are synchronous but always return a promise (or a thenable) explicitly; call sites wrapped as `Promise.resolve(f()).catch(...)` or `try { f() } catch {}`; type-checked code where the compiler rejects `.catch` on `void`.

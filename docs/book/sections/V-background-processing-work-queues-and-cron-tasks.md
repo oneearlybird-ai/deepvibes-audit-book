@@ -430,3 +430,11 @@ followed by a clean inspection a cycle later.
 could-not-inspect state the repairer skips without throwing; lanes whose alarm on a failed read is
 deliberate and fires only after the failure persists across several cycles; reads whose failure
 genuinely means the subject is broken (a not-found on a resource that must exist).
+
+## V:27 — A dispatcher drops work it cannot schedule within its delay ceiling and defers it, in a comment, to the next periodic cycle; a caller added later has no such cycle, so the drop is permanent while its entry point reports the whole batch queued
+
+**Statement.** A shared dispatch function can delay a message only up to the queue's ceiling (minutes, not hours). When the target window opens later than that, it returns "not dispatched, deferred" and relies on the periodic job that called it to try again on its next run. That was true for the caller it was written for. A second caller - a one-shot job started by a person, an API-triggered batch - reuses the function, counts the deferral as an ordinary refusal and finishes; nothing will ever call again for those items. The entry point that queued the batch has already answered the person with the full batch size, so the person believes every item is on its way while every item outside the window has silently gone. Tests of the new caller pin the window wide open, so the deferral branch never runs under them.
+
+**Detect.** For every function that can return a deferral or "try later" outcome, find each caller and ask what retries it: a schedule that re-runs the same selection, a re-queue with the remaining items, or nothing. A caller with no retry path that reports success (or an item count) to a person is the finding. Check its tests for a fixed always-open window, and run one with the window closed.
+
+**False positives.** Callers that re-enqueue deferred items themselves (a delayed message to their own queue, a stored remainder a later run picks up); entry points that answer with what was actually dispatched rather than what was requested; deferral windows shorter than the delay ceiling by construction.

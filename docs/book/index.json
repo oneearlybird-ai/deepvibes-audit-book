@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1227,
+ "rule_count": 1229,
  "sections": [
   {
    "id": "A",
@@ -3070,7 +3070,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 26,
+   "rule_count": 27,
    "rules": [
     {
      "id": "V:1",
@@ -3175,6 +3175,10 @@
     {
      "id": "V:26",
      "title": "The inspector files \"I could not read the subject\" in the same record as \"the subject is wrong\", so every control-plane throttle is handed to the repairer as a defect it has no repair for, and the read error that would tell the two apart is dropped before anything logs it"
+    },
+    {
+     "id": "V:27",
+     "title": "A dispatcher drops work it cannot schedule within its delay ceiling and defers it, in a comment, to the next periodic cycle; a caller added later has no such cycle, so the drop is permanent while its entry point reports the whole batch queued"
     }
    ]
   },
@@ -4617,7 +4621,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 20,
+   "rule_count": 21,
    "rules": [
     {
      "id": "KK:1",
@@ -4698,6 +4702,10 @@
     {
      "id": "KK:20",
      "title": "A conditionally-loaded object is read downstream through optional chaining and a `||` default, so a control-flow gap is laundered into a sentinel lookup and reported forever as missing data"
+    },
+    {
+     "id": "KK:21",
+     "title": "A cleanup in a `finally` calls `.catch()` on the result of a function that is synchronous, so the TypeError it raises escapes the `finally` and turns every successful run into a failure"
     }
    ]
   },

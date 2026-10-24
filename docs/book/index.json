@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1251,
+ "rule_count": 1252,
  "sections": [
   {
    "id": "A",
@@ -1553,7 +1553,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "I:1",
@@ -1674,6 +1674,10 @@
     {
      "id": "I:30",
      "title": "A summary count is derived from the whole collection while the list beneath it renders one subtype, so the count promises rows the list will not show and the missing subtype is invisible rather than filtered"
+    },
+    {
+     "id": "I:31",
+     "title": "A shared component makes its interaction an optional callback and draws the same interactive-looking element either way, so one mount site that omits the callback ships controls that look tappable and do nothing"
     }
    ]
   },

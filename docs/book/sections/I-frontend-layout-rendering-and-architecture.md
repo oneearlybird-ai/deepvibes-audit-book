@@ -346,3 +346,11 @@ narrowed copy.
 ("6 of 40"), where the relationship is stated. Lists with an explicit, visible filter control whose
 state explains the difference. Virtualised or paginated lists where the count is of the query and the
 rows are of the page, and the surface says so.
+
+## I:31 — A shared component makes its interaction an optional callback and draws the same interactive-looking element either way, so one mount site that omits the callback ships controls that look tappable and do nothing
+
+**Statement.** A component used on several screens (a map with pins, a card list, a chart with points) takes its click behaviour as an optional prop and attaches the handler only when the prop is given, while drawing the element identically - same cursor, same hover, same shape - in both cases. The screen it was built for passes the callback and works. A second screen mounts the same component for a summary view, leaves the prop out because it was not thinking about selection, and every element on it looks exactly as interactive as on the first screen and responds to nothing. No type check, test or review flags it, because omitting an optional prop is legal and the summary screen renders correctly; users find it by tapping.
+
+**Detect.** For each shared component that renders pointer-targetable elements, find interaction props typed optional and read whether the element's appearance (cursor, hover, role, focusability) changes when the prop is absent. Then list every mount site and check which pass the prop; a site that omits it while the elements still look interactive is the finding. A crawl that clicks every visible control and records whether anything changed catches the same thing from the outside.
+
+**False positives.** Components that render a visibly non-interactive variant (no pointer cursor, no hover, not focusable) when the callback is absent; mount sites where the elements are covered or disabled by design and say so.

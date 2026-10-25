@@ -395,3 +395,11 @@ should be reported as one.
 **Detect.** For every `.catch(` chained directly on a call (and every `await f().then`), resolve the callee and check that it returns a promise on every path; a callee declared without `async` that returns nothing is the finding. Give the finally block special attention: a throw there overrides the try's result. Confirm with a minimal reproduction of the call shape, then trace what the caller does on a throw (acknowledgement skipped, retry, dead-letter).
 
 **False positives.** Callees that are synchronous but always return a promise (or a thenable) explicitly; call sites wrapped as `Promise.resolve(f()).catch(...)` or `try { f() } catch {}`; type-checked code where the compiler rejects `.catch` on `void`.
+
+## KK:22 — A character-class regex written without its backslash matches a literal letter, so a whitespace normalizer deletes that letter from every stored value, and nothing compares the stored text with the input
+
+**Statement.** `text.replace(/s+/g, " ")` was meant as `/\s+/g`. It runs without error, the tests that only check that a value was stored pass, and every stored string loses its `s` letters (`/d+/` eats digits, `/w+/` eats words). Later lookups compare against the same mangled form, so the corruption is self-consistent and surfaces only when a person reads the stored text ("Oakmont Partner ", "Ke trel Group").
+
+**Detect.** Search regex literals for a bare letter where an escape class was meant: `/s+/`, `/d+/`, `/w+/`, `/b/` inside a `replace`, `split` or `test` whose name or comment speaks of whitespace, digits or words. Confirm by running the normalizer on an input containing that letter and comparing output with input. The durable guard is a round-trip test: store a representative value and assert the stored text equals the input (whitespace collapsed).
+
+**False positives.** A deliberate literal match (stripping a plural `s`) stated by a comment and pinned by a test.

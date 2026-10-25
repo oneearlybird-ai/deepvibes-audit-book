@@ -1026,3 +1026,11 @@ written down.
 **Detect.** For every reference case that names a status event, replay it from the entity's initial status and check that each event has a transition from the status the entity is actually in at that point; any event the table refuses is the finding. Also list, per status, which actors can leave it: a non-terminal status no actor can leave is the same defect seen from the other side.
 
 **False positives.** Reference cases deliberately written to show a refusal; tables where the skipped status is set by an event the platform does produce in that story (verify by replay with the platform's real inputs, not by assumption).
+
+## JJ:54 — A domain names an entity type with the identifier the engine reserves for the implicit owner of unscoped facts, so the engine routes that entity's facts to the reserved owner, finds no definition there and drops them, while the schema accepts the name
+
+**Statement.** A configuration lets each domain declare its own entity types by id, and the engine uses a fixed id ("customer", "self", "default") for the owner of facts that belong to no declared entity. A domain that names an entity type with that reserved word makes the engine's owner resolution take the reserved branch, look the entity's fields up in the wrong table and reject every one as unknown: all facts about that entity are lost, in every environment, with no error at load time and no failing test unless a fixture happens to use that domain.
+
+**Detect.** List the reserved owner identifiers the engine compares against (string literals in owner or scope resolution), then scan every domain configuration's declared entity ids for them. The configuration validator must refuse the collision; a reserved word that validates clean is the finding. Prove it by driving one fact for that entity through the engine's normalization and watching it rejected as an unknown field. Check too that the fixture loader's filename pattern admits every domain file (a `\d{3}` pattern silently skipped the four-digit domains that carried the collision).
+
+**False positives.** Engines whose reserved owner lives in a namespace distinct from entity ids (an enum, a separate field), so a collision cannot select the wrong branch.

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1258,
+ "rule_count": 1260,
  "sections": [
   {
    "id": "A",
@@ -4504,7 +4504,7 @@
    "title": "Domain Invariants & Business-Logic Integrity",
    "group": "cross-cutting",
    "file": "sections/JJ-domain-invariants-and-business-logic-integrity.md",
-   "rule_count": 53,
+   "rule_count": 54,
    "rules": [
     {
      "id": "JJ:1",
@@ -4717,6 +4717,10 @@
     {
      "id": "JJ:53",
      "title": "A declared lifecycle omits a transition that the domain's own reference cases require, so the commonest real sequence strands the record in its initial state and no actor - caller, system or owner - can move it"
+    },
+    {
+     "id": "JJ:54",
+     "title": "A domain names an entity type with the identifier the engine reserves for the implicit owner of unscoped facts, so the engine routes that entity's facts to the reserved owner, finds no definition there and drops them, while the schema accepts the name"
     }
    ]
   },
@@ -4725,7 +4729,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "KK:1",
@@ -4810,6 +4814,10 @@
     {
      "id": "KK:21",
      "title": "A cleanup in a `finally` calls `.catch()` on the result of a function that is synchronous, so the TypeError it raises escapes the `finally` and turns every successful run into a failure"
+    },
+    {
+     "id": "KK:22",
+     "title": "A character-class regex written without its backslash matches a literal letter, so a whitespace normalizer deletes that letter from every stored value, and nothing compares the stored text with the input"
     }
    ]
   },

@@ -849,7 +849,7 @@
     },
     {
      "id": "E:48",
-     "title": "A WebSocket API's connect route moves from a function-proxy integration to an HTTP integration, and the client's query-string credential stops arriving, because the HTTP hop forwards only the query values the route declares and the integration maps"
+     "title": "A WebSocket API's connect route moves from a function-proxy integration to an HTTP integration, and every connect is refused, because the HTTP hop does not deliver what the backend used to receive for free - the event type and the client's credential - and the mappings that look like they carry them do not"
     },
     {
      "id": "E:49",

@@ -203,3 +203,11 @@ the first translucent theme turns real.
 **Detect.** Grep chart components for negative margins on the plot and a fixed axis width; render with the largest realistic values and measure the first tick label's left edge against the SVG's (a negative x is the finding). Size the axis width from the formatted longest tick, or drop the negative margin.
 
 **False positives.** Axes whose tick formatter guarantees a bounded label length (compact notation) that fits the reserved width; charts with overflow visible and room to the left.
+
+## N:20 — A sentence template fixes the article or the plural form before an interpolated word, so the sentence is ungrammatical for every value that takes the other form
+
+**Statement.** User-facing sentences are built as templates with a word dropped in: "has an {kind} deadline", "1 {items}", "a {plan} plan". The author wrote the fixed words for the value they were looking at ("an inspection"), and every other value of the variable gets the same article or number: "has an financing deadline", "a appraisal", "1 items". Each case is minor, but they appear on the highest-traffic summaries (briefs, alerts, headlines), read as careless, and recur wherever the vocabulary grows, because no test renders the template with every value.
+
+**Detect.** Search display templates for a fixed "a ", "an ", or a fixed plural directly before an interpolation, and for counts interpolated beside a fixed noun. For each, enumerate the variable's vocabulary and render the sentence for every member; any wrong article or number is the finding. The fix derives the article and number from the rendered word or count in one helper.
+
+**False positives.** Templates whose variable is a closed set that all share the same initial sound or number, enforced by a type or test; languages handled by a proper localisation library with plural and article rules.

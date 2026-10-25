@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1255,
+ "rule_count": 1257,
  "sections": [
   {
    "id": "A",
@@ -2150,7 +2150,7 @@
    "title": "Frontend: DOM Manipulation, Style & Accessibility (a11y)",
    "group": "frontend",
    "file": "sections/N-frontend-dom-manipulation-style-and-accessibility-a11y.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "N:1",
@@ -2227,6 +2227,10 @@
     {
      "id": "N:19",
      "title": "A chart pulls its plot left with a negative margin to save space, and the axis's fixed label width no longer fits the widest tick, so the clipped SVG cuts the leading digit and a value reads as a different number"
+    },
+    {
+     "id": "N:20",
+     "title": "A sentence template fixes the article or the plural form before an interpolated word, so the sentence is ungrammatical for every value that takes the other form"
     }
    ]
   },
@@ -2865,7 +2869,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 64,
+   "rule_count": 65,
    "rules": [
     {
      "id": "U:1",
@@ -3122,6 +3126,10 @@
     {
      "id": "U:64",
      "title": "A hook sources its framework's wrapper with stderr discarded, and the wrapper re-executes the hook body inside that sourcing, so every diagnostic the hook prints - including the one naming the missing tool - goes to the null device and the commit fails with only \"exited with code 1\""
+    },
+    {
+     "id": "U:65",
+     "title": "Scratch clones and dependency trees are written to a memory-backed temporary filesystem with a fixed inode count, so many small files exhaust inodes while bytes remain free and every process on the host stops being able to create a file"
     }
    ]
   },

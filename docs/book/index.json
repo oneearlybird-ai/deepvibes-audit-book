@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1257,
+ "rule_count": 1258,
  "sections": [
   {
    "id": "A",
@@ -1771,7 +1771,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 48,
+   "rule_count": 49,
    "rules": [
     {
      "id": "K:1",
@@ -1964,6 +1964,10 @@
     {
      "id": "K:48",
      "title": "A client addresses a per-tenant read with a query parameter the server never reads, because the server scopes every request by the session's active tenant, so each per-tenant card is answered with the active tenant's data and nothing errors"
+    },
+    {
+     "id": "K:49",
+     "title": "A singleton connect caches its in-flight promise, and the promise rejects on a precondition that is only false for a moment (configuration not loaded yet), so the rejection is memoised and the feature never starts until the page reloads"
     }
    ]
   },

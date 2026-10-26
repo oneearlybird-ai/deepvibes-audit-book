@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1261,
+ "rule_count": 1262,
  "sections": [
   {
    "id": "A",
@@ -2692,7 +2692,7 @@
    "title": "Modern Authentication, SSO & Authorization (RBAC/ABAC)",
    "group": "saas-core",
    "file": "sections/T-modern-authentication-sso-and-authorization-rbac-abac.md",
-   "rule_count": 44,
+   "rule_count": 45,
    "rules": [
     {
      "id": "T:1",
@@ -2869,6 +2869,10 @@
     {
      "id": "T:44",
      "title": "The authorizer's verdict reaches the origin as request headers, and on routes where the authorizer leaves a key out the origin cannot tell the gateway's header from one the caller sent"
+    },
+    {
+     "id": "T:45",
+     "title": "An identity provider accepts an undocumented answer to its factor set-up challenge and signs the user in, but records no factor, so every later sign-in asks for the set-up again"
     }
    ]
   },

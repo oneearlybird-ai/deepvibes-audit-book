@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1262,
+ "rule_count": 1263,
  "sections": [
   {
    "id": "A",
@@ -1775,7 +1775,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 49,
+   "rule_count": 50,
    "rules": [
     {
      "id": "K:1",
@@ -1972,6 +1972,10 @@
     {
      "id": "K:49",
      "title": "A singleton connect caches its in-flight promise, and the promise rejects on a precondition that is only false for a moment (configuration not loaded yet), so the rejection is memoised and the feature never starts until the page reloads"
+    },
+    {
+     "id": "K:50",
+     "title": "A per-row action scoped by the session's selected entity instead of the entity its row names, on a surface that renders without a selection, so the action works only when the two coincide and degrades elsewhere into a dead end that varies by device and session history"
     }
    ]
   },

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1260,
+ "rule_count": 1261,
  "sections": [
   {
    "id": "A",
@@ -862,7 +862,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 53,
+   "rule_count": 54,
    "rules": [
     {
      "id": "F:1",
@@ -1075,6 +1075,10 @@
     {
      "id": "F:53",
      "title": "The shared secret that proves a request came through the gateway is kept in the gateway stage's variables, which every principal with read access to the API's configuration can read in plain text"
+    },
+    {
+     "id": "F:54",
+     "title": "A grant's condition names a context key the granted action never carries, so the grant can never match and every call that needs it dies as a denial of a permission the policy visibly contains"
     }
    ]
   },

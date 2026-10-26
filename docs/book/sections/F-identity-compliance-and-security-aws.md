@@ -984,3 +984,11 @@ statement is dead text to remove).
 **Detect.** List each API stage's variable names (never print values) and the integration request parameters that map a stage variable into a header the backend checks. List the principals with read on the API's stages. Confirm the backend's check compares that header against a value it holds. Prefer a value the gateway fetches from a secret store or a mutual-TLS or private-link trust that no configuration read reveals; rotate any value that has been read by a person or printed by a tool.
 
 **False positives.** Stage variables holding non-secret routing data; backends that do not trust the header for anything; values that rotate automatically on a short interval and are scoped so that knowing one gives no lasting access.
+
+## F:54 — A grant's condition names a context key the granted action never carries, so the grant can never match and every call that needs it dies as a denial of a permission the policy visibly contains
+
+**Statement.** A least-privilege statement bundles several actions under one condition, such as `iam:PermissionsBoundary` scoping role creation. One of the bundled actions (`iam:TagRole`, applied by IAM to a `CreateRole` with tags) does not supply that key in its request context, so `StringEquals` on it is never true and the action is implicitly denied, in every environment, while a reader of the policy sees the action allowed. Nothing fails at plan or apply; the policy validator sees a well-formed, scoped statement; the first production call that exercises the action fails with an AccessDenied naming the action the policy lists.
+
+**Detect.** For every statement with a condition, take each action and check the service authorization reference: is the condition key available for that action? A key missing for any action in the bundle is the finding. Prove it with the policy simulator (SimulatePrincipalPolicy with the action, the resource and the keys the real request carries): the denied action under a statement that names it. Keep the simulation as the lane's live check for such grants.
+
+**False positives.** A `...IfExists` operator, which passes when the key is absent; a statement whose actions all supply the key; a deny statement, where an absent key is the intended outcome.

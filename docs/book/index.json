@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1263,
+ "rule_count": 1264,
  "sections": [
   {
    "id": "A",
@@ -4358,7 +4358,7 @@
    "title": "Mobile & Native Clients",
    "group": "platform-delivery",
    "file": "sections/HH-mobile-and-native-clients.md",
-   "rule_count": 17,
+   "rule_count": 18,
    "rules": [
     {
      "id": "HH:1",
@@ -4427,6 +4427,10 @@
     {
      "id": "HH:17",
      "title": "A native app declares an entitlement that its registered app identifier does not enable, so every build compiles and archives and then fails at signed export, and the release lane stays red until someone with portal access changes a setting no code review can see"
+    },
+    {
+     "id": "HH:18",
+     "title": "A native app's \"email me a link\" reuses a web-first verify endpoint, so for an address that already has an account the link signs a browser in and the app that asked stays signed out"
     }
    ]
   },

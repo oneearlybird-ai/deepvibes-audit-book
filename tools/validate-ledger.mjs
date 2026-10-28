@@ -39,11 +39,16 @@ const ledger = JSON.parse(ledgerRaw);
 // off-format write fails the gate every run already passes through.
 const canonical = JSON.stringify(ledger, null, 1) + "\n";
 if (ledgerRaw !== canonical) {
+  const onlyLineEndings = ledgerRaw.replace(/\r\n/g, "\n") === canonical;
   console.error("LEDGER INVALID — 1 error(s):");
   console.error(
-    "  - ledger is not in canonical form (JSON.stringify(ledger, null, 1) + newline). " +
-      "An editor rewrote it with different formatting, which turns any real change into a whole-file diff. " +
-      "Rewrite it canonically before committing.",
+    onlyLineEndings
+      ? "  - ledger is not in canonical form: the bytes differ only by line endings (CRLF on disk). " +
+          "git rewrote it on checkout (core.autocrlf) - a .gitattributes line pinning eol=lf for the ledger stops that; " +
+          "rewrite it canonically (JSON.stringify(ledger, null, 1) + newline) before committing."
+      : "  - ledger is not in canonical form (JSON.stringify(ledger, null, 1) + newline). " +
+          "An editor rewrote it with different formatting, which turns any real change into a whole-file diff. " +
+          "Rewrite it canonically before committing.",
   );
   process.exit(1);
 }

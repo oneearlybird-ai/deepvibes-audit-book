@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1277,
+ "rule_count": 1285,
  "sections": [
   {
    "id": "A",
@@ -657,7 +657,7 @@
    "title": "Integration, Messaging & APIs (AWS)",
    "group": "aws-backend",
    "file": "sections/E-integration-messaging-and-apis-aws.md",
-   "rule_count": 49,
+   "rule_count": 50,
    "rules": [
     {
      "id": "E:1",
@@ -854,6 +854,10 @@
     {
      "id": "E:49",
      "title": "A protocol bridge rebuilds a typed event from transport headers and fills a missing type with one of the real types, so a lost discriminator turns one kind of request into another and the handler's refusal looks like a client fault"
+    },
+    {
+     "id": "E:50",
+     "title": "A new event rule is given its queue target and its dead-letter grant but not the queue's own send grant, so the rule's every fire is refused by the queue it points at and the day's work is never delivered"
     }
    ]
   },
@@ -1722,7 +1726,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "J:1",
@@ -1795,6 +1799,10 @@
     {
      "id": "J:18",
      "title": "A client-boundary directive is added to an existing shared component, and its unchanged imports drag a server-only child across the boundary, so the page renders and then dies on hydration"
+    },
+    {
+     "id": "J:19",
+     "title": "A script driving a document in another browsing context tests nodes with `instanceof` against its own window's constructors, so every node from the frame fails the check and the driver silently does nothing"
     }
    ]
   },
@@ -1803,7 +1811,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 50,
+   "rule_count": 51,
    "rules": [
     {
      "id": "K:1",
@@ -2004,6 +2012,10 @@
     {
      "id": "K:50",
      "title": "A per-row action scoped by the session's selected entity instead of the entity its row names, on a surface that renders without a selection, so the action works only when the two coincide and degrades elsewhere into a dead end that varies by device and session history"
+    },
+    {
+     "id": "K:51",
+     "title": "A picker fetches the first page of a server list and filters, searches or ranks within it, so a record beyond the page is unreachable from the control that exists to find it"
     }
    ]
   },
@@ -2441,7 +2453,7 @@
    "title": "Third Party: Twilio Communications Integration",
    "group": "third-party",
    "file": "sections/Q-third-party-twilio-communications-integration.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "Q:1",
@@ -2526,6 +2538,10 @@
     {
      "id": "Q:21",
      "title": "Texts are sent with no GSM normalisation (no Smart Encoding on the messaging service, no per-send flag), so one smart quote typed by a phone or laptop turns the whole message into UCS-2 and multiplies the segments billed"
+    },
+    {
+     "id": "Q:22",
+     "title": "A template message's variables are filled with free text that may hold a newline, a tab or a run of spaces, which the template channel refuses, so the alert fails exactly on the inputs most worth delivering"
     }
    ]
   },
@@ -2917,7 +2933,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 65,
+   "rule_count": 68,
    "rules": [
     {
      "id": "U:1",
@@ -3178,6 +3194,18 @@
     {
      "id": "U:65",
      "title": "Scratch clones and dependency trees are written to a memory-backed temporary filesystem with a fixed inode count, so many small files exhaust inodes while bytes remain free and every process on the host stops being able to create a file"
+    },
+    {
+     "id": "U:66",
+     "title": "A lane supervising a helper process reads one of its output streams, the helper reports its refusal on the other, and the lane waits its full timeout for a port that was never going to open"
+    },
+    {
+     "id": "U:67",
+     "title": "An operator lane binds a fixed local port for its session, so two operators on one workstation collide and the second is refused until the first finishes"
+    },
+    {
+     "id": "U:68",
+     "title": "A byte-identity gate reads the materialized working copy, the version control system's content filter denormalizes that copy on every checkout, and the gate's message attributes the mismatch to an editor, so each fetch on a filtering machine turns the gate red and sends the author to fix a file nobody changed"
     }
    ]
   },
@@ -3801,7 +3829,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 54,
+   "rule_count": 55,
    "rules": [
     {
      "id": "CC:1",
@@ -4018,6 +4046,10 @@
     {
      "id": "CC:54",
      "title": "The IaC tree was only ever initialised on its author's machine, so provider lock files carry package fingerprints for that one platform, a per-unit hook speaks that platform's shell, and the first lane on another OS or architecture stops at init"
+    },
+    {
+     "id": "CC:55",
+     "title": "A code change that needs a new grant ships in one deployment unit and the grant in another, and the compute rolls before the grant's stack applies, so every request that exercises the new read is refused for the whole gap"
     }
    ]
   },

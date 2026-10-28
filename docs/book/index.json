@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1276,
+ "rule_count": 1277,
  "sections": [
   {
    "id": "A",
@@ -862,7 +862,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 59,
+   "rule_count": 60,
    "rules": [
     {
      "id": "F:1",
@@ -1099,6 +1099,10 @@
     {
      "id": "F:59",
      "title": "A developer workstation runs under the pipeline's machine identity, so every process on the desktop holds the deploy lane's credentials"
+    },
+    {
+     "id": "F:60",
+     "title": "A metadata edit on a shared managed policy forces its replacement, and the replace detaches every in-stack role before failing on the roles other stacks attached, so a grant tightening becomes a partial outage"
     }
    ]
   },

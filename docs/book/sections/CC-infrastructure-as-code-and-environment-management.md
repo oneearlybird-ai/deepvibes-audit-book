@@ -793,7 +793,7 @@ sweep: the class returns with the next rename.
 
 Grants minted at runtime from a template in code — trust policies and inline policies a provisioner stamps on every tenant's roles, notification targets a worker writes per bucket — are grants too: a live target check that reads only the policies the IaC declares misses them, and a retirement that survives that check still breaks the next mint.
 
-**False positives.** Grants written ahead of a resource the same change creates, when the
+**False positives.** Grants written ahead of a resource the same change creates, when the A KMS alias ARN as the resource of a statement that grants only the alias operations (CreateAlias, UpdateAlias, DeleteAlias) is the shape the provider documents, graded against the account's live aliases, not an alias used as a key (refutation lesson, 2026-10-28).
 create and the grant land together. Wildcard grants over a namespace that is legitimately empty
 today by design (a per-customer prefix before the first customer). Service-created targets that
 appear on first use and are documented as such (the log group a tracing or delivery-status

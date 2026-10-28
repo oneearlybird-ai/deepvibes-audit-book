@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1264,
+ "rule_count": 1271,
  "sections": [
   {
    "id": "A",
@@ -1087,7 +1087,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 93,
+   "rule_count": 94,
    "rules": [
     {
      "id": "G:1",
@@ -1460,6 +1460,10 @@
     {
      "id": "G:93",
      "title": "A WebSocket (or any) API's connect step refuses every client with a 4xx, the API's alarms watch only integration errors and latency, and a total outage of the plane runs for days with every metric that is alarmed reading zero"
+    },
+    {
+     "id": "G:94",
+     "title": "A third party's refusal is relayed to the user's browser and never recorded by the service, so when a connection flow fails at the vendor the platform has no log of why, and the only copy of the vendor's error code is a toast the user has already closed"
     }
    ]
   },
@@ -2603,7 +2607,7 @@
    "title": "Global Data Multi-Tenancy & Isolation",
    "group": "saas-core",
    "file": "sections/S-global-data-multi-tenancy-and-isolation.md",
-   "rule_count": 21,
+   "rule_count": 22,
    "rules": [
     {
      "id": "S:1",
@@ -2688,6 +2692,10 @@
     {
      "id": "S:21",
      "title": "A tenant-scoped client is minted by hand beside the one shared session library, so the second credential path carries its own cache and expiry arithmetic, drifts from the library's fences, and is invisible to the control that reads the library"
+    },
+    {
+     "id": "S:22",
+     "title": "A queue consumer takes a derived connection identifier as the authority for whose credential it uses, and never checks the owner the message names against the owner the row stores, so a producer defect or an identifier collision writes one customer's data into another customer's system of record"
     }
    ]
   },
@@ -3154,7 +3162,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 28,
+   "rule_count": 29,
    "rules": [
     {
      "id": "V:1",
@@ -3267,6 +3275,10 @@
     {
      "id": "V:28",
      "title": "A scheduled consumer reads a derived record that is refreshed only when a person opens a screen, so the scheduled output depends on whether anyone happened to look recently"
+    },
+    {
+     "id": "V:29",
+     "title": "A job identifier chosen to deduplicate periodic work outlives the job's failure, so the broker answers the next period's enqueue with the finished job and the work is never retried until the identifier's natural key happens to change"
     }
    ]
   },
@@ -4745,7 +4757,7 @@
    "title": "Node.js & TypeScript Runtime Pitfalls",
    "group": "runtime",
    "file": "sections/KK-node-js-and-typescript-runtime-pitfalls.md",
-   "rule_count": 22,
+   "rule_count": 23,
    "rules": [
     {
      "id": "KK:1",
@@ -4834,6 +4846,10 @@
     {
      "id": "KK:22",
      "title": "A character-class regex written without its backslash matches a literal letter, so a whitespace normalizer deletes that letter from every stored value, and nothing compares the stored text with the input"
+    },
+    {
+     "id": "KK:23",
+     "title": "An allowlist implemented as a property lookup on a plain object admits the names every object inherits, so a request naming `constructor` or `__proto__` passes the membership test and reaches code that assumed a member"
     }
    ]
   },
@@ -5334,7 +5350,7 @@
    "title": "Third-Party Data Sync & Canonical Mapping",
    "group": "third-party",
    "file": "sections/PP-third-party-data-sync-and-canonical-mapping.md",
-   "rule_count": 25,
+   "rule_count": 28,
    "rules": [
     {
      "id": "PP:1",
@@ -5435,6 +5451,18 @@
     {
      "id": "PP:25",
      "title": "Disconnecting an integration deletes the platform's stored tokens but never calls the provider's revocation endpoint, so the grant stays live at the provider - the customer still sees the app authorized, and any copy of the refresh token keeps working"
+    },
+    {
+     "id": "PP:26",
+     "title": "A worker calls the provider with an access token whose stored expiry has already passed, so the refusal that follows is read as a revoked grant and a connection the refresh scheduler was about to renew is marked dead"
+    },
+    {
+     "id": "PP:27",
+     "title": "Token-endpoint failures are classified by HTTP status alone, so the error code the token endpoint sends to say the platform's own client is at fault is read as the customer's grant being dead, and a platform misconfiguration disconnects every customer at once"
+    },
+    {
+     "id": "PP:28",
+     "title": "A connection's death is recorded only in the integration engine's own store, and the product surface that shows the connection has no consumer of that state, so a dead connection displays as connected and synced until the customer notices the data stopped"
     }
    ]
   }

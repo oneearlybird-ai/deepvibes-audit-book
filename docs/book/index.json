@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1271,
+ "rule_count": 1276,
  "sections": [
   {
    "id": "A",
@@ -862,7 +862,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 54,
+   "rule_count": 59,
    "rules": [
     {
      "id": "F:1",
@@ -1079,6 +1079,26 @@
     {
      "id": "F:54",
      "title": "A grant's condition names a context key the granted action never carries, so the grant can never match and every call that needs it dies as a denial of a permission the policy visibly contains"
+    },
+    {
+     "id": "F:55",
+     "title": "A domain-wide attachment policy grants a configuration-tree prefix that holds the platform's secrets, so every function wearing it can read every secret, and the exact per-function grant is never written"
+    },
+    {
+     "id": "F:56",
+     "title": "A runtime provisioning worker holds key administration on every key in the account because the create call's policy-lockout check was satisfied through the identity policy instead of the key policy being created"
+    },
+    {
+     "id": "F:57",
+     "title": "A pipeline read role built on the provider's blanket read-only managed policy reads data as well as configuration, so the plan identity can dump rows, messages, log lines, user records and secret values"
+    },
+    {
+     "id": "F:58",
+     "title": "A role's grant set is wider than the set of calls its code makes, and nothing derives one from the other, so excess actions accumulate silently at every refactor"
+    },
+    {
+     "id": "F:59",
+     "title": "A developer workstation runs under the pipeline's machine identity, so every process on the desktop holds the deploy lane's credentials"
     }
    ]
   },

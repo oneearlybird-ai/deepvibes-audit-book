@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1285,
+ "rule_count": 1287,
  "sections": [
   {
    "id": "A",
@@ -1115,7 +1115,7 @@
    "title": "Management, Governance & Observability (AWS)",
    "group": "aws-backend",
    "file": "sections/G-management-governance-and-observability-aws.md",
-   "rule_count": 94,
+   "rule_count": 95,
    "rules": [
     {
      "id": "G:1",
@@ -1492,6 +1492,10 @@
     {
      "id": "G:94",
      "title": "A third party's refusal is relayed to the user's browser and never recorded by the service, so when a connection flow fails at the vendor the platform has no log of why, and the only copy of the vendor's error code is a toast the user has already closed"
+    },
+    {
+     "id": "G:95",
+     "title": "An alarm's built-in triage text names the components that served the path when it was written, and after the path is rebuilt on new components the alarm keeps firing but sends the responder to logs and commands that no longer exist"
     }
    ]
   },
@@ -4507,7 +4511,7 @@
    "title": "Concurrency, Races & Distributed Coordination",
    "group": "cross-cutting",
    "file": "sections/II-concurrency-races-and-distributed-coordination.md",
-   "rule_count": 18,
+   "rule_count": 19,
    "rules": [
     {
      "id": "II:1",
@@ -4580,6 +4584,10 @@
     {
      "id": "II:18",
      "title": "A side effect is fired only when the write that performs a state transition reports it observed the old state, so a failure between the write and the side effect is never retried: the retry sees the new state and skips it"
+    },
+    {
+     "id": "II:19",
+     "title": "A component writes a record and hands its key to a second component, which finds it through an eventually-consistent secondary index instead of the primary key, so the hand-off intermittently finds nothing"
     }
    ]
   },

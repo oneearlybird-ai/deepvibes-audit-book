@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1287,
+ "rule_count": 1288,
  "sections": [
   {
    "id": "A",
@@ -2937,7 +2937,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 68,
+   "rule_count": 69,
    "rules": [
     {
      "id": "U:1",
@@ -3210,6 +3210,10 @@
     {
      "id": "U:68",
      "title": "A byte-identity gate reads the materialized working copy, the version control system's content filter denormalizes that copy on every checkout, and the gate's message attributes the mismatch to an editor, so each fetch on a filtering machine turns the gate red and sends the author to fix a file nobody changed"
+    },
+    {
+     "id": "U:69",
+     "title": "A CI job runs a provisioning tool that creates temporary cloud resources and relies on the tool's own interrupt cleanup, so a cancelled run leaves its builder resources behind and nothing sweeps them"
     }
    ]
   },

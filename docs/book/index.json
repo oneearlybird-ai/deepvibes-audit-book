@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1288,
+ "rule_count": 1289,
  "sections": [
   {
    "id": "A",
@@ -5080,7 +5080,7 @@
    "title": "Test-Suite Integrity & Verification Quality",
    "group": "cross-cutting",
    "file": "sections/NN-test-suite-integrity-and-verification-quality.md",
-   "rule_count": 72,
+   "rule_count": 73,
    "rules": [
     {
      "id": "NN:1",
@@ -5369,6 +5369,10 @@
     {
      "id": "NN:72",
      "title": "A visual fix is proven on a stand-in (a bare probe page, an isolated story) instead of the screen that shows the defect, and its source test asserts the fix's own shape, so both pass while the real screen breaks in a new way"
+    },
+    {
+     "id": "NN:73",
+     "title": "A test drives a real entry point whose default names a fixed path on shared host storage, so the suite is green for the first operator to run it and red for every other user of the machine, and the landing lane turns that host condition into a block on unrelated work"
     }
    ]
   },

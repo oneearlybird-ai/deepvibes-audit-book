@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1289,
+ "rule_count": 1290,
  "sections": [
   {
    "id": "A",
@@ -1730,7 +1730,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 19,
+   "rule_count": 20,
    "rules": [
     {
      "id": "J:1",
@@ -1807,6 +1807,10 @@
     {
      "id": "J:19",
      "title": "A script driving a document in another browsing context tests nodes with `instanceof` against its own window's constructors, so every node from the frame fails the check and the driver silently does nothing"
+    },
+    {
+     "id": "J:20",
+     "title": "An embedded demo runs the real product's code in a browser that may hold a real session and is fenced only at its data layer, so every exit the shim does not cover reaches the real application as the visitor"
     }
    ]
   },

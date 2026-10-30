@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1290,
+ "rule_count": 1291,
  "sections": [
   {
    "id": "A",
@@ -866,7 +866,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 60,
+   "rule_count": 61,
    "rules": [
     {
      "id": "F:1",
@@ -1107,6 +1107,10 @@
     {
      "id": "F:60",
      "title": "A metadata edit on a shared managed policy forces its replacement, and the replace detaches every in-stack role before failing on the roles other stacks attached, so a grant tightening becomes a partial outage"
+    },
+    {
+     "id": "F:61",
+     "title": "A grant names the ARN pattern of a service's child objects, but the service authorizes operations on those children against the parent object's ARN, so the grant never matches and every call after the parent-level one is denied"
     }
    ]
   },

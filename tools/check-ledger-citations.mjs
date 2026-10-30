@@ -55,7 +55,10 @@ if (repos.length === 0) {
 // "hash" alone is deliberately NOT a lead-in: a ledger says "source-hash <hex>"
 // and "stream <hex>" far more often than it says "commit hash <hex>", and the
 // latter is already covered by "commit".
-const CITED = /(?:commits?|landed(?:\s+(?:as|on|in))?|implemented\s+(?:in|as)|fixed\s+(?:in|on)|closed\s+on|adopted\s+on|shipped\s+in|reverted\s+in|cherry-picked\s+from)\s+(?:\w+\s+)?([0-9a-f]{7,40})(?![-_0-9a-zA-Z])/gi;
+// "main" IS a lead-in: "backend main <hex>" is how a record names the trunk commit,
+// and on 2026-10-30 a closure citing a slot hash in that form passed unflagged while
+// the lead-in widened the resolved set from 933 to 1629 with no false positive.
+const CITED = /(?:commits?|main|landed(?:\s+(?:as|on|in))?|implemented\s+(?:in|as)|fixed\s+(?:in|on)|closed\s+on|adopted\s+on|shipped\s+in|reverted\s+in|cherry-picked\s+from)\s+(?:\w+\s+)?([0-9a-f]{7,40})(?![-_0-9a-zA-Z])/gi;
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
 const ALL_DIGITS = /^[0-9]+$/;
 // A field may quote a hash precisely BECAUSE it does not resolve — the record of a

@@ -633,3 +633,11 @@ of it points at a retried default action or a second wait stacked behind the hoo
 that the grep of the host image would not show — check the event rules and the tool before filing;
 groups whose declared heartbeat is deliberately the drain budget and whose operators accept a
 fixed-length roll, documented as such.
+
+## A:51 — Host software licenses or activates itself against a vendor bucket in the cloud's own namespace, the instance profile never grants that read, and the software degrades on a timer instead of failing at boot
+
+**Statement.** A remote-display server, a database engine or a managed agent installed on an instance proves its licence by reading an object from a vendor-owned bucket in the same cloud, under the instance's own credentials, and the vendor documents the exact grant (a read on the regional licence bucket). The instance profile is derived from the workload's own needs and never names that bucket. The software starts, the licence read is refused, and the software runs in a limited or trial mode: sessions that end after a fixed period, a watermark, a reduced feature set, a periodic retry that logs a denial every few minutes for as long as the host runs. Nothing fails at boot, so the gap is read as a product quirk, and the refusals are the host's steadiest contribution to the refused-calls alarm.
+
+**Detect.** Read the refused-calls log for object reads against buckets the account does not own whose names carry a vendor or licence word; map the role to the host and the software. Read each installed vendor component's documentation for the licence grant it names and compare it with the profile. On the host, read the software's own licence status command or log.
+
+**False positives.** Software licensed by key file or licence server with no bucket read; hosts whose documented grant is present on an attached managed policy; a bucket read refused because the account is in a region the vendor does not serve (a different defect).

@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1291,
+ "rule_count": 1297,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 50,
+   "rule_count": 51,
    "rules": [
     {
      "id": "A:1",
@@ -210,6 +210,10 @@
     {
      "id": "A:50",
      "title": "A termination lifecycle hook that nothing completes turns every termination into a fixed maximum wait, and the group's replacement reports \"in progress\" for the whole of it"
+    },
+    {
+     "id": "A:51",
+     "title": "Host software licenses or activates itself against a vendor bucket in the cloud's own namespace, the instance profile never grants that read, and the software degrades on a timer instead of failing at boot"
     }
    ]
   },
@@ -866,7 +870,7 @@
    "title": "Identity, Compliance & Security (AWS)",
    "group": "aws-backend",
    "file": "sections/F-identity-compliance-and-security-aws.md",
-   "rule_count": 61,
+   "rule_count": 63,
    "rules": [
     {
      "id": "F:1",
@@ -1111,6 +1115,14 @@
     {
      "id": "F:61",
      "title": "A grant names the ARN pattern of a service's child objects, but the service authorizes operations on those children against the parent object's ARN, so the grant never matches and every call after the parent-level one is denied"
+    },
+    {
+     "id": "F:62",
+     "title": "A grant-derivation rule keys on the request parameter that made a service act in the caller's name, but the service also acts in the caller's name on a parameterless read of the same object, so the worker that only reads is refused on every call while the derivation gate approves its role"
+    },
+    {
+     "id": "F:63",
+     "title": "A service's forward-access decrypt in the caller's name is refused and logged although the read succeeds through the service's own key grant, so a polling reader fills the refused-calls alarm with denials that break nothing"
     }
    ]
   },
@@ -1734,7 +1746,7 @@
    "title": "Frontend: Routing & Execution Boundary",
    "group": "frontend",
    "file": "sections/J-frontend-routing-and-execution-boundary.md",
-   "rule_count": 20,
+   "rule_count": 22,
    "rules": [
     {
      "id": "J:1",
@@ -1815,6 +1827,14 @@
     {
      "id": "J:20",
      "title": "An embedded demo runs the real product's code in a browser that may hold a real session and is fenced only at its data layer, so every exit the shim does not cover reaches the real application as the visitor"
+    },
+    {
+     "id": "J:21",
+     "title": "A host-level forward that stood in for correct link targets is replaced by a hard not-found, and every relative link that relied on the forward dead-ends on the hosts that no longer forward"
+    },
+    {
+     "id": "J:22",
+     "title": "A self-driving embedded demo scrolls with page-level calls, so the host page jumps while the demo drives, and a visitor's interaction pauses it with no resume path"
     }
    ]
   },
@@ -3845,7 +3865,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 55,
+   "rule_count": 56,
    "rules": [
     {
      "id": "CC:1",
@@ -4066,6 +4086,10 @@
     {
      "id": "CC:55",
      "title": "A code change that needs a new grant ships in one deployment unit and the grant in another, and the compute rolls before the grant's stack applies, so every request that exercises the new read is refused for the whole gap"
+    },
+    {
+     "id": "CC:56",
+     "title": "A host agent's configuration re-declares an attribute the infrastructure code owns on a resource the host only writes to, so the agent's write is refused on every boot, or, when it is granted, the two owners fight"
     }
    ]
   },

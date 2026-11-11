@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1300,
+ "rule_count": 1302,
  "sections": [
   {
    "id": "A",
@@ -367,7 +367,7 @@
    "title": "Networking & Routing (AWS)",
    "group": "aws-backend",
    "file": "sections/C-networking-and-routing-aws.md",
-   "rule_count": 30,
+   "rule_count": 31,
    "rules": [
     {
      "id": "C:1",
@@ -488,6 +488,10 @@
     {
      "id": "C:30",
      "title": "The gateway's specification is imported in merge mode so that other stacks may attach to it, which makes the specification append-only: a path deleted from the contract stays live forever and nothing reconciles the difference"
+    },
+    {
+     "id": "C:31",
+     "title": "A proxying hop re-encodes the query string for its backend with a plus for each space, the backend percent-decodes only, so every query value with a space reaches the handler with plus signs in it"
     }
    ]
   },
@@ -2977,7 +2981,7 @@
    "title": "Modern CI/CD Pipelines, Build Infrastructure & Supply Chain",
    "group": "saas-core",
    "file": "sections/U-modern-ci-cd-pipelines-build-infrastructure-and-supply-chain.md",
-   "rule_count": 69,
+   "rule_count": 70,
    "rules": [
     {
      "id": "U:1",
@@ -3254,6 +3258,10 @@
     {
      "id": "U:69",
      "title": "A CI job runs a provisioning tool that creates temporary cloud resources and relies on the tool's own interrupt cleanup, so a cancelled run leaves its builder resources behind and nothing sweeps them"
+    },
+    {
+     "id": "U:70",
+     "title": "A build gate keeps its compiler output in one long-lived directory on a shared disk, with incremental caches on and nothing that prunes it, so it grows until the disk is full and every tool on the machine fails"
     }
    ]
   },

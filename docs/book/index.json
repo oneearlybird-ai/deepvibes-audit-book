@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1299,
+ "rule_count": 1300,
  "sections": [
   {
    "id": "A",
@@ -2392,7 +2392,7 @@
    "title": "Third Party: Stripe Payments Integration",
    "group": "third-party",
    "file": "sections/P-third-party-stripe-payments-integration.md",
-   "rule_count": 23,
+   "rule_count": 24,
    "rules": [
     {
      "id": "P:1",
@@ -2485,6 +2485,10 @@
     {
      "id": "P:23",
      "title": "An idempotency key is built from an owner label that is the same for every tenant, so two tenants processed in one run share a key and the provider returns one tenant's object for the other's request or refuses it"
+    },
+    {
+     "id": "P:24",
+     "title": "A call moved to the provider's replacement endpoint keeps the retired endpoint's parameter names, so the request names parameters the new endpoint does not define and the path fails the first time anyone uses it"
     }
    ]
   },

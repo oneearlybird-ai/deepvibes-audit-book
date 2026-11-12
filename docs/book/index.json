@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1305,
+ "rule_count": 1307,
  "sections": [
   {
    "id": "A",
@@ -222,7 +222,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 35,
+   "rule_count": 36,
    "rules": [
     {
      "id": "B:1",
@@ -363,6 +363,10 @@
     {
      "id": "B:35",
      "title": "An edge function sends a request to another origin under a different host name and gives the CDN only the host header, so the CDN checks the origin's certificate against the origin's own address and every redirected request fails"
+    },
+    {
+     "id": "B:36",
+     "title": "Content-hashed page files are served by the application instances themselves, so during a rolling replacement a page from a new instance names files an old instance answers 404 for"
     }
    ]
   },
@@ -1621,7 +1625,7 @@
    "title": "Frontend: Layout, Rendering & Architecture",
    "group": "frontend",
    "file": "sections/I-frontend-layout-rendering-and-architecture.md",
-   "rule_count": 32,
+   "rule_count": 33,
    "rules": [
     {
      "id": "I:1",
@@ -1750,6 +1754,10 @@
     {
      "id": "I:32",
      "title": "Error boundaries are attached where tabs are lazily loaded, so the eagerly loaded default screen is the one without one, and a third-party renderer that throws on an unsupported device takes down the whole app"
+    },
+    {
+     "id": "I:33",
+     "title": "A page is re-implemented on a new renderer and proven equal to the old page's own component, while what the old framework's layouts and providers mount around every page is never listed, so the new page ships without it - and the parts whose markup was copied but whose behaviour lived in a wrapper are drawn and dead"
     }
    ]
   },

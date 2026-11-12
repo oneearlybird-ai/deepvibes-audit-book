@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1302,
+ "rule_count": 1305,
  "sections": [
   {
    "id": "A",
@@ -222,7 +222,7 @@
    "title": "Storage & Content Delivery (AWS)",
    "group": "aws-backend",
    "file": "sections/B-storage-and-content-delivery-aws.md",
-   "rule_count": 34,
+   "rule_count": 35,
    "rules": [
     {
      "id": "B:1",
@@ -359,6 +359,10 @@
     {
      "id": "B:34",
      "title": "On a versioned bucket an expiry rule only hides the current object, and a noncurrent-version rule as long as the retention period restarts the clock, so the bytes outlive the published retention by the whole period again"
+    },
+    {
+     "id": "B:35",
+     "title": "An edge function sends a request to another origin under a different host name and gives the CDN only the host header, so the CDN checks the origin's certificate against the origin's own address and every redirected request fails"
     }
    ]
   },
@@ -3885,7 +3889,7 @@
    "title": "Infrastructure as Code & Environment Management",
    "group": "platform-delivery",
    "file": "sections/CC-infrastructure-as-code-and-environment-management.md",
-   "rule_count": 56,
+   "rule_count": 58,
    "rules": [
     {
      "id": "CC:1",
@@ -4110,6 +4114,14 @@
     {
      "id": "CC:56",
      "title": "A host agent's configuration re-declares an attribute the infrastructure code owns on a resource the host only writes to, so the agent's write is refused on every boot, or, when it is granted, the two owners fight"
+    },
+    {
+     "id": "CC:57",
+     "title": "One change removes a resource and re-points the thing that used it, the tool deletes the removed resource before it updates its user in place, and the provider refuses to delete what is still in use"
+    },
+    {
+     "id": "CC:58",
+     "title": "Instances are keyed by a display name read live, the name changes, and the state keeps the old key beside the new one, so the next apply deletes the \"old\" instance - which is the same real association the new key describes"
     }
    ]
   },

@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1307,
+ "rule_count": 1308,
  "sections": [
   {
    "id": "A",
@@ -1863,7 +1863,7 @@
    "title": "Frontend: State, Caching & Data Flow",
    "group": "frontend",
    "file": "sections/K-frontend-state-caching-and-data-flow.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "K:1",
@@ -2068,6 +2068,10 @@
     {
      "id": "K:51",
      "title": "A picker fetches the first page of a server list and filters, searches or ranks within it, so a record beyond the page is unreachable from the control that exists to find it"
+    },
+    {
+     "id": "K:52",
+     "title": "One client shows the text the service writes for a surface while another client keeps composing that surface's text itself from raw records, so the two apps say different things about the same moment and the copy's wording rules drift on their own"
     }
    ]
   },

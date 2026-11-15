@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1310,
+ "rule_count": 1311,
  "sections": [
   {
    "id": "A",
@@ -4408,7 +4408,7 @@
    "title": "Email & Transactional Notifications",
    "group": "platform-delivery",
    "file": "sections/FF-email-and-transactional-notifications.md",
-   "rule_count": 13,
+   "rule_count": 14,
    "rules": [
     {
      "id": "FF:1",
@@ -4461,6 +4461,10 @@
     {
      "id": "FF:13",
      "title": "The sending service's account-level verification state is a separate gate from the identity grant, and its refusal names the recipient rather than the sender, so the refusal reads as a policy defect and policy is widened while the real blocker is untouched"
+    },
+    {
+     "id": "FF:14",
+     "title": "A default configuration set is put on a sending identity after its senders' grants were written, so every sender whose grant names the identity alone is refused on a resource it never named"
     }
    ]
   },

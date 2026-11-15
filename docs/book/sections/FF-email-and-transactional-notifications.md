@@ -182,3 +182,31 @@ pinning and is stable across the service's internal choices.
 defect. Services that name the sender in the refusal, where the message is not misleading. And
 policies deliberately naming recipient identities for a documented reason, such as a fixed
 allow-list of destinations enforced at the permission layer as a second control.
+
+## FF:14 — A default configuration set is put on a sending identity after its senders' grants were written, so every sender whose grant names the identity alone is refused on a resource it never named
+
+**Statement.** Email services authorize a send against every resource the message uses: the
+sending identity and, when one applies, the configuration set. A default configuration set on the
+identity applies to every message sent from it, named by no caller. Adding one is therefore a
+permission change for every principal that sends from the identity, although no sender's code or
+policy is touched: a principal whose resource-scoped grant names the identity alone is refused
+from that moment, on a resource it never mentioned. The change that adds the set usually updates
+the senders its author knew of, which makes the gap harder to see - the mail everyone watches
+keeps flowing, and the senders that were missed are the quiet ones (a notification nobody is
+waiting for, an invitation sent once a month). Their refusals land in an error log as an
+authorization failure, are often caught and counted rather than raised, and the feature they
+serve simply never arrives.
+
+**Detect.** For every sending identity that carries a default configuration set, list every
+principal whose policy allows sending from that identity and evaluate the send action against the
+set as its own resource, with the provider's policy simulator or by reading each statement's
+resource list; a grant that names identities only fails. Do it when a default set is introduced,
+and again for every sender added later, since a new sender copied from an old policy inherits
+the same gap. In logs, the signature is an authorization refusal whose resource is a
+configuration set the calling code does not contain. Confirm a repair with a delivered message,
+not with the simulator alone.
+
+**False positives.** Senders whose grant is not resource-scoped, or names the set by a pattern
+that covers it. Identities with no default set, where a set applies only when the caller names
+one and the caller's own policy can be read beside its code. A refusal that names an identity or
+a recipient rather than a set, which is a different gate (see FF:13).

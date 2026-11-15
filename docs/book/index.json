@@ -2,14 +2,14 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1308,
+ "rule_count": 1309,
  "sections": [
   {
    "id": "A",
    "title": "Compute, Containers & Serverless (AWS)",
    "group": "aws-backend",
    "file": "sections/A-compute-containers-and-serverless-aws.md",
-   "rule_count": 51,
+   "rule_count": 52,
    "rules": [
     {
      "id": "A:1",
@@ -214,6 +214,10 @@
     {
      "id": "A:51",
      "title": "Host software licenses or activates itself against a vendor bucket in the cloud's own namespace, the instance profile never grants that read, and the software degrades on a timer instead of failing at boot"
+    },
+    {
+     "id": "A:52",
+     "title": "The function host reroutes its SDK's invoke call to in-cluster services by patching the client; a service ported to another runtime copies the call unpatched and asks the cloud's function API for functions that no longer exist there"
     }
    ]
   },

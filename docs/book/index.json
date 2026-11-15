@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1309,
+ "rule_count": 1310,
  "sections": [
   {
    "id": "A",
@@ -4146,7 +4146,7 @@
    "title": "Configuration, Feature Flags & Remote Config",
    "group": "platform-delivery",
    "file": "sections/DD-configuration-feature-flags-and-remote-config.md",
-   "rule_count": 43,
+   "rule_count": 44,
    "rules": [
     {
      "id": "DD:1",
@@ -4319,6 +4319,10 @@
     {
      "id": "DD:43",
      "title": "Public content carries literal copies of an identifier owned by a provisioned resource, so when the resource is recycled the pages keep advertising it and nothing connects the two"
+    },
+    {
+     "id": "DD:44",
+     "title": "A customer-facing setting is stored, validated and echoed back through a typed API on every client, and no runtime path reads the stored value, so the control round-trips perfectly and changes nothing"
     }
    ]
   },

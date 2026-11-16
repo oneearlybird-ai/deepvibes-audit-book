@@ -2,7 +2,7 @@
  "kind": "book-index",
  "generated_by": "tools/build-index.mjs",
  "section_count": 42,
- "rule_count": 1311,
+ "rule_count": 1312,
  "sections": [
   {
    "id": "A",
@@ -3290,7 +3290,7 @@
    "title": "Background Processing, Work Queues & Cron Tasks",
    "group": "saas-core",
    "file": "sections/V-background-processing-work-queues-and-cron-tasks.md",
-   "rule_count": 29,
+   "rule_count": 30,
    "rules": [
     {
      "id": "V:1",
@@ -3407,6 +3407,10 @@
     {
      "id": "V:29",
      "title": "A job identifier chosen to deduplicate periodic work outlives the job's failure, so the broker answers the next period's enqueue with the finished job and the work is never retried until the identifier's natural key happens to change"
+    },
+    {
+     "id": "V:30",
+     "title": "One message stands for a work list of unknown length and the handler walks the list inside the per-message time limit, so the queue's delivery count becomes the list's progress budget and a long list is parked half done"
     }
    ]
   },
